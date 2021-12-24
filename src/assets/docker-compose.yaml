@@ -9,13 +9,10 @@ services:
     image: haidousm/portfolio:1.0.1
     labels:
       - traefik.http.routers.portfolio.rule=Host(`moussa.codes`) ||
-        Host(`www.moussa.codes`) || Host(`portfolio.moussa.codes`) ||
-        (Host(`p.moussa.codes`) && PathPrefix(`/portfolio`))
+        Host(`www.moussa.codes`)
       - traefik.http.routers.portfolio.tls=true
       - traefik.http.routers.portfolio.tls.certresolver=lets-encrypt
       - traefik.port=80
-      - traefik.http.middlewares.portfolio-prefix.stripprefix.prefixes=/portfolio
-      - traefik.http.routers.portfolio.middlewares=portfolio-prefix
     networks:
       - internal
       - web
@@ -32,3 +29,13 @@ services:
     networks:
       - internal
       - web
+  fapi:
+    image: haidousm/fapi:1.0.0
+    labels:
+      - traefik.http.routers.fapi.rule=(Host(`api.moussa.codes`) &&
+        PathPrefix(`/fapi`))
+      - traefik.http.middlewares.fapi-prefix.stripprefix.prefixes=/fapi
+      - traefik.http.routers.fapi.middlewares=fapi-prefix
+    networks:
+      - web
+      - internal

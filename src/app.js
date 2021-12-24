@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const YAML = require("yaml");
 const fs = require("fs");
-const { createService, addHostname } = require("./utils");
+const { createService, addHostnames } = require("./utils");
 
 const morgan = require("morgan");
 app.use(morgan("dev"));
@@ -75,12 +75,23 @@ app.get("/containers", (req, res) => {
     res.send(containers);
 });
 
+app.post("/containers", (req, res) => {
+    const { name, image, hosts } = req.body;
+    const service = createService(name, image);
+    const updatedService = addHostnames(name, service, hosts);
+    const yaml = fs.readFileSync(FILE_PATH, "utf8");
+    const data = YAML.parse(yaml);
+    data.services[name] = updatedService;
+    fs.writeFileSync(FILE_PATH, YAML.stringify(data));
+    res.send(data);
+});
+
 app.post("/containers/host", (req, res) => {
     const { name, host } = req.body;
     const yaml = fs.readFileSync(FILE_PATH, "utf8");
     const data = YAML.parse(yaml);
     const service = data.services[name];
-    data.services[name] = addHostname(name, service, host);
+    data.services[name] = addHostnames(name, service, [host]);
     fs.writeFileSync(FILE_PATH, YAML.stringify(data));
     res.send(data);
 });

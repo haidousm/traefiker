@@ -39,24 +39,24 @@ app.get("/containers", (req, res) => {
     const services = Object.keys(data.services);
     const containers = services.map((service) => {
         const { image, labels } = data.services[service];
-        const urlLabels = labels.filter((label) => label.includes("Host"))[0];
-        const labelString = urlLabels.split("=")[1];
-        let urls = labelString.includes("||")
+        const hostLabels = labels.filter((label) => label.includes("Host"))[0];
+        const labelString = hostLabels.split("=")[1];
+        let hosts = labelString.includes("||")
             ? labelString.split("||")
             : [labelString];
 
-        urls = urls.map((urlString) => {
-            let hostname = urlString
+        hosts = hosts.map((hostString) => {
+            let hostname = hostString
                 .split("Host(`")
                 .pop()
                 .split("`)")
                 .shift()
                 .trim();
 
-            if (urlString.includes("PathPrefix")) {
+            if (hostString.includes("PathPrefix")) {
                 hostname =
                     hostname +
-                    urlString
+                    hostString
                         .split("PathPrefix(`")
                         .pop()
                         .split("`)")
@@ -69,10 +69,14 @@ app.get("/containers", (req, res) => {
         return {
             name: service,
             image,
-            urls,
+            hosts,
         };
     });
     res.send(containers);
+});
+
+app.post("/containers/host", (req, res) => {
+    const { name, hostname } = req.body;
 });
 
 app.get("/yaml", (req, res) => {

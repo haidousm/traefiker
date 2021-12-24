@@ -1,31 +1,34 @@
 version: "3"
-
 networks:
-    web:
-        external: true
-    internal:
-        external: false
-
+  web:
+    external: true
+  internal:
+    external: false
 services:
-    portfolio:
-        image: haidousm/portfolio:1.0.1
-        labels:
-            - traefik.http.routers.portfolio.rule=Host(`moussa.codes`) || Host(`www.moussa.codes`)
-            - traefik.http.routers.portfolio.tls=true
-            - traefik.http.routers.portfolio.tls.certresolver=lets-encrypt
-            - traefik.port=80
-        networks:
-            - internal
-            - web
-    shell-api:
-        image: haidousm/unix-shell-api:1.0.0
-        labels:
-            - traefik.http.routers.shell-api.rule=Host(`api.moussa.codes`) && PathPrefix(`/shell`)
-            - traefik.http.routers.shell-api.tls=true
-            - traefik.http.routers.shell-api.tls.certresolver=lets-encrypt
-            - "traefik.http.middlewares.shell-api-prefix.stripprefix.prefixes=/shell"
-            - "traefik.http.routers.shell-api.middlewares=shell-api-prefix"
-            - traefik.port=8000
-        networks:
-            - internal
-            - web
+  portfolio:
+    image: haidousm/portfolio:1.0.1
+    labels:
+      - traefik.http.routers.portfolio.rule=Host(`moussa.codes`) ||
+        Host(`www.moussa.codes`) || Host(`portfolio.moussa.codes`) ||
+        (Host(`p.moussa.codes`) && PathPrefix(`/portfolio`))
+      - traefik.http.routers.portfolio.tls=true
+      - traefik.http.routers.portfolio.tls.certresolver=lets-encrypt
+      - traefik.port=80
+      - traefik.http.middlewares.portfolio-prefix.stripprefix.prefixes=/portfolio
+      - traefik.http.routers.portfolio.middlewares=portfolio-prefix
+    networks:
+      - internal
+      - web
+  shell-api:
+    image: haidousm/unix-shell-api:1.0.0
+    labels:
+      - traefik.http.routers.shell-api.rule=Host(`api.moussa.codes`) &&
+        PathPrefix(`/shell`)
+      - traefik.http.routers.shell-api.tls=true
+      - traefik.http.routers.shell-api.tls.certresolver=lets-encrypt
+      - traefik.http.middlewares.shell-api-prefix.stripprefix.prefixes=/shell
+      - traefik.http.routers.shell-api.middlewares=shell-api-prefix
+      - traefik.port=8000
+    networks:
+      - internal
+      - web

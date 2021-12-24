@@ -6,8 +6,8 @@ const { createService, addHostname } = require("./utils");
 
 const morgan = require("morgan");
 app.use(morgan("dev"));
-
 app.use(express.static(__dirname + "/public"));
+app.use(express.json());
 
 const FILE_PATH = `${__dirname}/assets/docker-compose.yaml`;
 
@@ -76,7 +76,13 @@ app.get("/containers", (req, res) => {
 });
 
 app.post("/containers/host", (req, res) => {
-    const { name, hostname } = req.body;
+    const { name, host } = req.body;
+    const yaml = fs.readFileSync(FILE_PATH, "utf8");
+    const data = YAML.parse(yaml);
+    const service = data.services[name];
+    data.services[name] = addHostname(name, service, host);
+    fs.writeFileSync(FILE_PATH, YAML.stringify(data));
+    res.send(data);
 });
 
 app.get("/yaml", (req, res) => {

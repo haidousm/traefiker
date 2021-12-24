@@ -42,6 +42,7 @@ const addHostname = (name, service, hostname) => {
         );
         labels.push(`traefik.http.routers.${name}.middlewares=${name}-prefix`);
     }
+    return service;
 };
 
 const labelExists = (service, label) => {

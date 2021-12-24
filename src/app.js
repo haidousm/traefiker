@@ -5,13 +5,74 @@ const fs = require("fs");
 const { createService, addHostname } = require("./utils");
 
 const morgan = require("morgan");
-
 app.use(morgan("dev"));
 
 app.use(express.static(__dirname + "/public"));
 
+const FILE_PATH = `${__dirname}/assets/docker-compose.yaml`;
+
 app.get("/", (req, res) => {
     res.send("nothing to see here");
+});
+
+app.get("/containers", (req, res) => {
+    if (!fs.existsSync(FILE_PATH)) {
+        fs.writeFileSync(
+            FILE_PATH,
+            YAML.stringify({
+                version: "3",
+                networks: {
+                    web: {
+                        external: true,
+                    },
+                    internal: {
+                        external: false,
+                    },
+                },
+                services: {},
+            })
+        );
+    }
+
+    const yaml = fs.readFileSync(FILE_PATH, "utf8");
+    const data = YAML.parse(yaml);
+    const services = Object.keys(data.services);
+    const containers = services.map((service) => {
+        const { image, labels } = data.services[service];
+        const urlLabels = labels.filter((label) => label.includes("Host"))[0];
+        const labelString = urlLabels.split("=")[1];
+        let urls = labelString.includes("||")
+            ? labelString.split("||")
+            : [labelString];
+
+        urls = urls.map((urlString) => {
+            let hostname = urlString
+                .split("Host(`")
+                .pop()
+                .split("`)")
+                .shift()
+                .trim();
+
+            if (urlString.includes("PathPrefix")) {
+                hostname =
+                    hostname +
+                    urlString
+                        .split("PathPrefix(`")
+                        .pop()
+                        .split("`)")
+                        .shift()
+                        .trim();
+            }
+            return hostname;
+        });
+
+        return {
+            name: service,
+            image,
+            urls,
+        };
+    });
+    res.send(containers);
 });
 
 app.get("/yaml", (req, res) => {

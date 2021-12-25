@@ -24,10 +24,13 @@ const getDataFromFile = (filepath) => {
     return YAML.parse(yaml);
 };
 
-const createService = (image) => {
+const createService = (name, image) => {
     const service = {
         image,
-        labels: [],
+        labels: [
+            `traefik.http.routers.${name}.tls=true`,
+            `traefik.http.routers.${name}.tls.certresolver=lets-encrypt`,
+        ],
         networks: ["web", "internal"],
     };
 
@@ -78,38 +81,50 @@ const transformHostsToLabels = (name, hosts) => {
         const path = host.includes("/") ? host.split("/")[1] : "";
         if (path !== "") {
             labels.push(
-                `traefik.http.middlewares.${name}-prefix.stripprefix.prefixes=/${path}`
+                `traefik.http.middlewares.${path}-prefix.stripprefix.prefixes=/${path}`
             );
-            labels.push(
-                `traefik.http.routers.${name}.middlewares=${name}-prefix`
+            const middlewaresLabels = labels.filter((label) =>
+                label.includes("middlewares=")
             );
+            if (middlewaresLabels.length === 0) {
+                labels.push(
+                    `traefik.http.routers.${name}.middlewares=${path}-prefix`
+                );
+            } else {
+                const middlewaresLabel = middlewaresLabels[0];
+                const newMiddlewaresLabel = `${middlewaresLabel},${path}-prefix`;
+                labels.splice(
+                    labels.indexOf(middlewaresLabel),
+                    1,
+                    newMiddlewaresLabel
+                );
+            }
         }
     });
     return labels;
 };
 
 const addHostToExistingLabels = (name, service, host) => {
-    const labels = service.labels;
-    const hostLabel = labels.filter((label) => label.includes("Host"))[0];
-
-    const path = host.includes("/") ? host.split("/")[1] : "";
-    const newHostLabel = `${hostLabel} || ${formatHostAsLabel(
-        host.split("/")[0],
-        path
-    )}`;
-    labels.splice(labels.indexOf(hostLabel), 1, newHostLabel);
-    if (path !== "") {
-        labels.push(
-            `traefik.http.middlewares.${name}-prefix.stripprefix.prefixes=/${path}`
-        );
-        labels.push(`traefik.http.routers.${name}.middlewares=${name}-prefix`);
-    }
-    return labels;
+    // const labels = service.labels;
+    // const hostLabel = labels.filter((label) => label.includes("Host"))[0];
+    // const path = host.includes("/") ? host.split("/")[1] : "";
+    // const newHostLabel = `${hostLabel} || ${formatHostAsLabel(
+    //     host.split("/")[0],
+    //     path
+    // )}`;
+    // labels.splice(labels.indexOf(hostLabel), 1, newHostLabel);
+    // if (path !== "") {
+    //     labels.push(
+    //         `traefik.http.middlewares.${path}-prefix.stripprefix.prefixes=/${path}`
+    //     );
+    //     labels.push(`traefik.http.routers.${name}.middlewares=${name}-prefix`);
+    // }
+    // return labels;
 };
 
 const formatHostAsLabel = (host, path) => {
     return path !== ""
-        ? `(Host(\`${host}\`) && PathPrefix(\`/${path}\`))`
+        ? `Host(\`${host}\`) && PathPrefix(\`/${path}\`)`
         : `Host(\`${host}\`)`;
 };
 

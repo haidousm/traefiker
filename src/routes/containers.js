@@ -29,7 +29,7 @@ router.get("/", (req, res) => {
 router.get("/:name", (req, res) => {
     const container = getContainerByName(req.params.name);
     if (container) {
-        res.send(container);
+        return res.send(container);
     }
     res.status(404).send({
         error: `Container with name ${req.params.name} not found`,
@@ -47,8 +47,11 @@ router.post("/", (req, res) => {
         createDockerFile(process.env.DOCKER_FILEPATH);
     }
     const data = getDataFromFile(process.env.DOCKER_FILEPATH);
-    const service = createService(image);
-    service.labels = transformHostsToLabels(name, hosts);
+    const service = createService(name, image);
+    service.labels = [
+        ...service.labels,
+        ...transformHostsToLabels(name, hosts),
+    ];
 
     data.services[name] = service;
     fs.writeFileSync(process.env.DOCKER_FILEPATH, YAML.stringify(data));

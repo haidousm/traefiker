@@ -1,124 +1,24 @@
 const express = require("express");
-const app = express();
-const YAML = require("yaml");
-const fs = require("fs");
-const { createService, addHostnames } = require("./utils");
-
 const morgan = require("morgan");
+const path = require("path");
+require("dotenv").config({
+    path: path.resolve(__dirname, "./config/config.env"),
+});
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(morgan("dev"));
+
 app.use(express.static(__dirname + "/public"));
 app.use(express.json());
 
-const FILE_PATH = `${__dirname}/assets/docker-compose.yaml`;
+app.use("/containers", require("./routes/containers"));
 
 app.get("/", (req, res) => {
     res.send("nothing to see here");
 });
 
-app.get("/containers", (req, res) => {
-    if (!fs.existsSync(FILE_PATH)) {
-        fs.writeFileSync(
-            FILE_PATH,
-            YAML.stringify({
-                version: "3",
-                networks: {
-                    web: {
-                        external: true,
-                    },
-                    internal: {
-                        external: false,
-                    },
-                },
-                services: {},
-            })
-        );
-    }
-
-    const yaml = fs.readFileSync(FILE_PATH, "utf8");
-    const data = YAML.parse(yaml);
-    const services = Object.keys(data.services);
-    const containers = services.map((service) => {
-        const { image, labels } = data.services[service];
-        const hostLabels = labels.filter((label) => label.includes("Host"))[0];
-        const labelString = hostLabels.split("=")[1];
-        let hosts = labelString.includes("||")
-            ? labelString.split("||")
-            : [labelString];
-
-        hosts = hosts.map((hostString) => {
-            let hostname = hostString
-                .split("Host(`")
-                .pop()
-                .split("`)")
-                .shift()
-                .trim();
-
-            if (hostString.includes("PathPrefix")) {
-                hostname =
-                    hostname +
-                    hostString
-                        .split("PathPrefix(`")
-                        .pop()
-                        .split("`)")
-                        .shift()
-                        .trim();
-            }
-            return hostname;
-        });
-
-        return {
-            name: service,
-            image,
-            hosts,
-        };
-    });
-    res.send(containers);
-});
-
-app.post("/containers", (req, res) => {
-    const { name, image, hosts } = req.body;
-    const service = createService(name, image);
-    const updatedService = addHostnames(name, service, hosts);
-    const yaml = fs.readFileSync(FILE_PATH, "utf8");
-    const data = YAML.parse(yaml);
-    data.services[name] = updatedService;
-    fs.writeFileSync(FILE_PATH, YAML.stringify(data));
-    res.send(data);
-});
-
-app.post("/containers/host", (req, res) => {
-    const { name, host } = req.body;
-    const yaml = fs.readFileSync(FILE_PATH, "utf8");
-    const data = YAML.parse(yaml);
-    const service = data.services[name];
-    data.services[name] = addHostnames(name, service, [host]);
-    fs.writeFileSync(FILE_PATH, YAML.stringify(data));
-    res.send(data);
-});
-
-app.get("/yaml", (req, res) => {
-    const dockerComposeFile = fs.readFileSync(
-        __dirname + "/../test.yaml",
-        "utf8"
-    );
-    const dockerCompose = YAML.parse(dockerComposeFile);
-
-    const serviceName = "test";
-    const imageName = "test";
-    const hostname = "test.com/shell";
-
-    const service = createService(serviceName, imageName);
-    addHostname(serviceName, service, hostname);
-
-    dockerCompose.services[serviceName] = service;
-
-    const portfolio = dockerCompose.services["portfolio"];
-    addHostname("portfolio", portfolio, "portfolio.com");
-    dockerCompose.services["portfolio"] = portfolio;
-    res.send(dockerCompose);
-});
-
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

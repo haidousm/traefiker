@@ -1,2 +1,3 @@
 node_modules/
-src/assets/docker-compose.yaml
+docker-compose.yaml
+src/config/config.env

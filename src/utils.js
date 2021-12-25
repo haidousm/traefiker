@@ -1,61 +1,123 @@
-const createService = (name, image) => {
-    return {
-        image: image,
+const YAML = require("yaml");
+const fs = require("fs");
+
+const createDockerFile = (filepath) => {
+    fs.writeFileSync(
+        filepath,
+        YAML.stringify({
+            version: "3",
+            networks: {
+                web: {
+                    external: true,
+                },
+                internal: {
+                    external: false,
+                },
+            },
+            services: {},
+        })
+    );
+};
+
+const getDataFromFile = (filepath) => {
+    const yaml = fs.readFileSync(filepath, "utf8");
+    return YAML.parse(yaml);
+};
+
+const createService = (image) => {
+    const service = {
+        image,
         labels: [],
         networks: ["web", "internal"],
     };
+
+    return service;
 };
 
-const addHostnames = (name, service, hostnames) => {
+const getHostsFromService = (service) => {
     const labels = service.labels || [];
+    const hostLabels = labels.filter((label) => label.includes("Host"))[0];
+    const labelString = hostLabels.split("=")[1];
+    let hosts = labelString.includes("||")
+        ? labelString.split("||")
+        : [labelString];
 
-    hostnames.forEach((hostname) => {
-        const labelIndex = labelExists(
-            service,
-            `traefik.http.routers.${name}.rule`
+    hosts = hosts.map((hostString) => {
+        let hostname = hostString
+            .split("Host(`")
+            .pop()
+            .split("`)")
+            .shift()
+            .trim();
+
+        if (hostString.includes("PathPrefix")) {
+            hostname =
+                hostname +
+                hostString
+                    .split("PathPrefix(`")
+                    .pop()
+                    .split("`)")
+                    .shift()
+                    .trim();
+        }
+        return hostname;
+    });
+    return hosts;
+};
+
+const transformHostsToLabels = (name, hosts) => {
+    const labels = [];
+    hosts.forEach((host) => {
+        const path = host.includes("/") ? host.split("/")[1] : "";
+        labels.push(
+            `traefik.http.routers.${name}.rule=${formatHostAsLabel(
+                host.split("/")[0],
+                path
+            )}`
         );
-
-        let path = "";
-
-        if (hostname.includes("/")) {
-            const hostnameParts = hostname.split("/");
-            hostname = hostnameParts[0];
-            path = "/" + hostnameParts[1];
-        }
-
-        if (labelIndex !== -1) {
-            const label = labels[labelIndex];
-            labels[labelIndex] = label.concat(
-                path !== ""
-                    ? ` || (Host(\`${hostname}\`) && PathPrefix(\`${path}\`))`
-                    : ` || Host(\`${hostname}\`)`
-            );
-        } else {
-            labels.push(
-                path !== ""
-                    ? `traefik.http.routers.${name}.rule=(Host(\`${hostname}\`) && PathPrefix(\`${path}\`))`
-                    : `traefik.http.routers.${name}.rule=Host(\`${hostname}\`)`
-            );
-        }
 
         if (path !== "") {
             labels.push(
-                `traefik.http.middlewares.${name}-prefix.stripprefix.prefixes=${path}`
+                `traefik.http.middlewares.${name}-prefix.stripprefix.prefixes=/${path}`
             );
             labels.push(
                 `traefik.http.routers.${name}.middlewares=${name}-prefix`
             );
         }
     });
-    return service;
+    return labels;
 };
 
-const labelExists = (service, label) => {
-    const labels = service.labels || [];
-    return labels.findIndex((l) => l.includes(label));
+const addHostToExistingLabels = (name, service, host) => {
+    const labels = service.labels;
+    const hostLabel = labels.filter((label) => label.includes("Host"))[0];
+
+    const path = host.includes("/") ? host.split("/")[1] : "";
+    const newHostLabel = `${hostLabel} || ${formatHostAsLabel(
+        host.split("/")[0],
+        path
+    )}`;
+    labels.splice(labels.indexOf(hostLabel), 1, newHostLabel);
+    if (path !== "") {
+        labels.push(
+            `traefik.http.middlewares.${name}-prefix.stripprefix.prefixes=/${path}`
+        );
+        labels.push(`traefik.http.routers.${name}.middlewares=${name}-prefix`);
+    }
+    return labels;
+};
+
+const formatHostAsLabel = (host, path) => {
+    return path !== ""
+        ? `(Host(\`${host}\`) && PathPrefix(\`/${path}\`))`
+        : `Host(\`${host}\`)`;
 };
 
 module.exports = {
+    createDockerFile,
+    getDataFromFile,
     createService,
-    addHostnames,
+    getHostsFromService,
+    transformHostsToLabels,
+    addHostToExistingLabels,
 };

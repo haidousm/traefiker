@@ -70,7 +70,7 @@
                                     >
                                         Container Hostname
                                     </th>
-                                    <th
+                                    <!-- <th
                                         scope="col"
                                         class="
                                             px-6
@@ -83,7 +83,7 @@
                                         "
                                     >
                                         Status
-                                    </th>
+                                    </th> -->
 
                                     <th scope="col" class="relative px-6 py-3">
                                         <span class="sr-only">Edit</span>
@@ -91,7 +91,8 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <%- include("container") %>
+                                <% containers.forEach(container => { %> <%-
+                                include("container", {container}) %> <% }) %>
                             </tbody>
                         </table>
                     </div>

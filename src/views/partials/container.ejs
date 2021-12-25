@@ -1,11 +1,5 @@
 <tr>
     <td class="px-6 py-4 whitespace-nowrap text-center">
-        <div class="text-sm text-gray-900">Portfolio</div>
-    </td>
-    <td class="px-6 py-4 whitespace-nowrap text-center">
-        <div class="text-sm text-gray-900">haidousm/portfolio:1.0.1</div>
-    </td>
-    <td class="px-6 py-4 whitespace-nowrap text-center">
         <span
             class="
                 px-4
@@ -19,26 +13,65 @@
                 text-blue-800
             "
         >
-            moussa.codes
+            <%= container.name.toUpperCase() %>
         </span>
     </td>
-
     <td class="px-6 py-4 whitespace-nowrap text-center">
         <span
             class="
-                px-2
+                px-4
+                py-2
+                inline-flex
+                text-sm
+                leading-5
+                font-semibold
+                rounded-md
+                bg-sky-100
+                text-sky-800
+            "
+        >
+            <%= container.image %>
+        </span>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-center">
+        <% container.hosts.forEach(host => { %>
+        <a href="https://<%= host%>">
+            <span
+                class="
+                    px-4
+                    py-2
+                    inline-flex
+                    text-sm
+                    leading-5
+                    font-semibold
+                    rounded-md
+                    bg-amber-100
+                    text-amber-800
+                "
+            >
+                <%= host %>
+            </span>
+        </a>
+        <% }) %>
+    </td>
+
+    <!-- <td class="px-6 py-4 whitespace-nowrap text-center">
+        <span
+            class="
+                px-4
+                py-2
                 inline-flex
                 text-xs
                 leading-5
                 font-semibold
-                rounded-full
+                rounded-md
                 bg-green-100
                 text-green-800
             "
         >
             Active
         </span>
-    </td>
+    </td> -->
 
     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>

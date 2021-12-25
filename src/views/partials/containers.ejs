@@ -134,7 +134,27 @@
     }
 
     function handleSubmit() {
-        document.getElementById("modal").style.display = "none";
-        // document.getElementById("form").submit();
+        closeModal();
+        const containerName = document.getElementById("container-name").value;
+        const containerImage = document.getElementById("image-name").value;
+        const containerHosts = document
+            .getElementById("hosts")
+            .value.split(",")
+            .map((host) => host.trim());
+        fetch("/containers", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: containerName,
+                image: containerImage,
+                hosts: containerHosts,
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                window.location.reload();
+            });
     }
 </script>

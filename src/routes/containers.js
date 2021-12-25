@@ -3,6 +3,7 @@ const router = express.Router();
 
 const YAML = require("yaml");
 const fs = require("fs");
+const { exec } = require("child_process");
 const {
     createDockerFile,
     getDataFromFile,
@@ -55,7 +56,15 @@ router.post("/", (req, res) => {
 
     data.services[name] = service;
     fs.writeFileSync(process.env.DOCKER_FILEPATH, YAML.stringify(data));
-    res.send(data);
+    exec(`cd /usr/src/docker-config/ && docker-compose up -d`, (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send({
+                error: err,
+            });
+        }
+        res.send(data);
+    });
 });
 
 /**

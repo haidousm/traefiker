@@ -8,5 +8,8 @@ COPY package.json .
 RUN npm install
 COPY . .
 RUN npm run build-css
+RUN apk add --update docker openrc
+RUN rc-update add docker boot
+RUN apk add docker-compose
 EXPOSE 8080
 CMD ["npm", "start"]

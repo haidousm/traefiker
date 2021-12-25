@@ -67,15 +67,15 @@ const getHostsFromService = (service) => {
 
 const transformHostsToLabels = (name, hosts) => {
     const labels = [];
+    const hostsLabel = `traefik.http.routers.${name}.rule=${hosts
+        .map((host) => {
+            const path = host.includes("/") ? host.split("/")[1] : "";
+            return formatHostAsLabel(host.split("/")[0], path);
+        })
+        .join(" || ")}`;
+    labels.push(hostsLabel);
     hosts.forEach((host) => {
         const path = host.includes("/") ? host.split("/")[1] : "";
-        labels.push(
-            `traefik.http.routers.${name}.rule=${formatHostAsLabel(
-                host.split("/")[0],
-                path
-            )}`
-        );
-
         if (path !== "") {
             labels.push(
                 `traefik.http.middlewares.${name}-prefix.stripprefix.prefixes=/${path}`

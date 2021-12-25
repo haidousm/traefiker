@@ -157,4 +157,14 @@
                 window.location.reload();
             });
     }
+    async function handleEdit(containerName) {
+        const { image, hosts } = await fetch(
+            `/containers/${containerName}`
+        ).then((response) => response.json());
+        document.getElementById("container-name").value = containerName;
+        document.getElementById("image-name").value = image;
+        document.getElementById("hosts").value = hosts.join(",");
+        document.getElementById("modal-title").innerHTML = "Edit Container";
+        openModal();
+    }
 </script>

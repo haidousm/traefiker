@@ -22,6 +22,21 @@ router.get("/", (req, res) => {
 });
 
 /**
+ * @route GET /containers/:name
+ * @desc Get container by name
+ * @access Public
+ */
+router.get("/:name", (req, res) => {
+    const container = getContainerByName(req.params.name);
+    if (container) {
+        res.send(container);
+    }
+    res.status(404).send({
+        error: `Container with name ${req.params.name} not found`,
+    });
+});
+
+/**
  * @route POST /containers
  * @desc Create a container
  * @access Public
@@ -72,6 +87,19 @@ const getAllContainers = () => {
         };
     });
     return containers;
+};
+
+const getContainerByName = (name) => {
+    if (!fs.existsSync(process.env.DOCKER_FILEPATH)) {
+        createDockerFile(process.env.DOCKER_FILEPATH);
+    }
+    const data = getDataFromFile(process.env.DOCKER_FILEPATH);
+    const service = data.services[name];
+    return {
+        name,
+        image: service.image,
+        hosts: getHostsFromService(service),
+    };
 };
 
 module.exports = { router, getAllContainers };

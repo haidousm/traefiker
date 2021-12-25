@@ -11,12 +11,16 @@ const PORT = process.env.PORT || 3000;
 app.use(morgan("dev"));
 
 app.use(express.static(__dirname + "/public"));
-app.use(express.json());
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "/views"));
 
-app.use("/containers", require("./routes/containers"));
+app.use(express.json());
+app.use("/containers", require("./routes/containers").router);
 
 app.get("/", (req, res) => {
-    res.send("nothing to see here");
+    res.render("pages/dashboard", {
+        containers: require("./routes/containers").getAllContainers(),
+    });
 });
 
 app.listen(PORT, () => {

@@ -18,20 +18,7 @@ const {
  * @access Public
  */
 router.get("/", (req, res) => {
-    if (!fs.existsSync(process.env.DOCKER_FILEPATH)) {
-        createDockerFile(process.env.DOCKER_FILEPATH);
-    }
-    const data = getDataFromFile(process.env.DOCKER_FILEPATH);
-    const serviceNames = Object.keys(data.services);
-    const containers = serviceNames.map((name) => {
-        const service = data.services[name];
-        return {
-            name,
-            image: service.image,
-            hosts: getHostsFromService(service),
-        };
-    });
-    res.send(containers);
+    res.send(getAllContainers());
 });
 
 /**
@@ -70,4 +57,21 @@ router.post("/host", (req, res) => {
     res.send(data);
 });
 
-module.exports = router;
+const getAllContainers = () => {
+    if (!fs.existsSync(process.env.DOCKER_FILEPATH)) {
+        createDockerFile(process.env.DOCKER_FILEPATH);
+    }
+    const data = getDataFromFile(process.env.DOCKER_FILEPATH);
+    const serviceNames = Object.keys(data.services);
+    const containers = serviceNames.map((name) => {
+        const service = data.services[name];
+        return {
+            name,
+            image: service.image,
+            hosts: getHostsFromService(service),
+        };
+    });
+    return containers;
+};
+
+module.exports = { router, getAllContainers };

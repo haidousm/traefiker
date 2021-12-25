@@ -1,5 +1,5 @@
 {
-    "name": "traefikker",
+    "name": "traefiker",
     "version": "1.0.0",
     "description": "deploy containers on traefik easily",
     "scripts": {
@@ -7,7 +7,7 @@
         "dev": "nodemon src/app.js",
         "build-css": "yarn tailwindcss -o src/public/assets/tailwind.css"
     },
-    "repository": "https://github.com/haidousm/traefikker",
+    "repository": "https://github.com/haidousm/traefiker",
     "author": "Moussa Haidous",
     "license": "MIT",
     "private": false,

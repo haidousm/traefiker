@@ -72,6 +72,18 @@ router.post("/host", (req, res) => {
     res.send(data);
 });
 
+/**
+ * @route DELETE /containers/:name
+ * @desc Delete a container
+ * @access Public
+ */
+router.delete("/:name", (req, res) => {
+    const data = getDataFromFile(process.env.DOCKER_FILEPATH, YAML);
+    delete data.services[req.params.name];
+    fs.writeFileSync(process.env.DOCKER_FILEPATH, YAML.stringify(data));
+    res.send(data);
+});
+
 const getAllContainers = () => {
     if (!fs.existsSync(process.env.DOCKER_FILEPATH)) {
         createDockerFile(process.env.DOCKER_FILEPATH);

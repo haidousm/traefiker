@@ -110,6 +110,9 @@
                                     <th scope="col" class="relative px-6 py-3">
                                         <span class="sr-only">Edit</span>
                                     </th>
+                                    <th scope="col" class="relative px-6 py-3">
+                                        <span class="sr-only">Delete</span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -162,9 +165,22 @@
             `/containers/${containerName}`
         ).then((response) => response.json());
         document.getElementById("container-name").value = containerName;
+        document.getElementById("container-name").disabled = true;
         document.getElementById("image-name").value = image;
         document.getElementById("hosts").value = hosts.join(",");
         document.getElementById("modal-title").innerHTML = "Edit Container";
         openModal();
+    }
+    async function handleDelete(containerName) {
+        if (
+            confirm(
+                `Are you sure you want to delete container ${containerName}?`
+            )
+        ) {
+            await fetch(`/containers/${containerName}`, {
+                method: "DELETE",
+            });
+            window.location.reload();
+        }
     }
 </script>

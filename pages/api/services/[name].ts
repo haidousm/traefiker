@@ -15,6 +15,11 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
             res.status(200).json(_service);
         });
         res.status(200).json(_service);
+    } else if (method === "DELETE") {
+        docker.deleteService(name);
+        docker.launchDockerCompose(() => {
+            res.status(200).json({});
+        });
     }
 };
 

@@ -77,6 +77,12 @@ export function saveService(name: string, _service: _Service) {
     writeData(process.env.DOCKER_COMPOSE_FILEPATH!, dockerCompose);
 }
 
+export function deleteService(name: string) {
+    const dockerCompose = getData(process.env.DOCKER_COMPOSE_FILEPATH!);
+    delete dockerCompose.services[name as any];
+    writeData(process.env.DOCKER_COMPOSE_FILEPATH!, dockerCompose);
+}
+
 export function launchDockerCompose(callback: () => void) {
     const command = `docker-compose -f ${process.env
         .DOCKER_COMPOSE_FILEPATH!} up -d`;

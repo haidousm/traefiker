@@ -1,8 +1,8 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Navbar";
 
-const Home: NextPage = () => {
+const Dashboard: NextPage = () => {
     return (
         <div>
             <Head>
@@ -22,4 +22,4 @@ const Home: NextPage = () => {
     );
 };
 
-export default Home;
+export default Dashboard;

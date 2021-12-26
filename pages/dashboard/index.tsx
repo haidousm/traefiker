@@ -4,14 +4,30 @@ import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/DashboardTable";
 import Navbar from "../../components/Navbar";
+import { Service } from "../../lib/docker";
 
 const Dashboard: NextPage = () => {
-    const [services, setServices] = useState([]);
+    const [services, setServices] = useState<Service[]>([]);
+    const [isEditing, setIsEditing] = useState(false);
     useEffect(() => {
         fetch("/api/services")
             .then((res) => res.json())
             .then((data) => setServices(data));
     }, []);
+
+    const handleNewServiceClicked = () => {
+        setIsEditing(true);
+    };
+
+    const handleSaveClicked = (service: Service) => {
+        console.log("handle save clicked");
+        setIsEditing(false);
+    };
+
+    const handleCancelClicked = () => {
+        setIsEditing(false);
+    };
+
     return (
         <div>
             <Head>
@@ -26,8 +42,15 @@ const Dashboard: NextPage = () => {
                 <Navbar />
             </nav>
             <main>
-                <DashboardHeader />
-                <DashboardTable services={services} />
+                <DashboardHeader
+                    handleNewServiceClicked={handleNewServiceClicked}
+                />
+                <DashboardTable
+                    services={services}
+                    handleSaveClicked={handleSaveClicked}
+                    handleCancelClicked={handleCancelClicked}
+                    isEditing={isEditing}
+                />
             </main>
         </div>
     );

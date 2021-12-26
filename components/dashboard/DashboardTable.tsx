@@ -1,7 +1,13 @@
 import { Service } from "../../lib/docker";
 import DashboardTableRow from "./DashboardTableRow";
+import DashboardTableRowEditable from "./DashboardTableRowEditable";
 
-function DashboardTable(props: { services: Service[] }) {
+function DashboardTable(props: {
+    services: Service[];
+    isEditing: boolean;
+    handleSaveClicked: (service: Service) => void;
+    handleCancelClicked: () => void;
+}) {
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
@@ -9,6 +15,14 @@ function DashboardTable(props: { services: Service[] }) {
         { name: "Edit", screenReaderOnly: true },
         { name: "Delete", screenReaderOnly: true },
     ];
+
+    const handleSaveClicked = (service: Service) => {
+        props.handleSaveClicked(service);
+    };
+
+    const handleCancelClicked = () => {
+        props.handleCancelClicked();
+    };
 
     return (
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -67,6 +81,16 @@ function DashboardTable(props: { services: Service[] }) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
+                                    {props.isEditing ? (
+                                        <DashboardTableRowEditable
+                                            handleCancelClicked={
+                                                handleCancelClicked
+                                            }
+                                            handleSaveClicked={
+                                                handleSaveClicked
+                                            }
+                                        />
+                                    ) : null}
                                     {props.services.map((service) => (
                                         <DashboardTableRow
                                             key={service.name}

@@ -1,4 +1,4 @@
-function DashboardHeader() {
+function DashboardHeader(props: { handleNewServiceClicked: () => void }) {
     return (
         <div>
             <header className="bg-white shadow">
@@ -24,6 +24,9 @@ function DashboardHeader() {
                             hover:text-white
                             lg:text-base
                             "
+                        onClick={() => {
+                            props.handleNewServiceClicked();
+                        }}
                     >
                         Add New Service
                     </button>

@@ -1,0 +1,42 @@
+version: "3"
+networks:
+  web:
+    external: true
+  internal:
+    external: false
+services:
+  portfolio:
+    image: haidousm/portfolio:1.0.1
+    labels:
+      - traefik.http.routers.portfolio.rule=Host(`moussa.codes`) ||
+        Host(`www.moussa.codes`)
+      - traefik.http.routers.portfolio.tls=true
+      - traefik.http.routers.portfolio.tls.certresolver=lets-encrypt
+      - traefik.port=80
+    networks:
+      - internal
+      - web
+  shell-api:
+    image: haidousm/unix-shell-api:1.0.0
+    labels:
+      - traefik.http.routers.shell-api.tls=true
+      - traefik.http.routers.shell-api.tls.certresolver=lets-encrypt
+      - traefik.http.routers.shell-api.rule=Host(`api.moussa.codes`) &&
+        PathPrefix(`/shell`)
+      - traefik.http.middlewares.shell-prefix.stripprefix.prefixes=/shell
+      - traefik.http.routers.shell-api.middlewares=shell-prefix
+    networks:
+      - web
+      - internal
+  httpd:
+    image: httpd
+    labels:
+      - traefik.http.routers.httpd.tls=true
+      - traefik.http.routers.httpd.tls.certresolver=lets-encrypt
+      - traefik.http.routers.httpd.rule=Host(`api.moussa.codes`) &&
+        PathPrefix(`/httpd`)
+      - traefik.http.middlewares.httpd-prefix.stripprefix.prefixes=/httpd
+      - traefik.http.routers.httpd.middlewares=httpd-prefix
+    networks:
+      - web
+      - internal

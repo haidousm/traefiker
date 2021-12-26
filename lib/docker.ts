@@ -1,3 +1,4 @@
+import { exec } from "child_process";
 import fs from "fs";
 import YAML from "yaml";
 
@@ -31,17 +32,8 @@ const ROUTER_MIDDLEWARE_PREFIX =
 const HOSTS_DELIMITER = " || ";
 const PATH_PREFIX_DELIMITER = " && ";
 
-export function getData(filepath: string) {
-    const yaml = fs.readFileSync(filepath, "utf8");
-    return YAML.parse(yaml) as DockerCompose;
-}
-
-export function writeData(filepath: string, data: DockerCompose) {
-    const yaml = YAML.stringify(data);
-    fs.writeFileSync(filepath, yaml);
-}
-
-export function getAllServices(dockerCompose: DockerCompose) {
+export function getAllServices() {
+    const dockerCompose = getData(process.env.DOCKER_COMPOSE_FILEPATH!);
     const _services: _Service[] = Object.values(dockerCompose.services);
     return _services.map((_service) => {
         const name = Object.keys(dockerCompose.services).find(
@@ -54,6 +46,10 @@ export function getAllServices(dockerCompose: DockerCompose) {
             hosts,
         } as Service;
     }) as Service[];
+}
+
+export function getServiceByName(name: string) {
+    return getAllServices().find((service) => service.name === name);
 }
 
 export function createService(name: string, image: string, hosts: string[]) {
@@ -73,6 +69,29 @@ export function createService(name: string, image: string, hosts: string[]) {
         _service.labels = [..._service.labels, ...pathMiddlewareLabels];
     }
     return _service;
+}
+
+export function saveService(name: string, _service: _Service) {
+    const dockerCompose = getData(process.env.DOCKER_COMPOSE_FILEPATH!);
+    dockerCompose.services[name as any] = _service;
+    writeData(process.env.DOCKER_COMPOSE_FILEPATH!, dockerCompose);
+}
+
+export function launchDockerCompose() {
+    const command = `docker-compose -f ${process.env
+        .DOCKER_COMPOSE_FILEPATH!} up -d`;
+    const result = execSync(command);
+    return result.toString();
+}
+
+function getData(filepath: string) {
+    const yaml = fs.readFileSync(filepath, "utf8");
+    return YAML.parse(yaml) as DockerCompose;
+}
+
+function writeData(filepath: string, data: DockerCompose) {
+    const yaml = YAML.stringify(data);
+    fs.writeFileSync(filepath, yaml);
 }
 
 function getFormattedHostsFromService(name: string, service: _Service) {
@@ -139,4 +158,8 @@ function getPathMiddlewareLabels(name: string, hosts: string[]) {
     )}=${paths.map((path) => `${path}-prefix`).join(PATH_PREFIX_DELIMITER)}`;
 
     return [...pathMiddlewareLabels, routerMiddlewareLabel];
+}
+
+function execSync(command: string) {
+    return exec(command, { encoding: "utf8" });
 }

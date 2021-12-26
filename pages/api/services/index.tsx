@@ -7,8 +7,8 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
         return res
             .status(200)
             .json(
-                docker.getDockerComposeData(
-                    process.env.DOCKER_COMPOSE_FILEPATH!
+                docker.getAllServices(
+                    docker.getData(process.env.DOCKER_COMPOSE_FILEPATH!)
                 )
             );
     }

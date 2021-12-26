@@ -1,19 +1,22 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
-import styles from "../styles/Home.module.css";
+import Navbar from "../components/Navbar";
 
 const Home: NextPage = () => {
     return (
         <div>
             <Head>
-                <title>Traefik</title>
+                <title>Traefiker</title>
                 <meta
                     name="description"
                     content="Traefiker is a tool for managing Docker containers running on Traefik"
                 />
                 <link rel="icon" href="traefik-logo.png" />
             </Head>
+            <nav>
+                <Navbar />
+            </nav>
+            <main>{/* <h1>Hello Next.js</h1> */}</main>
         </div>
     );
 };

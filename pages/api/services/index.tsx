@@ -11,6 +11,14 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
                     docker.getData(process.env.DOCKER_COMPOSE_FILEPATH!)
                 )
             );
+    } else if (method === "POST") {
+        const { name, image, hosts } = req.body;
+        const dockerCompose = docker.getData(
+            process.env.DOCKER_COMPOSE_FILEPATH!
+        );
+        const _service = docker.createService(name, image, hosts);
+        dockerCompose.services[name] = _service;
+        res.status(200).json(_service);
     }
 };
 

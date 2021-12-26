@@ -24,7 +24,12 @@ interface _Service {
 }
 
 const HOST_LABEL_PREFIX = "traefik.http.routers.{service-name}.rule";
-const HOSTS_DELIMITER = "||";
+const PATH_MIDDLEWARE_PREFIX =
+    "traefik.http.middlewares.{path-name}-prefix.stripprefix.prefixes";
+const ROUTER_MIDDLEWARE_PREFIX =
+    "traefik.http.routers.{service-name}.middlewares";
+const HOSTS_DELIMITER = " || ";
+const PATH_PREFIX_DELIMITER = " && ";
 
 export function getData(filepath: string) {
     const yaml = fs.readFileSync(filepath, "utf8");
@@ -46,7 +51,26 @@ export function getAllServices(dockerCompose: DockerCompose) {
     }) as Service[];
 }
 
-export function getFormattedHostsFromService(name: string, service: _Service) {
+export function createService(name: string, image: string, hosts: string[]) {
+    const _service: _Service = {
+        image,
+        labels: [
+            `traefik.http.routers.${name}.tls=true`,
+            `traefik.http.routers.${name}.tls.certresolver=lets-encrypt`,
+        ],
+        networks: ["web", "internal"],
+    };
+
+    const hostsLabel = transformHostsToHostLabel(name, hosts);
+    _service.labels.push(hostsLabel);
+    if (hostsLabel.includes("PathPrefix")) {
+        const pathMiddlewareLabels = getPathMiddlewareLabels(name, hosts);
+        _service.labels = [..._service.labels, ...pathMiddlewareLabels];
+    }
+    return _service;
+}
+
+function getFormattedHostsFromService(name: string, service: _Service) {
     const { labels } = service;
     if (!labels || !labels.length) {
         return [];
@@ -77,4 +101,37 @@ function transformHostLabelToHost(hostLabel: string) {
     const pathMatch = hostLabel.match(pathRegex);
     const path = pathMatch ? pathMatch[1] : "";
     return `${hostname}${path}`;
+}
+
+function transformHostsToHostLabel(name: string, hosts: string[]) {
+    return `${HOST_LABEL_PREFIX.replace("{service-name}", name)}=${hosts
+        .map((host) => {
+            const path = host.split("/").slice(1).join("/");
+            return `Host(\`${host.split("/")[0]}\`)${
+                path ? `${PATH_PREFIX_DELIMITER}PathPrefix(\`/${path}\`)` : ""
+            }`;
+        })
+        .join(HOSTS_DELIMITER)}`;
+}
+
+function getPathMiddlewareLabels(name: string, hosts: string[]) {
+    const paths = hosts
+        .map((host) => {
+            const path = host.split("/").slice(1).join("/");
+            return path;
+        })
+        .filter((path) => path !== "");
+
+    const pathMiddlewareLabels = paths.map((path) => {
+        return `${PATH_MIDDLEWARE_PREFIX.replace(
+            "{path-name}",
+            name
+        )}=/${path}`;
+    });
+    const routerMiddlewareLabel = `${ROUTER_MIDDLEWARE_PREFIX.replace(
+        "{service-name}",
+        name
+    )}=${paths.join(PATH_PREFIX_DELIMITER)}`;
+
+    return [...pathMiddlewareLabels, routerMiddlewareLabel];
 }

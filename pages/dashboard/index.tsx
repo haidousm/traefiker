@@ -9,19 +9,32 @@ import { Service } from "../../lib/docker";
 const Dashboard: NextPage = () => {
     const [services, setServices] = useState<Service[]>([]);
     const [isEditing, setIsEditing] = useState(false);
+
     useEffect(() => {
         fetch("/api/services")
             .then((res) => res.json())
-            .then((data) => setServices(data));
-    }, []);
+            .then((data) => {
+                setServices(data);
+            });
+    }, [services]);
 
     const handleNewServiceClicked = () => {
         setIsEditing(true);
     };
 
     const handleSaveClicked = (service: Service) => {
-        console.log("handle save clicked");
         setIsEditing(false);
+        fetch("/api/services", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(service),
+        }).then((res) => {
+            if (res.status === 200) {
+                setServices((prevServices) => [...prevServices, service]);
+            }
+        });
     };
 
     const handleCancelClicked = () => {

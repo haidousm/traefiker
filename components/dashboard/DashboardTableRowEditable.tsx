@@ -95,6 +95,7 @@ function DashboardTableRowEditable(props: {
                             rounded-md
                             bg-amber-100
                             text-amber-800
+                            col-start-2
                     "
                 >
                     <input
@@ -132,7 +133,10 @@ function DashboardTableRowEditable(props: {
                         props.handleSaveClicked({
                             name: name,
                             image: image,
-                            hosts: hosts,
+                            hosts:
+                                possibleHost !== ""
+                                    ? [...hosts, possibleHost]
+                                    : hosts,
                         });
                     }}
                 >

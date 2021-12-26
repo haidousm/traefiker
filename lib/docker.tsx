@@ -36,6 +36,11 @@ export function getData(filepath: string) {
     return YAML.parse(yaml) as DockerCompose;
 }
 
+export function writeData(filepath: string, data: DockerCompose) {
+    const yaml = YAML.stringify(data);
+    fs.writeFileSync(filepath, yaml);
+}
+
 export function getAllServices(dockerCompose: DockerCompose) {
     const _services: _Service[] = Object.values(dockerCompose.services);
     return _services.map((_service) => {
@@ -131,7 +136,7 @@ function getPathMiddlewareLabels(name: string, hosts: string[]) {
     const routerMiddlewareLabel = `${ROUTER_MIDDLEWARE_PREFIX.replace(
         "{service-name}",
         name
-    )}=${paths.join(PATH_PREFIX_DELIMITER)}`;
+    )}=${paths.map((path) => `${path}-prefix`).join(PATH_PREFIX_DELIMITER)}`;
 
     return [...pathMiddlewareLabels, routerMiddlewareLabel];
 }

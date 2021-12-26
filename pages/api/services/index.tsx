@@ -18,6 +18,7 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
         );
         const _service = docker.createService(name, image, hosts);
         dockerCompose.services[name] = _service;
+        docker.writeData(process.env.DOCKER_COMPOSE_FILEPATH!, dockerCompose);
         res.status(200).json(_service);
     }
 };

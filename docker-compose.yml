@@ -40,3 +40,15 @@ services:
     networks:
       - web
       - internal
+  fapi:
+    image: haidousm/fapi:1.0.0
+    labels:
+      - traefik.http.routers.fapi.tls=true
+      - traefik.http.routers.fapi.tls.certresolver=lets-encrypt
+      - traefik.http.routers.fapi.rule=Host(`api.moussa.codes`) &&
+        PathPrefix(`/fapi`)
+      - traefik.http.middlewares.fapi-prefix.stripprefix.prefixes=/fapi
+      - traefik.http.routers.fapi.middlewares=fapi-prefix
+    networks:
+      - web
+      - internal

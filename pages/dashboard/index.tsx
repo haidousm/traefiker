@@ -1,8 +1,17 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useEffect, useState } from "react";
+import DashboardHeader from "../../components/dashboard/DashboardHeader";
+import DashboardTable from "../../components/dashboard/DashboardTable";
 import Navbar from "../../components/Navbar";
 
 const Dashboard: NextPage = () => {
+    const [services, setServices] = useState([]);
+    useEffect(() => {
+        fetch("/api/services")
+            .then((res) => res.json())
+            .then((data) => setServices(data));
+    }, []);
     return (
         <div>
             <Head>
@@ -16,8 +25,10 @@ const Dashboard: NextPage = () => {
             <nav>
                 <Navbar />
             </nav>
-
-            <main></main>
+            <main>
+                <DashboardHeader />
+                <DashboardTable services={services} />
+            </main>
         </div>
     );
 };

@@ -77,11 +77,18 @@ export function saveService(name: string, _service: _Service) {
     writeData(process.env.DOCKER_COMPOSE_FILEPATH!, dockerCompose);
 }
 
-export function launchDockerCompose() {
+export function launchDockerCompose(callback: () => void) {
     const command = `docker-compose -f ${process.env
         .DOCKER_COMPOSE_FILEPATH!} up -d`;
-    const result = execSync(command);
-    return result.toString();
+    exec(command, { encoding: "utf8" }, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
+        callback();
+    });
 }
 
 function getData(filepath: string) {
@@ -158,8 +165,4 @@ function getPathMiddlewareLabels(name: string, hosts: string[]) {
     )}=${paths.map((path) => `${path}-prefix`).join(PATH_PREFIX_DELIMITER)}`;
 
     return [...pathMiddlewareLabels, routerMiddlewareLabel];
-}
-
-function execSync(command: string) {
-    return exec(command, { encoding: "utf8" });
 }

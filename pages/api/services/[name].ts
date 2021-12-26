@@ -11,7 +11,9 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
         const { image, hosts } = req.body;
         const _service = docker.createService(name, image, hosts);
         docker.saveService(name, _service);
-        docker.launchDockerCompose();
+        docker.launchDockerCompose(() => {
+            res.status(200).json(_service);
+        });
         res.status(200).json(_service);
     }
 };

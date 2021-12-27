@@ -1,4 +1,2 @@
-node_modules
-.gitignore
-.git/
-yarn.lock
+node_modules/
+.next/

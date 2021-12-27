@@ -7,7 +7,7 @@ function DashboardTableRow(props: {
 }) {
     return (
         <tr>
-            <td className="sm:px-2 sm:py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
+            <td className="px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
                 <span
                     className="
                 px-4
@@ -25,7 +25,7 @@ function DashboardTableRow(props: {
                     {props.service.name}
                 </span>
             </td>
-            <td className="hidden sm:table-cell sm:px-2 sm:py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
+            <td className="hidden sm:table-cell px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
                 <span
                     className="
                 px-4
@@ -43,7 +43,7 @@ function DashboardTableRow(props: {
                     {props.service.image}
                 </span>
             </td>
-            <td className="sm:px-2 sm:py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
+            <td className="px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
                 {props.service.hosts.map((host, index) => (
                     <a href={`https://${host}`} key={index}>
                         <span

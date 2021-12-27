@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/DashboardTable";
 import LoadingComponent from "../../components/loading/LoadingPopup";
-import Navbar from "../../components/Navbar";
+import Navbar from "../../components/navbar/Navbar";
 import { Service } from "../../types/Service";
 import { resetServerContext } from "react-beautiful-dnd";
 

@@ -1,6 +1,7 @@
 import { Service } from "../../types/Service";
 import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 function DashboardTable(props: {
     services: Service[];
@@ -10,6 +11,7 @@ function DashboardTable(props: {
     handleCancelClicked: () => void;
     handleEditClicked: (service: Service) => void;
     handleDeleteClicked: (service: Service) => void;
+    onDragEnd: (result: any) => void;
 }) {
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
@@ -17,6 +19,7 @@ function DashboardTable(props: {
         { name: "Service Hosts", screenReaderOnly: false },
         { name: "Edit", screenReaderOnly: true },
         { name: "Delete", screenReaderOnly: true },
+        { name: "Order", screenReaderOnly: true },
     ];
 
     const handleSaveClicked = (service: Service) => {
@@ -89,50 +92,74 @@ function DashboardTable(props: {
                                         })}
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {props.isEditing && !props.editedService ? (
-                                        <DashboardTableRowEditable
-                                            handleCancelClicked={
-                                                handleCancelClicked
-                                            }
-                                            handleSaveClicked={
-                                                handleSaveClicked
-                                            }
-                                        />
-                                    ) : null}
-                                    {props.services.map((service) => {
-                                        if (
-                                            props.isEditing &&
-                                            service.name ===
-                                                props.editedService?.name
-                                        ) {
-                                            return (
-                                                <DashboardTableRowEditable
-                                                    key={service.name}
-                                                    service={service}
-                                                    handleCancelClicked={
-                                                        handleCancelClicked
+                                <DragDropContext onDragEnd={props.onDragEnd}>
+                                    <Droppable droppableId="list">
+                                        {(provided) => (
+                                            <tbody
+                                                className="bg-white divide-y divide-gray-200"
+                                                ref={provided.innerRef}
+                                                {...provided.droppableProps}
+                                            >
+                                                {props.isEditing &&
+                                                !props.editedService ? (
+                                                    <DashboardTableRowEditable
+                                                        handleCancelClicked={
+                                                            handleCancelClicked
+                                                        }
+                                                        handleSaveClicked={
+                                                            handleSaveClicked
+                                                        }
+                                                    />
+                                                ) : null}
+                                                {props.services.map(
+                                                    (service) => {
+                                                        if (
+                                                            props.isEditing &&
+                                                            service.name ===
+                                                                props
+                                                                    .editedService
+                                                                    ?.name
+                                                        ) {
+                                                            return (
+                                                                <DashboardTableRowEditable
+                                                                    key={
+                                                                        service.name
+                                                                    }
+                                                                    service={
+                                                                        service
+                                                                    }
+                                                                    handleCancelClicked={
+                                                                        handleCancelClicked
+                                                                    }
+                                                                    handleSaveClicked={
+                                                                        handleSaveClicked
+                                                                    }
+                                                                />
+                                                            );
+                                                        }
+                                                        return (
+                                                            <DashboardTableRow
+                                                                key={
+                                                                    service.name
+                                                                }
+                                                                service={
+                                                                    service
+                                                                }
+                                                                handleEditClicked={
+                                                                    handleEditClicked
+                                                                }
+                                                                handleDeleteClicked={
+                                                                    handleDeleteClicked
+                                                                }
+                                                            />
+                                                        );
                                                     }
-                                                    handleSaveClicked={
-                                                        handleSaveClicked
-                                                    }
-                                                />
-                                            );
-                                        }
-                                        return (
-                                            <DashboardTableRow
-                                                key={service.name}
-                                                service={service}
-                                                handleEditClicked={
-                                                    handleEditClicked
-                                                }
-                                                handleDeleteClicked={
-                                                    handleDeleteClicked
-                                                }
-                                            />
-                                        );
-                                    })}
-                                </tbody>
+                                                )}
+                                                {provided.placeholder}
+                                            </tbody>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
                             </table>
                         </div>
                     </div>

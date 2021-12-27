@@ -11,14 +11,28 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
         const { image, hosts } = req.body;
         const _service = docker.createService(name, image, hosts);
         docker.saveService(name, _service);
-        docker.launchDockerCompose(() => {
-            res.status(200).json(_service);
-        });
+        if (process.env.NODE_ENV === "production") {
+            docker.launchDockerCompose(() => {
+                res.status(200).json(_service);
+            });
+        } else {
+            // simulate a delay
+            setTimeout(() => {
+                res.status(200).json(_service);
+            }, 5000);
+        }
     } else if (method === "DELETE") {
         docker.deleteService(name);
-        docker.launchDockerCompose(() => {
-            res.status(200).json({});
-        });
+        if (process.env.NODE_ENV === "production") {
+            docker.launchDockerCompose(() => {
+                res.status(200).json({});
+            });
+        } else {
+            // simulate a delay
+            setTimeout(() => {
+                res.status(200).json({});
+            }, 5000);
+        }
     }
 };
 

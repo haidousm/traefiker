@@ -1,10 +1,27 @@
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/DashboardTable";
-import Navbar from "../../components/Navbar";
+import LoadingComponent from "../../components/loading/LoadingPopup";
+import Navbar from "../../components/navbar/Navbar";
 import { Service } from "../../types/Service";
+import { resetServerContext } from "react-beautiful-dnd";
+
+const reorder = (list: Service[], startIndex: number, endIndex: number) => {
+    if (startIndex === endIndex) {
+        return list;
+    }
+    const result = Array.from(list);
+    const [current] = result.splice(startIndex, 1);
+    current.order = endIndex;
+
+    const previous = result[endIndex - 1];
+    previous.order = startIndex;
+    result.splice(endIndex, 0, current);
+
+    return result;
+};
 
 const Dashboard: NextPage = () => {
     const [services, setServices] = useState<Service[]>([
@@ -17,6 +34,16 @@ const Dashboard: NextPage = () => {
 
     const [isEditing, setIsEditing] = useState(false);
     const [editedService, setEditedService] = useState<Service>();
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    const loadingMessages = [
+        "Creating Service..",
+        "Saving Docker Compose File..",
+        "Launching Docker Compose..",
+        "Doing some magic..",
+        "Doing some more magic..",
+    ];
 
     useEffect(() => {
         fetch("/api/services")
@@ -32,6 +59,7 @@ const Dashboard: NextPage = () => {
 
     const handleSaveClicked = (service: Service) => {
         setIsEditing(false);
+        setIsLoading(true);
         fetch("/api/services", {
             method: "POST",
             headers: {
@@ -44,6 +72,7 @@ const Dashboard: NextPage = () => {
                     prevServices.filter((s) => s.name !== service.name)
                 );
                 setServices((prevServices) => [...prevServices, service]);
+                setIsLoading(false);
             }
         });
     };
@@ -58,6 +87,7 @@ const Dashboard: NextPage = () => {
     };
 
     const handleDeleteClicked = (service: Service) => {
+        setIsLoading(true);
         fetch(`/api/services/${service.name}`, {
             method: "DELETE",
         }).then((res) => {
@@ -65,8 +95,21 @@ const Dashboard: NextPage = () => {
                 setServices((prevServices) =>
                     prevServices.filter((s) => s.name !== service.name)
                 );
+                setIsLoading(false);
             }
         });
+    };
+
+    const onDragEnd = (result: any) => {
+        if (!result.destination) {
+            return;
+        }
+        const reorderedServices = reorder(
+            services,
+            result.source.index,
+            result.destination.index
+        );
+        setServices(reorderedServices);
     };
 
     return (
@@ -94,10 +137,19 @@ const Dashboard: NextPage = () => {
                     editedService={editedService}
                     handleEditClicked={handleEditClicked}
                     handleDeleteClicked={handleDeleteClicked}
+                    onDragEnd={onDragEnd}
                 />
             </main>
+            {isLoading ? (
+                <LoadingComponent loadingMessages={loadingMessages} />
+            ) : null}
         </div>
     );
 };
 
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+    resetServerContext();
+
+    return { props: {} };
+};
 export default Dashboard;

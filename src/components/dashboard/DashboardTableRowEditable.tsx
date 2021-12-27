@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Service } from "../../lib/docker";
+import { Service } from "../../types/Service";
 
 function DashboardTableRowEditable(props: {
     service?: Service;

@@ -1,4 +1,4 @@
-import { Service } from "../../lib/docker";
+import { Service } from "../../types/Service";
 
 function DashboardTableRow(props: {
     service: Service;

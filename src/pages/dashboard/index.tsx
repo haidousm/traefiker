@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/DashboardTable";
 import Navbar from "../../components/Navbar";
-import { Service } from "../../lib/docker";
+import { Service } from "../../types/Service";
 
 const Dashboard: NextPage = () => {
     const [services, setServices] = useState<Service[]>([

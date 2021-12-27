@@ -1,4 +1,4 @@
-import { Service } from "../../lib/docker";
+import { Service } from "../../types/Service";
 import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
 

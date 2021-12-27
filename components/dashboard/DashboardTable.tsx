@@ -36,7 +36,7 @@ function DashboardTable(props: {
     };
 
     return (
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-6 px-6 lg:px-8">
             <div className="flex flex-col">
                 <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div
@@ -54,7 +54,7 @@ function DashboardTable(props: {
                             shadow
                             overflow-hidden
                             border-b border-gray-200
-                            sm:rounded-lg
+                            rounded-lg
                         "
                         >
                             <table className="min-w-full divide-y divide-gray-200">
@@ -65,7 +65,7 @@ function DashboardTable(props: {
                                                 <th
                                                     key={column.name}
                                                     scope="col"
-                                                    className="relative px-6 py-3"
+                                                    className="relative px-6 py-3 hidden lg:table-cell"
                                                 >
                                                     <span className="sr-only">
                                                         {column.name}
@@ -75,15 +75,13 @@ function DashboardTable(props: {
                                                 <th
                                                     key={column.name}
                                                     scope="col"
-                                                    className="
-                                            px-6
-                                            py-3
-                                            text-center text-xs
-                                            font-medium
-                                            text-gray-500
-                                            uppercase
-                                            tracking-wider
-                                        "
+                                                    className={
+                                                        "px-6 py-3 text-center text-xs font-medium text-gray-500  uppercase tracking-wider" +
+                                                        (column.name ===
+                                                        "Image Name"
+                                                            ? " hidden sm:table-cell"
+                                                            : "")
+                                                    }
                                                 >
                                                     {column.name}
                                                 </th>

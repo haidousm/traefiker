@@ -9,6 +9,8 @@ function DashboardHeader(props: { handleNewServiceClicked: () => void }) {
                     <button
                         type="button"
                         className="
+                            hidden
+                            lg:block
                             ml-4
                             px-5
                             py-2

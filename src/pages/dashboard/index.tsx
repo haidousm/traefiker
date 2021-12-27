@@ -1,5 +1,4 @@
-import { Dialog, Popover } from "@headlessui/react";
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
@@ -7,6 +6,19 @@ import DashboardTable from "../../components/dashboard/DashboardTable";
 import LoadingComponent from "../../components/loading/LoadingComponent";
 import Navbar from "../../components/Navbar";
 import { Service } from "../../types/Service";
+import { resetServerContext } from "react-beautiful-dnd";
+
+const reorder = (list: Service[], startIndex: number, endIndex: number) => {
+    const result = Array.from(list);
+    const [current] = result.splice(startIndex, 1);
+    current.order = endIndex;
+
+    const previous = result[endIndex - 1];
+    previous.order = startIndex;
+    result.splice(endIndex, 0, current);
+
+    return result;
+};
 
 const Dashboard: NextPage = () => {
     const [services, setServices] = useState<Service[]>([
@@ -85,6 +97,19 @@ const Dashboard: NextPage = () => {
         });
     };
 
+    const onDragEnd = (result: any) => {
+        if (!result.destination) {
+            return;
+        }
+        const reorderedServices = reorder(
+            services,
+            result.source.index,
+            result.destination.index
+        );
+        setServices(reorderedServices);
+        console.log(reorderedServices);
+    };
+
     return (
         <div>
             <Head>
@@ -110,6 +135,7 @@ const Dashboard: NextPage = () => {
                     editedService={editedService}
                     handleEditClicked={handleEditClicked}
                     handleDeleteClicked={handleDeleteClicked}
+                    onDragEnd={onDragEnd}
                 />
             </main>
             {isLoading ? (
@@ -119,4 +145,9 @@ const Dashboard: NextPage = () => {
     );
 };
 
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+    resetServerContext(); // <-- CALL RESET SERVER CONTEXT, SERVER SIDE
+
+    return { props: {} };
+};
 export default Dashboard;

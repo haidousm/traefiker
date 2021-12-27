@@ -1,10 +1,17 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import * as docker from "../../../lib/docker";
+import { Service } from "../../../types/Service";
 
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
     if (method === "GET") {
-        return res.status(200).json(docker.getAllServices());
+        const services: Service[] = docker
+            .getAllServices()
+            .map((service, i) => {
+                service.order = i;
+                return service;
+            });
+        return res.status(200).json(services);
     } else if (method === "POST") {
         const { name, image, hosts } = req.body;
         const _service = docker.createService(name, image, hosts);

@@ -19,6 +19,7 @@ function DashboardTable(props: {
         { name: "Service Hosts", screenReaderOnly: false },
         { name: "Edit", screenReaderOnly: true },
         { name: "Delete", screenReaderOnly: true },
+        { name: "Order", screenReaderOnly: true },
     ];
 
     const handleSaveClicked = (service: Service) => {

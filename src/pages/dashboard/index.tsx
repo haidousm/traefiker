@@ -9,6 +9,9 @@ import { Service } from "../../types/Service";
 import { resetServerContext } from "react-beautiful-dnd";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
+    if (startIndex === endIndex) {
+        return list;
+    }
     const result = Array.from(list);
     const [current] = result.splice(startIndex, 1);
     current.order = endIndex;
@@ -107,7 +110,6 @@ const Dashboard: NextPage = () => {
             result.destination.index
         );
         setServices(reorderedServices);
-        console.log(reorderedServices);
     };
 
     return (

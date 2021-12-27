@@ -1,5 +1,6 @@
 import { Service } from "../../types/Service";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { Draggable } from "react-beautiful-dnd";
+import { MenuIcon } from "@heroicons/react/solid";
 import seedrandom from "seedrandom";
 
 function DashboardTableRow(props: {
@@ -103,6 +104,11 @@ function DashboardTableRow(props: {
                         >
                             Delete
                         </button>
+                    </td>
+                    <td className="hidden lg:table-cell text-right p-1">
+                        <div className="flex justify-end">
+                            <MenuIcon className="w-5 h-5" />
+                        </div>
                     </td>
                 </tr>
             )}

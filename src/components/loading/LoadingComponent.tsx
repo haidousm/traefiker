@@ -7,7 +7,7 @@ function LoadingComponent(props: { loadingMessages: string[] }) {
     );
 
     useEffect(() => {
-        setInterval(() => {
+        setInterval((i) => {
             // TODO: loop through messages sequentially
             setCurrentMessage(
                 props.loadingMessages[
@@ -27,10 +27,10 @@ function LoadingComponent(props: { loadingMessages: string[] }) {
             <div className="flex items-center justify-center min-h-screen">
                 <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-                <div className="relative bg-white rounded max-w-sm mx-auto flex justify-center items-center p-4">
+                <div className="relative bg-gray-800 rounded max-w-sm mx-auto flex justify-center items-center p-4 shadow-lg mb-48">
                     <div className="flex justify-center items-center">
                         <svg
-                            className="animate-spin -ml-1 mr-3 h-10 w-10 text-blue-800"
+                            className="animate-spin -ml-1 mr-3 h-8 w-8 text-white"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -49,7 +49,7 @@ function LoadingComponent(props: { loadingMessages: string[] }) {
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                             ></path>
                         </svg>
-                        <p className="text-blue-600 animate-pulse">
+                        <p className="text-white animate-pulse text-md w-64 text-left tracking-widest">
                             {currentMessage}
                         </p>
                     </div>

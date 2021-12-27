@@ -9,9 +9,17 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
         const { name, image, hosts } = req.body;
         const _service = docker.createService(name, image, hosts);
         docker.saveService(name, _service);
-        docker.launchDockerCompose(() => {
-            res.status(200).json(_service);
-        });
+
+        if (process.env.NODE_ENV === "production") {
+            docker.launchDockerCompose(() => {
+                res.status(200).json(_service);
+            });
+        } else {
+            // simulate a delay
+            setTimeout(() => {
+                res.status(200).json(_service);
+            }, 5000);
+        }
     }
 };
 

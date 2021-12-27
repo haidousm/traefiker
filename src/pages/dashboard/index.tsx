@@ -20,6 +20,8 @@ const Dashboard: NextPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedService, setEditedService] = useState<Service>();
 
+    const [isLoading, setIsLoading] = useState(false);
+
     const loadingMessages = [
         "Creating Service..",
         "Saving Docker Compose File..",
@@ -42,6 +44,7 @@ const Dashboard: NextPage = () => {
 
     const handleSaveClicked = (service: Service) => {
         setIsEditing(false);
+        setIsLoading(true);
         fetch("/api/services", {
             method: "POST",
             headers: {
@@ -54,6 +57,7 @@ const Dashboard: NextPage = () => {
                     prevServices.filter((s) => s.name !== service.name)
                 );
                 setServices((prevServices) => [...prevServices, service]);
+                setIsLoading(false);
             }
         });
     };
@@ -68,6 +72,7 @@ const Dashboard: NextPage = () => {
     };
 
     const handleDeleteClicked = (service: Service) => {
+        setIsLoading(true);
         fetch(`/api/services/${service.name}`, {
             method: "DELETE",
         }).then((res) => {
@@ -75,6 +80,7 @@ const Dashboard: NextPage = () => {
                 setServices((prevServices) =>
                     prevServices.filter((s) => s.name !== service.name)
                 );
+                setIsLoading(false);
             }
         });
     };
@@ -106,7 +112,9 @@ const Dashboard: NextPage = () => {
                     handleDeleteClicked={handleDeleteClicked}
                 />
             </main>
-            <LoadingComponent loadingMessages={loadingMessages} />
+            {isLoading ? (
+                <LoadingComponent loadingMessages={loadingMessages} />
+            ) : null}
         </div>
     );
 };

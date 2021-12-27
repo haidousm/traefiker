@@ -28,12 +28,3 @@ services:
     networks:
       - web
       - internal
-  httpd:
-    image: httpd
-    labels:
-      - traefik.http.routers.httpd.tls=true
-      - traefik.http.routers.httpd.tls.certresolver=lets-encrypt
-      - traefik.http.routers.httpd.rule=Host(`httpd.moussa.codes`)
-    networks:
-      - web
-      - internal

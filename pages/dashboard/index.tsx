@@ -7,8 +7,16 @@ import Navbar from "../../components/Navbar";
 import { Service } from "../../lib/docker";
 
 const Dashboard: NextPage = () => {
-    const [services, setServices] = useState<Service[]>([]);
+    const [services, setServices] = useState<Service[]>([
+        {
+            name: "",
+            image: "",
+            hosts: [],
+        },
+    ]);
+
     const [isEditing, setIsEditing] = useState(false);
+    const [editedService, setEditedService] = useState<Service>();
 
     useEffect(() => {
         fetch("/api/services")
@@ -41,6 +49,23 @@ const Dashboard: NextPage = () => {
         setIsEditing(false);
     };
 
+    const handleEditClicked = (service: Service) => {
+        setEditedService(service);
+        setIsEditing(true);
+    };
+
+    const handleDeleteClicked = (service: Service) => {
+        fetch(`/api/services/${service.name}`, {
+            method: "DELETE",
+        }).then((res) => {
+            if (res.status === 200) {
+                setServices((prevServices) =>
+                    prevServices.filter((s) => s.name !== service.name)
+                );
+            }
+        });
+    };
+
     return (
         <div>
             <Head>
@@ -63,6 +88,9 @@ const Dashboard: NextPage = () => {
                     handleSaveClicked={handleSaveClicked}
                     handleCancelClicked={handleCancelClicked}
                     isEditing={isEditing}
+                    editedService={editedService}
+                    handleEditClicked={handleEditClicked}
+                    handleDeleteClicked={handleDeleteClicked}
                 />
             </main>
         </div>

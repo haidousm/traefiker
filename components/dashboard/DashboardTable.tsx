@@ -5,8 +5,11 @@ import DashboardTableRowEditable from "./DashboardTableRowEditable";
 function DashboardTable(props: {
     services: Service[];
     isEditing: boolean;
+    editedService: Service | undefined;
     handleSaveClicked: (service: Service) => void;
     handleCancelClicked: () => void;
+    handleEditClicked: (service: Service) => void;
+    handleDeleteClicked: (service: Service) => void;
 }) {
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
@@ -22,6 +25,14 @@ function DashboardTable(props: {
 
     const handleCancelClicked = () => {
         props.handleCancelClicked();
+    };
+
+    const handleEditClicked = (service: Service) => {
+        props.handleEditClicked(service);
+    };
+
+    const handleDeleteClicked = (service: Service) => {
+        props.handleDeleteClicked(service);
     };
 
     return (
@@ -81,7 +92,7 @@ function DashboardTable(props: {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {props.isEditing ? (
+                                    {props.isEditing && !props.editedService ? (
                                         <DashboardTableRowEditable
                                             handleCancelClicked={
                                                 handleCancelClicked
@@ -91,12 +102,38 @@ function DashboardTable(props: {
                                             }
                                         />
                                     ) : null}
-                                    {props.services.map((service) => (
-                                        <DashboardTableRow
-                                            key={service.name}
-                                            service={service}
-                                        />
-                                    ))}
+                                    {props.services.map((service) => {
+                                        if (
+                                            props.isEditing &&
+                                            service.name ===
+                                                props.editedService?.name
+                                        ) {
+                                            return (
+                                                <DashboardTableRowEditable
+                                                    key={service.name}
+                                                    service={service}
+                                                    handleCancelClicked={
+                                                        handleCancelClicked
+                                                    }
+                                                    handleSaveClicked={
+                                                        handleSaveClicked
+                                                    }
+                                                />
+                                            );
+                                        }
+                                        return (
+                                            <DashboardTableRow
+                                                key={service.name}
+                                                service={service}
+                                                handleEditClicked={
+                                                    handleEditClicked
+                                                }
+                                                handleDeleteClicked={
+                                                    handleDeleteClicked
+                                                }
+                                            />
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Service } from "../../lib/docker";
 
 function DashboardTableRowEditable(props: {
+    service?: Service;
     handleSaveClicked: (service: Service) => void;
     handleCancelClicked: () => void;
 }) {
@@ -9,6 +10,15 @@ function DashboardTableRowEditable(props: {
     const [image, setImage] = useState("");
     const [hosts, setHosts] = useState<string[]>([]);
     const [possibleHost, setPossibleHost] = useState("");
+
+    useEffect(() => {
+        if (props.service) {
+            setName(props.service.name);
+            setImage(props.service.image);
+            setHosts(props.service.hosts);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <tr>

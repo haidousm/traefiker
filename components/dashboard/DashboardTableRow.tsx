@@ -1,6 +1,10 @@
 import { Service } from "../../lib/docker";
 
-function DashboardTableRow(props: { service: Service }) {
+function DashboardTableRow(props: {
+    service: Service;
+    handleEditClicked: (service: Service) => void;
+    handleDeleteClicked: (service: Service) => void;
+}) {
     return (
         <tr>
             <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -61,12 +65,22 @@ function DashboardTableRow(props: { service: Service }) {
             </td>
 
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button className="text-indigo-600 hover:text-indigo-900">
+                <button
+                    className="text-indigo-600 hover:text-indigo-900"
+                    onClick={() => {
+                        props.handleEditClicked(props.service);
+                    }}
+                >
                     Edit
                 </button>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button className="text-red-600 hover:text-red-900">
+                <button
+                    className="text-red-600 hover:text-red-900"
+                    onClick={() => {
+                        props.handleDeleteClicked(props.service);
+                    }}
+                >
                     Delete
                 </button>
             </td>

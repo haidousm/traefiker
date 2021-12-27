@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/DashboardTable";
-import LoadingComponent from "../../components/loading/LoadingComponent";
+import LoadingComponent from "../../components/loading/LoadingPopup";
 import Navbar from "../../components/Navbar";
 import { Service } from "../../types/Service";
 import { resetServerContext } from "react-beautiful-dnd";
@@ -146,7 +146,7 @@ const Dashboard: NextPage = () => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-    resetServerContext(); // <-- CALL RESET SERVER CONTEXT, SERVER SIDE
+    resetServerContext();
 
     return { props: {} };
 };

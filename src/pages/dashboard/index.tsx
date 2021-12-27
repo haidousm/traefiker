@@ -20,6 +20,14 @@ const Dashboard: NextPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedService, setEditedService] = useState<Service>();
 
+    const loadingMessages = [
+        "Creating Service..",
+        "Saving Docker Compose File..",
+        "Launching Docker Compose..",
+        "Doing some magic..",
+        "Doing some more magic..",
+    ];
+
     useEffect(() => {
         fetch("/api/services")
             .then((res) => res.json())
@@ -71,11 +79,6 @@ const Dashboard: NextPage = () => {
         });
     };
 
-    const loadingMessages = [
-        "Creating Service..",
-        "Saving Docker Compose File..",
-        "Launching Docker Compose..",
-    ];
     return (
         <div>
             <Head>

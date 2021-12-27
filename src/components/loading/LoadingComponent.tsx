@@ -5,18 +5,23 @@ function LoadingComponent(props: { loadingMessages: string[] }) {
     const [currentMessage, setCurrentMessage] = useState(
         props.loadingMessages[0]
     );
+    const [messageIndex, setMessageIndex] = useState(0);
 
     useEffect(() => {
-        setInterval((i) => {
-            // TODO: loop through messages sequentially
-            setCurrentMessage(
-                props.loadingMessages[
-                    Math.floor(Math.random() * props.loadingMessages.length)
-                ]
+        const timer = setInterval(() => {
+            setMessageIndex((prevIndex) =>
+                prevIndex + 1 <= props.loadingMessages.length - 1
+                    ? prevIndex + 1
+                    : prevIndex
             );
         }, 3000);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+
+        return () => clearInterval(timer);
+    }, [props.loadingMessages.length]);
+
+    useEffect(() => {
+        setCurrentMessage(props.loadingMessages[messageIndex]);
+    }, [messageIndex, props.loadingMessages]);
 
     return (
         <Dialog

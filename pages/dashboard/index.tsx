@@ -24,7 +24,7 @@ const Dashboard: NextPage = () => {
             .then((data) => {
                 setServices(data);
             });
-    }, [services]);
+    }, []);
 
     const handleNewServiceClicked = () => {
         setIsEditing(true);
@@ -40,6 +40,9 @@ const Dashboard: NextPage = () => {
             body: JSON.stringify(service),
         }).then((res) => {
             if (res.status === 200) {
+                setServices((prevServices) =>
+                    prevServices.filter((s) => s.name !== service.name)
+                );
                 setServices((prevServices) => [...prevServices, service]);
             }
         });

@@ -1,8 +1,10 @@
+import { Dialog, Popover } from "@headlessui/react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/DashboardTable";
+import LoadingComponent from "../../components/loading/LoadingComponent";
 import Navbar from "../../components/Navbar";
 import { Service } from "../../types/Service";
 
@@ -69,6 +71,11 @@ const Dashboard: NextPage = () => {
         });
     };
 
+    const loadingMessages = [
+        "Creating Service..",
+        "Saving Docker Compose File..",
+        "Launching Docker Compose..",
+    ];
     return (
         <div>
             <Head>
@@ -96,6 +103,7 @@ const Dashboard: NextPage = () => {
                     handleDeleteClicked={handleDeleteClicked}
                 />
             </main>
+            <LoadingComponent loadingMessages={loadingMessages} />
         </div>
     );
 };

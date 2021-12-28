@@ -8,21 +8,26 @@ const PATH_MIDDLEWARE_PREFIX =
     "traefik.http.middlewares.{path-name}-prefix.stripprefix.prefixes";
 const ROUTER_MIDDLEWARE_PREFIX =
     "traefik.http.routers.{service-name}.middlewares";
+
+const SERVICE_ORDER_PREFIX = "traefiker.{service-name}.order";
+
 const HOSTS_DELIMITER = " || ";
 const PATH_PREFIX_DELIMITER = " && ";
 
 export function getAllServices() {
     const dockerCompose = getData(process.env.DOCKER_COMPOSE_FILEPATH!);
     const _services: _Service[] = Object.values(dockerCompose.services);
-    return _services.map((_service) => {
+    return _services.map((_service, index) => {
         const name = Object.keys(dockerCompose.services).find(
             (key: any) => dockerCompose.services[key] === _service
         ) as string;
         const hosts = getFormattedHostsFromService(name, _service);
+        const order = getOrderFromService(name, _service);
         return {
             name,
             image: _service.image,
             hosts,
+            order: order >= 0 ? order : index,
         } as Service;
     }) as Service[];
 }
@@ -31,12 +36,18 @@ export function getServiceByName(name: string) {
     return getAllServices().find((service) => service.name === name);
 }
 
-export function createService(name: string, image: string, hosts: string[]) {
+export function createService(
+    name: string,
+    image: string,
+    hosts: string[],
+    order: number
+) {
     const _service: _Service = {
         image,
         labels: [
             `traefik.http.routers.${name}.tls=true`,
             `traefik.http.routers.${name}.tls.certresolver=lets-encrypt`,
+            `${SERVICE_ORDER_PREFIX.replace("{service-name}", name)}=${order}`,
         ],
         networks: ["web", "internal"],
     };
@@ -150,4 +161,21 @@ function getPathMiddlewareLabels(name: string, hosts: string[]) {
     )}=${paths.map((path) => `${path}-prefix`).join(PATH_PREFIX_DELIMITER)}`;
 
     return [...pathMiddlewareLabels, routerMiddlewareLabel];
+}
+
+function getOrderFromService(name: string, _service: _Service) {
+    const { labels } = _service;
+    if (!labels || !labels.length) {
+        return -1;
+    }
+
+    const possibleOrderLabel = labels.filter((label) =>
+        label.startsWith(SERVICE_ORDER_PREFIX.replace("{service-name}", name))
+    );
+    if (!possibleOrderLabel.length) {
+        return -1;
+    }
+    const orderLabel = possibleOrderLabel[0];
+    const order = parseInt(orderLabel.split("=")[1]);
+    return order;
 }

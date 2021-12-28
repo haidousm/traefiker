@@ -13,14 +13,12 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
         return list;
     }
     const result = Array.from(list);
-    const [current] = result.splice(startIndex, 1);
+    const current = result[startIndex];
+    const next = result[endIndex];
+    next.order = startIndex;
     current.order = endIndex;
 
-    const previous = result[endIndex - 1];
-    previous.order = startIndex;
-    result.splice(endIndex, 0, current);
-
-    return result;
+    return result.sort((a, b) => a.order - b.order);
 };
 
 const Dashboard: NextPage = () => {
@@ -29,6 +27,7 @@ const Dashboard: NextPage = () => {
             name: "",
             image: "",
             hosts: [],
+            order: 0,
         },
     ]);
 
@@ -49,7 +48,10 @@ const Dashboard: NextPage = () => {
         fetch("/api/services")
             .then((res) => res.json())
             .then((data) => {
-                setServices(data);
+                const sortedServices = data.sort(
+                    (a: Service, b: Service) => a.order - b.order
+                );
+                setServices(sortedServices);
             });
     }, []);
 

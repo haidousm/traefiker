@@ -8,15 +8,14 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
     if (method === "GET") {
         return res.status(200).json(docker.getServiceByName(name));
     } else if (method === "POST") {
-        const { image, hosts } = req.body;
-        const _service = docker.createService(name, image, hosts);
+        const { image, hosts, order } = req.body;
+        const _service = docker.createService(name, image, hosts, order);
         docker.saveService(name, _service);
         if (process.env.NODE_ENV === "production") {
             docker.launchDockerCompose(() => {
                 res.status(200).json(_service);
             });
         } else {
-            // simulate a delay
             setTimeout(() => {
                 res.status(200).json(_service);
             }, 5000);
@@ -28,7 +27,6 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
                 res.status(200).json({});
             });
         } else {
-            // simulate a delay
             setTimeout(() => {
                 res.status(200).json({});
             }, 5000);

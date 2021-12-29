@@ -61,6 +61,16 @@ const Dashboard: NextPage = () => {
     const handleSaveClicked = async (service: Service) => {
         setIsEditing(false);
         setIsLoading(true);
+
+        const index = services.findIndex((s) => s.name === service.name);
+        if (index !== -1) {
+            setServices((prevServices) => {
+                const updatedServices = [...prevServices];
+                updatedServices[index] = service;
+                return updatedServices;
+            });
+        }
+
         const newService = await (
             await fetch("/api/services", {
                 method: "POST",
@@ -71,16 +81,8 @@ const Dashboard: NextPage = () => {
             })
         ).json();
 
-        const index = services.findIndex((s) => s.name === newService.name);
-
         if (index === -1) {
             setServices((prevServices) => [...prevServices, newService]);
-        } else {
-            setServices((prevServices) => {
-                const updatedServices = [...prevServices];
-                updatedServices[index] = newService;
-                return updatedServices;
-            });
         }
         setIsLoading(false);
         setEditedService(undefined);

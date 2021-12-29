@@ -13,12 +13,14 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
         return list;
     }
     const result = Array.from(list);
-    const current = result[startIndex];
-    const next = result[endIndex];
-    next.order = startIndex;
-    current.order = endIndex;
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
-    return result.sort((a, b) => a.order - b.order);
+    const reordered = result.map((item, index) => {
+        return { ...item, order: index };
+    });
+
+    return reordered;
 };
 
 const Dashboard: NextPage = () => {

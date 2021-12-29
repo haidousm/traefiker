@@ -69,8 +69,9 @@ const Dashboard: NextPage = () => {
                 updatedServices[index] = service;
                 return updatedServices;
             });
+        } else {
+            service.order = services.length;
         }
-
         const newService = await (
             await fetch("/api/services", {
                 method: "POST",

@@ -87,6 +87,23 @@ export function launchDockerCompose(callback: () => void) {
     });
 }
 
+export function updateServiceOrder(name: string, order: number) {
+    const dockerCompose = getData(process.env.DOCKER_COMPOSE_FILEPATH!);
+    const service = dockerCompose.services[name as any];
+    const labels = service.labels.map((label) => {
+        if (
+            label.startsWith(
+                SERVICE_ORDER_PREFIX.replace("{service-name}", name)
+            )
+        ) {
+            return `${label.split("=")[0]}=${order}`;
+        }
+        return label;
+    });
+    service.labels = labels;
+    writeData(process.env.DOCKER_COMPOSE_FILEPATH!, dockerCompose);
+}
+
 function getData(filepath: string) {
     const yaml = fs.readFileSync(filepath, "utf8");
     return YAML.parse(yaml) as DockerCompose;

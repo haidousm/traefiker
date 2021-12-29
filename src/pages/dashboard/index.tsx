@@ -111,7 +111,7 @@ const Dashboard: NextPage = () => {
         }
     };
 
-    const onDragEnd = (result: any) => {
+    const onDragEnd = async (result: any) => {
         if (!result.destination) {
             return;
         }
@@ -121,6 +121,13 @@ const Dashboard: NextPage = () => {
             result.destination.index
         );
         setServices(reorderedServices);
+        await fetch("/api/services/order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ services: reorderedServices }),
+        });
     };
 
     return (

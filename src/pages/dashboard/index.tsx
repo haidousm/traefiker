@@ -37,7 +37,6 @@ const Dashboard: NextPage = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const loadingMessages = [
-        "Creating Service..",
         "Saving Docker Compose File..",
         "Launching Docker Compose..",
         "Doing some magic..",
@@ -97,18 +96,17 @@ const Dashboard: NextPage = () => {
         setEditedService(service);
     };
 
-    const handleDeleteClicked = (service: Service) => {
+    const handleDeleteClicked = async (service: Service) => {
         setIsLoading(true);
-        fetch(`/api/services/${service.name}`, {
+        const res = await fetch(`/api/services/${service.name}`, {
             method: "DELETE",
-        }).then((res) => {
-            if (res.status === 200) {
-                setServices((prevServices) =>
-                    prevServices.filter((s) => s.name !== service.name)
-                );
-                setIsLoading(false);
-            }
         });
+        if (res.status === 200) {
+            setServices((prevServices) =>
+                prevServices.filter((s) => s.name !== service.name)
+            );
+            setIsLoading(false);
+        }
     };
 
     const onDragEnd = (result: any) => {

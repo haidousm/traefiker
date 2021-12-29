@@ -20,11 +20,11 @@ const handlePostRequest = (req: NextApiRequest, res: NextApiResponse) => {
     docker.saveService(name, _service);
     if (process.env.NODE_ENV === "production") {
         docker.launchDockerCompose(() => {
-            res.status(200).json(_service);
+            res.status(200).json(req.body);
         });
     } else {
         setTimeout(() => {
-            res.status(200).json(_service);
+            res.status(200).json(req.body);
         }, 5000);
     }
 };

@@ -59,33 +59,42 @@ const Dashboard: NextPage = () => {
         setIsEditing(true);
     };
 
-    const handleSaveClicked = (service: Service) => {
+    const handleSaveClicked = async (service: Service) => {
         setIsEditing(false);
         setIsLoading(true);
-        fetch("/api/services", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(service),
-        }).then((res) => {
-            if (res.status === 200) {
-                setServices((prevServices) =>
-                    prevServices.filter((s) => s.name !== service.name)
-                );
-                setServices((prevServices) => [...prevServices, service]);
-                setIsLoading(false);
-            }
-        });
+        const newService = await (
+            await fetch("/api/services", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(service),
+            })
+        ).json();
+
+        const index = services.findIndex((s) => s.name === newService.name);
+
+        if (index === -1) {
+            setServices((prevServices) => [...prevServices, newService]);
+        } else {
+            setServices((prevServices) => {
+                const updatedServices = [...prevServices];
+                updatedServices[index] = newService;
+                return updatedServices;
+            });
+        }
+        setIsLoading(false);
+        setEditedService(undefined);
     };
 
     const handleCancelClicked = () => {
         setIsEditing(false);
+        setEditedService(undefined);
     };
 
     const handleEditClicked = (service: Service) => {
-        setEditedService(service);
         setIsEditing(true);
+        setEditedService(service);
     };
 
     const handleDeleteClicked = (service: Service) => {

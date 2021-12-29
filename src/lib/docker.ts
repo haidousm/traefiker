@@ -90,6 +90,9 @@ export function launchDockerCompose(callback: () => void) {
 export function updateServiceOrder(name: string, order: number) {
     const dockerCompose = getData(process.env.DOCKER_COMPOSE_FILEPATH!);
     const service = dockerCompose.services[name as any];
+    if (!service) {
+        return;
+    }
     const labels = service.labels.map((label) => {
         if (
             label.startsWith(

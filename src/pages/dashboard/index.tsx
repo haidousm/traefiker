@@ -54,6 +54,19 @@ const Dashboard: NextPage = () => {
             });
     }, []);
 
+    useEffect(() => {
+        async function updateOrders() {
+            await fetch("/api/services/order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ services }),
+            });
+        }
+        updateOrders();
+    }, [services]);
+
     const handleNewServiceClicked = () => {
         setIsEditing(true);
     };
@@ -105,9 +118,18 @@ const Dashboard: NextPage = () => {
             method: "DELETE",
         });
         if (res.status === 200) {
-            setServices((prevServices) =>
-                prevServices.filter((s) => s.name !== service.name)
-            );
+            setServices((prevServices) => {
+                const updatedServices = prevServices
+                    .map((s) => {
+                        if (s.order > service.order) {
+                            s.order--;
+                        }
+                        console.log(s);
+                        return s;
+                    })
+                    .filter((s) => s.name !== service.name);
+                return updatedServices;
+            });
             setIsLoading(false);
         }
     };
@@ -122,13 +144,6 @@ const Dashboard: NextPage = () => {
             result.destination.index
         );
         setServices(reorderedServices);
-        await fetch("/api/services/order", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ services: reorderedServices }),
-        });
     };
 
     return (

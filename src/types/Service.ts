@@ -12,7 +12,7 @@ export interface Service {
     name: string;
     image: string;
     hosts: string[];
-    order?: number;
+    order: number;
 }
 export interface _Service {
     image: string;

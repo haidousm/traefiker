@@ -3,36 +3,30 @@ import * as docker from "../../../lib/docker";
 
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
-    const { name } = req.query as { name: string };
 
     if (method === "GET") {
-        return res.status(200).json(docker.getServiceByName(name));
-    } else if (method === "POST") {
-        const { image, hosts } = req.body;
-        const _service = docker.createService(name, image, hosts);
-        docker.saveService(name, _service);
-        if (process.env.NODE_ENV === "production") {
-            docker.launchDockerCompose(() => {
-                res.status(200).json(_service);
-            });
-        } else {
-            // simulate a delay
-            setTimeout(() => {
-                res.status(200).json(_service);
-            }, 5000);
-        }
+        handleGetRequest(req, res);
     } else if (method === "DELETE") {
-        docker.deleteService(name);
-        if (process.env.NODE_ENV === "production") {
-            docker.launchDockerCompose(() => {
-                res.status(200).json({});
-            });
-        } else {
-            // simulate a delay
-            setTimeout(() => {
-                res.status(200).json({});
-            }, 5000);
-        }
+        handleDeleteRequest(req, res);
+    }
+};
+
+const handleGetRequest = (req: NextApiRequest, res: NextApiResponse) => {
+    const { name } = req.query as { name: string };
+    res.status(200).json(docker.getServiceByName(name));
+};
+
+const handleDeleteRequest = (req: NextApiRequest, res: NextApiResponse) => {
+    const { name } = req.query as { name: string };
+    docker.deleteService(name);
+    if (process.env.NODE_ENV === "production") {
+        docker.launchDockerCompose(() => {
+            res.status(200).json({});
+        });
+    } else {
+        setTimeout(() => {
+            res.status(200).json({});
+        }, 5000);
     }
 };
 

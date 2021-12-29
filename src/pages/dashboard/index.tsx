@@ -13,14 +13,14 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
         return list;
     }
     const result = Array.from(list);
-    const [current] = result.splice(startIndex, 1);
-    current.order = endIndex;
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
-    const previous = result[endIndex - 1];
-    previous.order = startIndex;
-    result.splice(endIndex, 0, current);
+    const reordered = result.map((item, index) => {
+        return { ...item, order: index };
+    });
 
-    return result;
+    return reordered;
 };
 
 const Dashboard: NextPage = () => {
@@ -29,6 +29,7 @@ const Dashboard: NextPage = () => {
             name: "",
             image: "",
             hosts: [],
+            order: 0,
         },
     ]);
 
@@ -38,7 +39,6 @@ const Dashboard: NextPage = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const loadingMessages = [
-        "Creating Service..",
         "Saving Docker Compose File..",
         "Launching Docker Compose..",
         "Doing some magic..",
@@ -49,58 +49,94 @@ const Dashboard: NextPage = () => {
         fetch("/api/services")
             .then((res) => res.json())
             .then((data) => {
-                setServices(data);
+                const sortedServices = data.sort(
+                    (a: Service, b: Service) => a.order - b.order
+                );
+                setServices(sortedServices);
             });
     }, []);
+
+    useEffect(() => {
+        async function updateOrders() {
+            await fetch("/api/services/order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ services }),
+            });
+        }
+        updateOrders();
+    }, [services]);
 
     const handleNewServiceClicked = () => {
         setIsEditing(true);
     };
 
-    const handleSaveClicked = (service: Service) => {
+    const handleSaveClicked = async (service: Service) => {
         setIsEditing(false);
         setIsLoading(true);
-        fetch("/api/services", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(service),
-        }).then((res) => {
-            if (res.status === 200) {
-                setServices((prevServices) =>
-                    prevServices.filter((s) => s.name !== service.name)
-                );
-                setServices((prevServices) => [...prevServices, service]);
-                setIsLoading(false);
-            }
-        });
+
+        const index = services.findIndex((s) => s.name === service.name);
+        if (index !== -1) {
+            setServices((prevServices) => {
+                const updatedServices = [...prevServices];
+                updatedServices[index] = service;
+                return updatedServices;
+            });
+        } else {
+            service.order = services.length;
+        }
+        const newService = await (
+            await fetch("/api/services", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(service),
+            })
+        ).json();
+
+        if (index === -1) {
+            setServices((prevServices) => [...prevServices, newService]);
+        }
+        setIsLoading(false);
+        setEditedService(undefined);
     };
 
     const handleCancelClicked = () => {
         setIsEditing(false);
+        setEditedService(undefined);
     };
 
     const handleEditClicked = (service: Service) => {
-        setEditedService(service);
         setIsEditing(true);
+        setEditedService(service);
     };
 
-    const handleDeleteClicked = (service: Service) => {
+    const handleDeleteClicked = async (service: Service) => {
         setIsLoading(true);
-        fetch(`/api/services/${service.name}`, {
+        const res = await fetch(`/api/services/${service.name}`, {
             method: "DELETE",
-        }).then((res) => {
-            if (res.status === 200) {
-                setServices((prevServices) =>
-                    prevServices.filter((s) => s.name !== service.name)
-                );
-                setIsLoading(false);
-            }
         });
+        if (res.status === 200) {
+            setServices((prevServices) => {
+                const updatedServices = prevServices
+                    .map((s) => {
+                        if (s.order > service.order) {
+                            s.order--;
+                        }
+                        console.log(s);
+                        return s;
+                    })
+                    .filter((s) => s.name !== service.name);
+                return updatedServices;
+            });
+            setIsLoading(false);
+        }
     };
 
-    const onDragEnd = (result: any) => {
+    const onDragEnd = async (result: any) => {
         if (!result.destination) {
             return;
         }

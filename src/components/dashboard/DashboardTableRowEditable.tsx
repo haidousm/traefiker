@@ -157,6 +157,7 @@ function DashboardTableRowEditable(props: {
                                 possibleHost !== ""
                                     ? [...hosts, possibleHost]
                                     : hosts,
+                            order: props.service ? props.service.order : 0,
                         });
                     }}
                 >

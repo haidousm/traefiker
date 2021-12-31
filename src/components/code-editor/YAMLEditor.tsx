@@ -45,7 +45,7 @@ function YAMLEditor(props: {
                     <Editor
                         height="400px"
                         language="yaml"
-                        defaultValue={editorBody}
+                        value={editorBody}
                         theme="vs-dark"
                         options={{
                             minimap: { enabled: false },

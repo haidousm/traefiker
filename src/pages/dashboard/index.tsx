@@ -9,6 +9,7 @@ import { resetServerContext } from "react-beautiful-dnd";
 import useServices from "../../hooks/useServices";
 import axios from "axios";
 import { LoadingOptions } from "../../types/LoadingOptions";
+import LoadingComponent from "../../components/loading/LoadingPopup";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {
@@ -38,7 +39,7 @@ const deleteService = async (service: Service) => {
 };
 
 const Dashboard: NextPage = () => {
-    const { services, mutate } = useServices();
+    const { services, isLoading, mutate } = useServices();
 
     const [isEditing, setIsEditing] = useState(false);
     const [editedService, setEditedService] = useState<Service>();
@@ -47,11 +48,26 @@ const Dashboard: NextPage = () => {
         fetchingServices: false,
         creatingService: false,
         deletingService: false,
+        updatingService: false,
     });
+
+    const loadingMessages = [
+        "Updating Docker Compose File..",
+        "Launching Docker Compose..",
+        "Doing some magic..",
+        "Doing some more magic..",
+    ];
 
     useEffect(() => {
         updateServiceOrdering(services);
     }, [services]);
+
+    useEffect(() => {
+        setLoadingOptions((prev) => ({
+            ...prev,
+            fetchingServices: isLoading,
+        }));
+    }, [isLoading]);
 
     const handleNewServiceClicked = () => {
         setIsEditing(true);
@@ -59,19 +75,24 @@ const Dashboard: NextPage = () => {
 
     const handleSaveClicked = async (service: Service) => {
         setIsEditing(false);
-        setLoadingOptions((prev) => ({ ...prev, creatingService: true }));
 
         const index = services.findIndex((s) => s.name === service.name);
         if (index !== -1) {
             services[index] = service;
             await mutate(services, false);
+            setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
         } else {
+            setLoadingOptions((prev) => ({ ...prev, creatingService: true }));
             service.order = services.length;
         }
 
         await createService(service);
         await mutate();
-        setLoadingOptions((prev) => ({ ...prev, creatingService: false }));
+        setLoadingOptions((prev) => ({
+            ...prev,
+            creatingService: false,
+            updatingService: false,
+        }));
         setEditedService(undefined);
     };
 
@@ -142,9 +163,10 @@ const Dashboard: NextPage = () => {
                     onDragEnd={onDragEnd}
                 />
             </main>
-            {/* {isLoading ? (
+            {loadingOptions.deletingService ||
+            loadingOptions.updatingService ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
-            ) : null} */}
+            ) : null}
         </div>
     );
 };

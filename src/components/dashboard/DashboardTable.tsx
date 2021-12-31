@@ -16,7 +16,7 @@ function DashboardTable(props: {
     handleDeleteClicked: (service: Service) => void;
     onDragEnd: (result: any) => void;
 }) {
-    const { services, isLoading: isLoadingServices } = useServices();
+    const { services } = useServices();
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
@@ -115,7 +115,8 @@ function DashboardTable(props: {
                                                         }
                                                     />
                                                 ) : null}
-                                                {isLoadingServices ? (
+                                                {props.loadingOptions
+                                                    .fetchingServices ? (
                                                     <LoadingRow
                                                         columns={columns}
                                                     />

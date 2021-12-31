@@ -86,9 +86,15 @@ const Dashboard: NextPage = () => {
         if (index !== -1) {
             services[index] = service;
             await mutate(services, false);
-            setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
+            setLoadingOptions((prev) => ({
+                ...prev,
+                updatingService: true && autoReload,
+            }));
         } else {
-            setLoadingOptions((prev) => ({ ...prev, creatingService: true }));
+            setLoadingOptions((prev) => ({
+                ...prev,
+                creatingService: true && autoReload,
+            }));
             service.order = services.length;
         }
 
@@ -113,7 +119,10 @@ const Dashboard: NextPage = () => {
     };
 
     const handleDeleteClicked = async (service: Service) => {
-        setLoadingOptions((prev) => ({ ...prev, deletingService: true }));
+        setLoadingOptions((prev) => ({
+            ...prev,
+            deletingService: true && autoReload,
+        }));
         const res = await deleteService(service, autoReload);
         if (res.status === 200) {
             const updatedServices = services

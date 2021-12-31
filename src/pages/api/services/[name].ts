@@ -24,9 +24,7 @@ const handleDeleteRequest = (req: NextApiRequest, res: NextApiResponse) => {
             res.status(200).json({});
         });
     } else {
-        setTimeout(() => {
-            res.status(200).json({});
-        }, 5000);
+        res.status(200).json({});
     }
 };
 

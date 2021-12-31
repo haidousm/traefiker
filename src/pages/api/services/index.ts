@@ -15,7 +15,9 @@ const handleGetRequest = (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const handlePostRequest = (req: NextApiRequest, res: NextApiResponse) => {
-    const { name, image, hosts, order } = req.body;
+    const {
+        service: { name, image, hosts, order },
+    } = req.body;
     const _service = docker.createService(name, image, hosts, order);
     docker.saveService(name, _service);
     if (process.env.NODE_ENV === "production") {
@@ -23,9 +25,7 @@ const handlePostRequest = (req: NextApiRequest, res: NextApiResponse) => {
             res.status(200).json(req.body);
         });
     } else {
-        setTimeout(() => {
-            res.status(200).json(req.body);
-        }, 5000);
+        res.status(200).json(req.body);
     }
 };
 export default handler;

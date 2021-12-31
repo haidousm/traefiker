@@ -2,9 +2,9 @@ import { Service } from "../../types/Service";
 import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import useServices from "../../hooks/useServices";
 
 function DashboardTable(props: {
-    services: Service[];
     isEditing: boolean;
     editedService: Service | undefined;
     handleSaveClicked: (service: Service) => void;
@@ -13,6 +13,7 @@ function DashboardTable(props: {
     handleDeleteClicked: (service: Service) => void;
     onDragEnd: (result: any) => void;
 }) {
+    const { services } = useServices();
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
@@ -111,50 +112,43 @@ function DashboardTable(props: {
                                                         }
                                                     />
                                                 ) : null}
-                                                {props.services.map(
-                                                    (service) => {
-                                                        if (
-                                                            props.isEditing &&
-                                                            service.name ===
-                                                                props
-                                                                    .editedService
-                                                                    ?.name
-                                                        ) {
-                                                            return (
-                                                                <DashboardTableRowEditable
-                                                                    key={
-                                                                        service.name
-                                                                    }
-                                                                    service={
-                                                                        service
-                                                                    }
-                                                                    handleCancelClicked={
-                                                                        handleCancelClicked
-                                                                    }
-                                                                    handleSaveClicked={
-                                                                        handleSaveClicked
-                                                                    }
-                                                                />
-                                                            );
-                                                        }
+                                                {services.map((service) => {
+                                                    if (
+                                                        props.isEditing &&
+                                                        service.name ===
+                                                            props.editedService
+                                                                ?.name
+                                                    ) {
                                                         return (
-                                                            <DashboardTableRow
+                                                            <DashboardTableRowEditable
                                                                 key={
                                                                     service.name
                                                                 }
                                                                 service={
                                                                     service
                                                                 }
-                                                                handleEditClicked={
-                                                                    handleEditClicked
+                                                                handleCancelClicked={
+                                                                    handleCancelClicked
                                                                 }
-                                                                handleDeleteClicked={
-                                                                    handleDeleteClicked
+                                                                handleSaveClicked={
+                                                                    handleSaveClicked
                                                                 }
                                                             />
                                                         );
                                                     }
-                                                )}
+                                                    return (
+                                                        <DashboardTableRow
+                                                            key={service.name}
+                                                            service={service}
+                                                            handleEditClicked={
+                                                                handleEditClicked
+                                                            }
+                                                            handleDeleteClicked={
+                                                                handleDeleteClicked
+                                                            }
+                                                        />
+                                                    );
+                                                })}
                                                 {provided.placeholder}
                                             </tbody>
                                         )}

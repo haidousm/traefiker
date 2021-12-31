@@ -8,6 +8,7 @@ import Navbar from "../../components/navbar/Navbar";
 import { Service } from "../../types/Service";
 import { resetServerContext } from "react-beautiful-dnd";
 import useServices from "../../hooks/useServices";
+import axios from "axios";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {
@@ -22,6 +23,18 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     });
 
     return reordered;
+};
+
+const createService = async (service: Service) => {
+    return await axios.post("/api/services", { service });
+};
+
+const updateServiceOrdering = async (services: Service[]) => {
+    return await axios.put("/api/services/ordering", { services });
+};
+
+const deleteService = async (service: Service) => {
+    return await axios.delete(`/api/services/${service.name}`);
 };
 
 const Dashboard: NextPage = () => {
@@ -40,17 +53,7 @@ const Dashboard: NextPage = () => {
     ];
 
     useEffect(() => {
-        async function updateOrders() {
-            await fetch("/api/services/order", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ services }),
-            });
-            console.log("hi");
-        }
-        updateOrders();
+        updateServiceOrdering(services);
     }, [services]);
 
     const handleNewServiceClicked = () => {
@@ -63,22 +66,13 @@ const Dashboard: NextPage = () => {
 
         const index = services.findIndex((s) => s.name === service.name);
         if (index !== -1) {
-            const updatedServices = [...services];
-            updatedServices[index] = service;
-            await mutate(updatedServices, false);
+            services[index] = service;
+            await mutate(services, false);
         } else {
             service.order = services.length;
         }
-        await (
-            await fetch("/api/services", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(service),
-            })
-        ).json();
 
+        await createService(service);
         await mutate();
         setIsLoading(false);
         setEditedService(undefined);
@@ -96,9 +90,7 @@ const Dashboard: NextPage = () => {
 
     const handleDeleteClicked = async (service: Service) => {
         setIsLoading(true);
-        const res = await fetch(`/api/services/${service.name}`, {
-            method: "DELETE",
-        });
+        const res = await deleteService(service);
         if (res.status === 200) {
             const updatedServices = services
                 .map((s) => {
@@ -143,7 +135,6 @@ const Dashboard: NextPage = () => {
                     handleNewServiceClicked={handleNewServiceClicked}
                 />
                 <DashboardTable
-                    services={services}
                     handleSaveClicked={handleSaveClicked}
                     handleCancelClicked={handleCancelClicked}
                     isEditing={isEditing}

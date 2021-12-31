@@ -10,6 +10,7 @@ import useServices from "../../hooks/useServices";
 import axios from "axios";
 import { LoadingOptions } from "../../types/LoadingOptions";
 import LoadingComponent from "../../components/loading/LoadingPopup";
+import YAMLEditor from "../../components/code-editor/YAMLEditor";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {
@@ -56,6 +57,8 @@ const Dashboard: NextPage = () => {
         deletingService: false,
         updatingService: false,
     });
+
+    const [YAMLEditorOpen, setYAMLEditorOpen] = useState(false);
 
     const loadingMessages = [
         "Updating Docker Compose File..",
@@ -140,7 +143,7 @@ const Dashboard: NextPage = () => {
 
     const handleRunComposeClicked = async () => {
         setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
-        await axios.get("/api/services/run");
+        await axios.get("/api/compose/run");
         setLoadingOptions((prev) => ({ ...prev, updatingService: false }));
     };
 
@@ -161,6 +164,14 @@ const Dashboard: NextPage = () => {
         await mutate(reorderedServices, false);
     };
 
+    const handleYAMLEditorOpen = () => {
+        setYAMLEditorOpen(true);
+    };
+
+    const handleYAMLEditorClose = () => {
+        setYAMLEditorOpen(false);
+    };
+
     return (
         <div>
             <Head>
@@ -179,6 +190,7 @@ const Dashboard: NextPage = () => {
                     handleAutoReloadClicked={handleAutoReloadClicked}
                     handleNewServiceClicked={handleNewServiceClicked}
                     handleRunComposeClicked={handleRunComposeClicked}
+                    handleYAMLEditorOpen={handleYAMLEditorOpen}
                 />
                 <DashboardTable
                     loadingOptions={loadingOptions}
@@ -194,6 +206,12 @@ const Dashboard: NextPage = () => {
             {loadingOptions.deletingService ||
             loadingOptions.updatingService ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
+            ) : null}
+            {YAMLEditorOpen ? (
+                <YAMLEditor
+                    YAMLEditorOpen={YAMLEditorOpen}
+                    handleYAMLEditorClose={handleYAMLEditorClose}
+                />
             ) : null}
         </div>
     );

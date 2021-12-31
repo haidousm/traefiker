@@ -1,10 +1,12 @@
 import { Switch } from "@headlessui/react";
+import { PencilIcon } from "@heroicons/react/solid";
 import { useEffect, useState } from "react";
 
 function DashboardHeader(props: {
     handleAutoReloadClicked: (enabled: boolean) => void;
     handleNewServiceClicked: () => void;
     handleRunComposeClicked: () => void;
+    handleYAMLEditorOpen: () => void;
 }) {
     const [enabled, setEnabled] = useState(false);
 
@@ -53,7 +55,7 @@ function DashboardHeader(props: {
                 </div>
                 <div
                     className="mx-12 py-6 px-4 sm:px-6 lg:px-8 items-center hidden
-                            md:flex"
+                            lg:flex"
                 >
                     <Switch.Group>
                         <div className="flex items-center">
@@ -78,7 +80,34 @@ function DashboardHeader(props: {
                         </div>
                     </Switch.Group>
                     <button
-                        type="button"
+                        className="
+                            hidden
+                            md:flex
+                            mx-5
+                            px-5
+                            py-2
+                            rounded
+                            overflow-hidden
+                            focus:outline-none focus:shadow-outline
+                            transition
+                            ease-out
+                            duration-200
+                            bg-indigo-500
+                            hover:bg-indigo-100
+                            text-white text-sm
+                            hover:text-indigo-800
+                            lg:text-base
+                            items-center
+                            justify-center
+                            "
+                        onClick={() => {
+                            props.handleYAMLEditorOpen();
+                        }}
+                    >
+                        <PencilIcon className="w-5 h-5 mr-2" />
+                        Edit File
+                    </button>
+                    <button
                         className="
                             hidden
                             md:block

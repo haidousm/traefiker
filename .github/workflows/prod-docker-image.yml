@@ -7,10 +7,9 @@ on:
 
 jobs:
 
-  build:
-
+  docker:
+    name: Build And Push Docker Image
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: docker login
@@ -23,7 +22,13 @@ jobs:
       run: docker build . --file Dockerfile --tag haidousm/traefiker:1.0.0
     - name: Push the Docker Image to DockerHub
       run: docker push haidousm/traefiker:1.0.0
-    - name: Deploy Docker Image on Server
+
+  deploy:
+    name: Deploy Prod. Docker Image
+    runs-on: ubuntu-latest
+    needs: [ docker ]
+    steps:
+    - name: Call Webhook
       uses: joelwmale/webhook-action@master
       env:
         WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL  }}

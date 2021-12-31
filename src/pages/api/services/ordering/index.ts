@@ -5,11 +5,11 @@ import { Service } from "../../../../types/Service";
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
     if (method === "PUT") {
-        return handlePUTRequest(req, res);
+        return handlePUT(req, res);
     }
 };
 
-const handlePUTRequest = (req: NextApiRequest, res: NextApiResponse) => {
+const handlePUT = (req: NextApiRequest, res: NextApiResponse) => {
     const { services } = req.body;
     services.forEach((service: Service) => {
         docker.updateServiceOrder(service.name, service.order);

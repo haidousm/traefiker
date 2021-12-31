@@ -4,17 +4,17 @@ import * as docker from "../../../lib/docker";
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
     if (method === "GET") {
-        handleGetRequest(req, res);
+        handleGET(req, res);
     } else if (method === "POST") {
-        handlePostRequest(req, res);
+        handlePOST(req, res);
     }
 };
 
-const handleGetRequest = (req: NextApiRequest, res: NextApiResponse) => {
+const handleGET = (req: NextApiRequest, res: NextApiResponse) => {
     res.status(200).json(docker.getAllServices());
 };
 
-const handlePostRequest = (req: NextApiRequest, res: NextApiResponse) => {
+const handlePOST = (req: NextApiRequest, res: NextApiResponse) => {
     const {
         service: { name, image, hosts, order },
     } = req.body;

@@ -44,6 +44,8 @@ const Dashboard: NextPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedService, setEditedService] = useState<Service>();
 
+    const [autoReload, setAutoReload] = useState(false);
+
     const [loadingOptions, setLoadingOptions] = useState<LoadingOptions>({
         fetchingServices: false,
         creatingService: false,
@@ -129,6 +131,11 @@ const Dashboard: NextPage = () => {
         setLoadingOptions((prev) => ({ ...prev, updatingService: false }));
     };
 
+    const handleAutoReloadClicked = (reload: boolean) => {
+        setAutoReload(reload);
+        console.log(reload);
+    };
+
     const onDragEnd = async (result: any) => {
         if (!result.destination) {
             return;
@@ -156,6 +163,7 @@ const Dashboard: NextPage = () => {
             </nav>
             <main>
                 <DashboardHeader
+                    handleAutoReloadClicked={handleAutoReloadClicked}
                     handleNewServiceClicked={handleNewServiceClicked}
                     handleRunComposeClicked={handleRunComposeClicked}
                 />

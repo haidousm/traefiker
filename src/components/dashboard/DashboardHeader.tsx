@@ -1,11 +1,17 @@
 import { Switch } from "@headlessui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function DashboardHeader(props: {
+    handleAutoReloadClicked: (enabled: boolean) => void;
     handleNewServiceClicked: () => void;
     handleRunComposeClicked: () => void;
 }) {
     const [enabled, setEnabled] = useState(false);
+
+    useEffect(() => {
+        props.handleAutoReloadClicked(enabled);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [enabled]);
     return (
         <div>
             <header className="bg-white shadow flex justify-between items-center">

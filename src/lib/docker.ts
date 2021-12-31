@@ -172,7 +172,7 @@ function getPathMiddlewareLabels(name: string, hosts: string[]) {
     const pathMiddlewareLabels = paths.map((path) => {
         return `${PATH_MIDDLEWARE_PREFIX.replace(
             "{path-name}",
-            name
+            path
         )}=/${path}`;
     });
     const routerMiddlewareLabel = `${ROUTER_MIDDLEWARE_PREFIX.replace(

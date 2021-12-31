@@ -1,5 +1,4 @@
 function LoadingRow(props: { columns: any }) {
-    console.log(props.columns);
     return (
         <tr className=" animate-pulse">
             {props.columns.map((column: any) => {

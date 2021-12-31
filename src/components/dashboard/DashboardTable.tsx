@@ -4,8 +4,10 @@ import DashboardTableRowEditable from "./DashboardTableRowEditable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import useServices from "../../hooks/useServices";
 import LoadingRow from "../loading/LoadingRow";
+import { LoadingOptions } from "../../types/LoadingOptions";
 
 function DashboardTable(props: {
+    loadingOptions: LoadingOptions;
     isEditing: boolean;
     editedService: Service | undefined;
     handleSaveClicked: (service: Service) => void;
@@ -14,7 +16,7 @@ function DashboardTable(props: {
     handleDeleteClicked: (service: Service) => void;
     onDragEnd: (result: any) => void;
 }) {
-    const { services, isLoading } = useServices();
+    const { services, isLoading: isLoadingServices } = useServices();
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
@@ -113,10 +115,10 @@ function DashboardTable(props: {
                                                         }
                                                     />
                                                 ) : null}
-                                                {isLoading ? (
-                                                    <tr>
-                                                        <td colSpan={6}>hi</td>
-                                                    </tr>
+                                                {isLoadingServices ? (
+                                                    <LoadingRow
+                                                        columns={columns}
+                                                    />
                                                 ) : (
                                                     services.map((service) => {
                                                         if (
@@ -161,8 +163,12 @@ function DashboardTable(props: {
                                                         );
                                                     })
                                                 )}
-
-                                                <LoadingRow columns={columns} />
+                                                {props.loadingOptions
+                                                    .creatingService ? (
+                                                    <LoadingRow
+                                                        columns={columns}
+                                                    />
+                                                ) : null}
                                                 {provided.placeholder}
                                             </tbody>
                                         )}

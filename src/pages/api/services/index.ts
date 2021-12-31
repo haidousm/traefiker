@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import * as docker from "../../../lib/docker";
 
-const handler = (req: NextApiRequest, res: NextApiResponse) => {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
     if (method === "GET") {
         handleGET(req, res);
     } else if (method === "POST") {
-        handlePOST(req, res);
+        await handlePOST(req, res);
     }
 };
 
@@ -14,7 +14,7 @@ const handleGET = (req: NextApiRequest, res: NextApiResponse) => {
     res.status(200).json(docker.getAllServices());
 };
 
-const handlePOST = (req: NextApiRequest, res: NextApiResponse) => {
+const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     const {
         service: { name, image, hosts, order },
     } = req.body;
@@ -25,6 +25,7 @@ const handlePOST = (req: NextApiRequest, res: NextApiResponse) => {
             res.status(200).json(req.body);
         });
     } else {
+        await new Promise<void>((done) => setTimeout(() => done(), 5000));
         res.status(200).json(req.body);
     }
 };

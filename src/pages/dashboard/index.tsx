@@ -3,12 +3,12 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/DashboardTable";
-import LoadingComponent from "../../components/loading/LoadingPopup";
 import Navbar from "../../components/navbar/Navbar";
 import { Service } from "../../types/Service";
 import { resetServerContext } from "react-beautiful-dnd";
 import useServices from "../../hooks/useServices";
 import axios from "axios";
+import { LoadingOptions } from "../../types/LoadingOptions";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {
@@ -43,14 +43,11 @@ const Dashboard: NextPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedService, setEditedService] = useState<Service>();
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const loadingMessages = [
-        "Saving Docker Compose File..",
-        "Launching Docker Compose..",
-        "Doing some magic..",
-        "Doing some more magic..",
-    ];
+    const [loadingOptions, setLoadingOptions] = useState<LoadingOptions>({
+        fetchingServices: false,
+        creatingService: false,
+        deletingService: false,
+    });
 
     useEffect(() => {
         updateServiceOrdering(services);
@@ -62,7 +59,7 @@ const Dashboard: NextPage = () => {
 
     const handleSaveClicked = async (service: Service) => {
         setIsEditing(false);
-        setIsLoading(true);
+        setLoadingOptions((prev) => ({ ...prev, creatingService: true }));
 
         const index = services.findIndex((s) => s.name === service.name);
         if (index !== -1) {
@@ -74,7 +71,7 @@ const Dashboard: NextPage = () => {
 
         await createService(service);
         await mutate();
-        setIsLoading(false);
+        setLoadingOptions((prev) => ({ ...prev, creatingService: false }));
         setEditedService(undefined);
     };
 
@@ -89,7 +86,7 @@ const Dashboard: NextPage = () => {
     };
 
     const handleDeleteClicked = async (service: Service) => {
-        setIsLoading(true);
+        setLoadingOptions((prev) => ({ ...prev, deletingService: true }));
         const res = await deleteService(service);
         if (res.status === 200) {
             const updatedServices = services
@@ -101,7 +98,7 @@ const Dashboard: NextPage = () => {
                 })
                 .filter((s) => s.name !== service.name);
             await mutate(updatedServices, false);
-            setIsLoading(false);
+            setLoadingOptions((prev) => ({ ...prev, deletingService: false }));
         }
     };
 
@@ -135,6 +132,7 @@ const Dashboard: NextPage = () => {
                     handleNewServiceClicked={handleNewServiceClicked}
                 />
                 <DashboardTable
+                    loadingOptions={loadingOptions}
                     handleSaveClicked={handleSaveClicked}
                     handleCancelClicked={handleCancelClicked}
                     isEditing={isEditing}
@@ -144,9 +142,9 @@ const Dashboard: NextPage = () => {
                     onDragEnd={onDragEnd}
                 />
             </main>
-            {isLoading ? (
+            {/* {isLoading ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
-            ) : null}
+            ) : null} */}
         </div>
     );
 };

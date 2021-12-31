@@ -38,7 +38,7 @@ const updateServiceOrdering = async (services: Service[]) => {
 
 const deleteService = async (service: Service, autoReload: boolean) => {
     return await axios.delete(
-        `/api/services/${service.name}?autoreload${autoReload}`
+        `/api/services/${service.name}?autoreload=${autoReload}`
     );
 };
 

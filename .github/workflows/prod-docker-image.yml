@@ -2,7 +2,8 @@ name: Build & Deploy Prod. Docker Image
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - 'release-*'
   workflow_dispatch:
 
 jobs:

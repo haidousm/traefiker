@@ -123,6 +123,12 @@ const Dashboard: NextPage = () => {
         }
     };
 
+    const handleRunComposeClicked = async () => {
+        setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
+        await axios.get("/api/services/run");
+        setLoadingOptions((prev) => ({ ...prev, updatingService: false }));
+    };
+
     const onDragEnd = async (result: any) => {
         if (!result.destination) {
             return;
@@ -151,6 +157,7 @@ const Dashboard: NextPage = () => {
             <main>
                 <DashboardHeader
                     handleNewServiceClicked={handleNewServiceClicked}
+                    handleRunComposeClicked={handleRunComposeClicked}
                 />
                 <DashboardTable
                     loadingOptions={loadingOptions}

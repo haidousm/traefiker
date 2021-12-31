@@ -1,8 +1,10 @@
-import { useState } from "react";
-import Editor from "@monaco-editor/react";
 import { Dialog } from "@headlessui/react";
 import useSWR from "swr";
 import axios from "axios";
+import dynamic from "next/dynamic";
+import { useEffect } from "react";
+
+const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
 const fetcher = (url: string) => fetch(url).then((r) => r.text());
 
@@ -33,8 +35,8 @@ function YAMLEditor(props: {
                 >
                     <Editor
                         height="400px"
-                        defaultLanguage="yaml"
-                        value={editorBody}
+                        language="yaml"
+                        defaultValue={editorBody}
                         theme="vs-dark"
                         options={{
                             minimap: { enabled: false },
@@ -46,11 +48,14 @@ function YAMLEditor(props: {
                             renderLineHighlight: "none",
                             copyWithSyntaxHighlighting: true,
                             fontSize: 14,
+                            scrollBeyondLastLine: false,
+                            automaticLayout: true,
                         }}
                         onChange={(e) => {
                             mutate(e || "", false);
                         }}
                         loading={<div></div>}
+                        line={1}
                     />
                     <div className="flex w-full justify-end mt-4">
                         <button

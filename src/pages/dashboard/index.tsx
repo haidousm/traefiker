@@ -207,10 +207,12 @@ const Dashboard: NextPage = () => {
             loadingOptions.updatingService ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
             ) : null}
-            <YAMLEditor
-                YAMLEditorOpen={YAMLEditorOpen}
-                handleYAMLEditorClose={handleYAMLEditorClose}
-            />
+            {YAMLEditorOpen ? (
+                <YAMLEditor
+                    YAMLEditorOpen={YAMLEditorOpen}
+                    handleYAMLEditorClose={handleYAMLEditorClose}
+                />
+            ) : null}
         </div>
     );
 };

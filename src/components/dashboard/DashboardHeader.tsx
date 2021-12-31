@@ -9,6 +9,11 @@ function DashboardHeader(props: {
     const [enabled, setEnabled] = useState(false);
 
     useEffect(() => {
+        const isEnabled = localStorage.getItem("autoReload") === "true";
+        setEnabled(isEnabled);
+    }, []);
+
+    useEffect(() => {
         props.handleAutoReloadClicked(enabled);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [enabled]);

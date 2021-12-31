@@ -146,6 +146,7 @@ const Dashboard: NextPage = () => {
 
     const handleAutoReloadClicked = (reload: boolean) => {
         setAutoReload(reload);
+        localStorage.setItem("autoReload", reload.toString());
     };
 
     const onDragEnd = async (result: any) => {

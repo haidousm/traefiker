@@ -18,8 +18,14 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     const {
         service: { name, image, hosts, order },
     } = req.body;
+
+    const autoreload = req.query.autoreload === "true";
+
     const _service = docker.createService(name, image, hosts, order);
     docker.saveService(name, _service);
+    if (!autoreload) {
+        return res.status(200).json(req.body);
+    }
     if (process.env.NODE_ENV === "production") {
         docker.launchDockerCompose(() => {
             res.status(200).json(req.body);

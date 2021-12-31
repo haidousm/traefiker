@@ -4,6 +4,7 @@ import { MenuIcon } from "@heroicons/react/solid";
 import seedrandom from "seedrandom";
 
 function DashboardTableRow(props: {
+    isLoading: boolean;
     service: Service;
     handleEditClicked: (service: Service) => void;
     handleDeleteClicked: (service: Service) => void;
@@ -84,10 +85,11 @@ function DashboardTableRow(props: {
                 lg:text-sm font-medium"
                     >
                         <button
-                            className="text-indigo-600 hover:text-indigo-900"
+                            className="text-indigo-600 hover:text-indigo-900 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:cursor-not-allowed"
                             onClick={() => {
                                 props.handleEditClicked(props.service);
                             }}
+                            disabled={props.isLoading}
                         >
                             Edit
                         </button>
@@ -97,10 +99,11 @@ function DashboardTableRow(props: {
                 lg:text-sm font-medium"
                     >
                         <button
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:cursor-not-allowed"
                             onClick={() => {
                                 props.handleDeleteClicked(props.service);
                             }}
+                            disabled={props.isLoading}
                         >
                             Delete
                         </button>

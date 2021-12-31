@@ -26,16 +26,20 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     return reordered;
 };
 
-const createService = async (service: Service) => {
-    return await axios.post("/api/services", { service });
+const createService = async (service: Service, autoReload: boolean) => {
+    return await axios.post(`/api/services?autoreload=${autoReload}`, {
+        service,
+    });
 };
 
 const updateServiceOrdering = async (services: Service[]) => {
     return await axios.put("/api/services/ordering", { services });
 };
 
-const deleteService = async (service: Service) => {
-    return await axios.delete(`/api/services/${service.name}`);
+const deleteService = async (service: Service, autoReload: boolean) => {
+    return await axios.delete(
+        `/api/services/${service.name}?autoreload${autoReload}`
+    );
 };
 
 const Dashboard: NextPage = () => {
@@ -43,6 +47,8 @@ const Dashboard: NextPage = () => {
 
     const [isEditing, setIsEditing] = useState(false);
     const [editedService, setEditedService] = useState<Service>();
+
+    const [autoReload, setAutoReload] = useState(false);
 
     const [loadingOptions, setLoadingOptions] = useState<LoadingOptions>({
         fetchingServices: false,
@@ -80,13 +86,19 @@ const Dashboard: NextPage = () => {
         if (index !== -1) {
             services[index] = service;
             await mutate(services, false);
-            setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
+            setLoadingOptions((prev) => ({
+                ...prev,
+                updatingService: true && autoReload,
+            }));
         } else {
-            setLoadingOptions((prev) => ({ ...prev, creatingService: true }));
+            setLoadingOptions((prev) => ({
+                ...prev,
+                creatingService: true && autoReload,
+            }));
             service.order = services.length;
         }
 
-        await createService(service);
+        await createService(service, autoReload);
         await mutate();
         setLoadingOptions((prev) => ({
             ...prev,
@@ -107,8 +119,11 @@ const Dashboard: NextPage = () => {
     };
 
     const handleDeleteClicked = async (service: Service) => {
-        setLoadingOptions((prev) => ({ ...prev, deletingService: true }));
-        const res = await deleteService(service);
+        setLoadingOptions((prev) => ({
+            ...prev,
+            deletingService: true && autoReload,
+        }));
+        const res = await deleteService(service, autoReload);
         if (res.status === 200) {
             const updatedServices = services
                 .map((s) => {
@@ -121,6 +136,17 @@ const Dashboard: NextPage = () => {
             await mutate(updatedServices, false);
             setLoadingOptions((prev) => ({ ...prev, deletingService: false }));
         }
+    };
+
+    const handleRunComposeClicked = async () => {
+        setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
+        await axios.get("/api/services/run");
+        setLoadingOptions((prev) => ({ ...prev, updatingService: false }));
+    };
+
+    const handleAutoReloadClicked = (reload: boolean) => {
+        setAutoReload(reload);
+        localStorage.setItem("autoReload", reload.toString());
     };
 
     const onDragEnd = async (result: any) => {
@@ -150,7 +176,9 @@ const Dashboard: NextPage = () => {
             </nav>
             <main>
                 <DashboardHeader
+                    handleAutoReloadClicked={handleAutoReloadClicked}
                     handleNewServiceClicked={handleNewServiceClicked}
+                    handleRunComposeClicked={handleRunComposeClicked}
                 />
                 <DashboardTable
                     loadingOptions={loadingOptions}

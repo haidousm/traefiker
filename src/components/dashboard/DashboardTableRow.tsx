@@ -58,7 +58,12 @@ function DashboardTableRow(props: {
                     </td>
                     <td className="px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
                         {props.service.hosts.map((host, index) => (
-                            <a href={`https://${host}`} key={index}>
+                            <a
+                                href={`https://${host}`}
+                                key={index}
+                                target={"_blank"}
+                                rel="noreferrer"
+                            >
                                 <span
                                     className="
                                     px-4

@@ -3,10 +3,13 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/DashboardTable";
-import LoadingComponent from "../../components/loading/LoadingPopup";
 import Navbar from "../../components/navbar/Navbar";
 import { Service } from "../../types/Service";
 import { resetServerContext } from "react-beautiful-dnd";
+import useServices from "../../hooks/useServices";
+import axios from "axios";
+import { LoadingOptions } from "../../types/LoadingOptions";
+import LoadingComponent from "../../components/loading/LoadingPopup";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {
@@ -23,51 +26,48 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     return reordered;
 };
 
+const createService = async (service: Service) => {
+    return await axios.post("/api/services", { service });
+};
+
+const updateServiceOrdering = async (services: Service[]) => {
+    return await axios.put("/api/services/ordering", { services });
+};
+
+const deleteService = async (service: Service) => {
+    return await axios.delete(`/api/services/${service.name}`);
+};
+
 const Dashboard: NextPage = () => {
-    const [services, setServices] = useState<Service[]>([
-        {
-            name: "",
-            image: "",
-            hosts: [],
-            order: 0,
-        },
-    ]);
+    const { services, isLoading, mutate } = useServices();
 
     const [isEditing, setIsEditing] = useState(false);
     const [editedService, setEditedService] = useState<Service>();
 
-    const [isLoading, setIsLoading] = useState(false);
+    const [loadingOptions, setLoadingOptions] = useState<LoadingOptions>({
+        fetchingServices: false,
+        creatingService: false,
+        deletingService: false,
+        updatingService: false,
+    });
 
     const loadingMessages = [
-        "Saving Docker Compose File..",
+        "Updating Docker Compose File..",
         "Launching Docker Compose..",
         "Doing some magic..",
         "Doing some more magic..",
     ];
 
     useEffect(() => {
-        fetch("/api/services")
-            .then((res) => res.json())
-            .then((data) => {
-                const sortedServices = data.sort(
-                    (a: Service, b: Service) => a.order - b.order
-                );
-                setServices(sortedServices);
-            });
-    }, []);
+        updateServiceOrdering(services);
+    }, [services]);
 
     useEffect(() => {
-        async function updateOrders() {
-            await fetch("/api/services/order", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ services }),
-            });
-        }
-        updateOrders();
-    }, [services]);
+        setLoadingOptions((prev) => ({
+            ...prev,
+            fetchingServices: isLoading,
+        }));
+    }, [isLoading]);
 
     const handleNewServiceClicked = () => {
         setIsEditing(true);
@@ -75,32 +75,24 @@ const Dashboard: NextPage = () => {
 
     const handleSaveClicked = async (service: Service) => {
         setIsEditing(false);
-        setIsLoading(true);
 
         const index = services.findIndex((s) => s.name === service.name);
         if (index !== -1) {
-            setServices((prevServices) => {
-                const updatedServices = [...prevServices];
-                updatedServices[index] = service;
-                return updatedServices;
-            });
+            services[index] = service;
+            await mutate(services, false);
+            setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
         } else {
+            setLoadingOptions((prev) => ({ ...prev, creatingService: true }));
             service.order = services.length;
         }
-        const newService = await (
-            await fetch("/api/services", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(service),
-            })
-        ).json();
 
-        if (index === -1) {
-            setServices((prevServices) => [...prevServices, newService]);
-        }
-        setIsLoading(false);
+        await createService(service);
+        await mutate();
+        setLoadingOptions((prev) => ({
+            ...prev,
+            creatingService: false,
+            updatingService: false,
+        }));
         setEditedService(undefined);
     };
 
@@ -115,24 +107,19 @@ const Dashboard: NextPage = () => {
     };
 
     const handleDeleteClicked = async (service: Service) => {
-        setIsLoading(true);
-        const res = await fetch(`/api/services/${service.name}`, {
-            method: "DELETE",
-        });
+        setLoadingOptions((prev) => ({ ...prev, deletingService: true }));
+        const res = await deleteService(service);
         if (res.status === 200) {
-            setServices((prevServices) => {
-                const updatedServices = prevServices
-                    .map((s) => {
-                        if (s.order > service.order) {
-                            s.order--;
-                        }
-                        console.log(s);
-                        return s;
-                    })
-                    .filter((s) => s.name !== service.name);
-                return updatedServices;
-            });
-            setIsLoading(false);
+            const updatedServices = services
+                .map((s) => {
+                    if (s.order > service.order) {
+                        s.order--;
+                    }
+                    return s;
+                })
+                .filter((s) => s.name !== service.name);
+            await mutate(updatedServices, false);
+            setLoadingOptions((prev) => ({ ...prev, deletingService: false }));
         }
     };
 
@@ -145,7 +132,7 @@ const Dashboard: NextPage = () => {
             result.source.index,
             result.destination.index
         );
-        setServices(reorderedServices);
+        await mutate(reorderedServices, false);
     };
 
     return (
@@ -166,7 +153,7 @@ const Dashboard: NextPage = () => {
                     handleNewServiceClicked={handleNewServiceClicked}
                 />
                 <DashboardTable
-                    services={services}
+                    loadingOptions={loadingOptions}
                     handleSaveClicked={handleSaveClicked}
                     handleCancelClicked={handleCancelClicked}
                     isEditing={isEditing}
@@ -176,7 +163,8 @@ const Dashboard: NextPage = () => {
                     onDragEnd={onDragEnd}
                 />
             </main>
-            {isLoading ? (
+            {loadingOptions.deletingService ||
+            loadingOptions.updatingService ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
             ) : null}
         </div>

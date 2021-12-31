@@ -2,15 +2,15 @@ name: Build & Deploy Prod. Docker Image
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - 'releases/**'
   workflow_dispatch:
 
 jobs:
 
-  build:
-
+  docker:
+    name: Build And Push Docker Image
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: docker login
@@ -20,10 +20,18 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker Image
-      run: docker build . --file Dockerfile --tag haidousm/traefiker:1.0.0
+      run: docker build . --file Dockerfile --tag haidousm/traefiker:latest --tag haidousm/traefiker:${GITHUB_REF##*/}
     - name: Push the Docker Image to DockerHub
-      run: docker push haidousm/traefiker:1.0.0
-    - name: Deploy Docker Image on Server
+      run: |
+        docker push haidousm/traefiker:${GITHUB_REF##*/}
+        docker push haidousm/traefiker:latest
+
+  deploy:
+    name: Deploy Prod. Docker Image
+    runs-on: ubuntu-latest
+    needs: [ docker ]
+    steps:
+    - name: Call Webhook
       uses: joelwmale/webhook-action@master
       env:
         WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL  }}

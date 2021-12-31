@@ -1,21 +1,23 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import * as docker from "../../../lib/docker";
 
-const handler = (req: NextApiRequest, res: NextApiResponse) => {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { method } = req;
     if (method === "GET") {
-        handleGetRequest(req, res);
+        handleGET(req, res);
     } else if (method === "POST") {
-        handlePostRequest(req, res);
+        await handlePOST(req, res);
     }
 };
 
-const handleGetRequest = (req: NextApiRequest, res: NextApiResponse) => {
+const handleGET = (req: NextApiRequest, res: NextApiResponse) => {
     res.status(200).json(docker.getAllServices());
 };
 
-const handlePostRequest = (req: NextApiRequest, res: NextApiResponse) => {
-    const { name, image, hosts, order } = req.body;
+const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
+    const {
+        service: { name, image, hosts, order },
+    } = req.body;
     const _service = docker.createService(name, image, hosts, order);
     docker.saveService(name, _service);
     if (process.env.NODE_ENV === "production") {
@@ -23,9 +25,8 @@ const handlePostRequest = (req: NextApiRequest, res: NextApiResponse) => {
             res.status(200).json(req.body);
         });
     } else {
-        setTimeout(() => {
-            res.status(200).json(req.body);
-        }, 5000);
+        await new Promise<void>((done) => setTimeout(() => done(), 5000));
+        res.status(200).json(req.body);
     }
 };
 export default handler;

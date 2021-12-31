@@ -106,7 +106,7 @@ function DashboardTableRow(props: {
                         </button>
                     </td>
                     <td className="hidden lg:table-cell text-right p-1">
-                        <div className="flex justify-end">
+                        <div className="flex justify-end m-2">
                             <MenuIcon className="w-5 h-5" />
                         </div>
                     </td>

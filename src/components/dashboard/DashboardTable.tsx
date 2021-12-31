@@ -2,9 +2,12 @@ import { Service } from "../../types/Service";
 import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import useServices from "../../hooks/useServices";
+import LoadingRow from "../loading/LoadingRow";
+import { LoadingOptions } from "../../types/LoadingOptions";
 
 function DashboardTable(props: {
-    services: Service[];
+    loadingOptions: LoadingOptions;
     isEditing: boolean;
     editedService: Service | undefined;
     handleSaveClicked: (service: Service) => void;
@@ -13,6 +16,7 @@ function DashboardTable(props: {
     handleDeleteClicked: (service: Service) => void;
     onDragEnd: (result: any) => void;
 }) {
+    const { services } = useServices();
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
@@ -79,7 +83,7 @@ function DashboardTable(props: {
                                                     key={column.name}
                                                     scope="col"
                                                     className={
-                                                        "px-6 py-3 text-center text-xs font-medium text-gray-500  uppercase tracking-wider" +
+                                                        "px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" +
                                                         (column.name ===
                                                         "Image Name"
                                                             ? " hidden sm:table-cell"
@@ -111,8 +115,13 @@ function DashboardTable(props: {
                                                         }
                                                     />
                                                 ) : null}
-                                                {props.services.map(
-                                                    (service) => {
+                                                {props.loadingOptions
+                                                    .fetchingServices ? (
+                                                    <LoadingRow
+                                                        columns={columns}
+                                                    />
+                                                ) : (
+                                                    services.map((service) => {
                                                         if (
                                                             props.isEditing &&
                                                             service.name ===
@@ -153,8 +162,14 @@ function DashboardTable(props: {
                                                                 }
                                                             />
                                                         );
-                                                    }
+                                                    })
                                                 )}
+                                                {props.loadingOptions
+                                                    .creatingService ? (
+                                                    <LoadingRow
+                                                        columns={columns}
+                                                    />
+                                                ) : null}
                                                 {provided.placeholder}
                                             </tbody>
                                         )}

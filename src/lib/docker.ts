@@ -107,6 +107,11 @@ export function updateServiceOrder(name: string, order: number) {
     writeData(process.env.DOCKER_COMPOSE_FILEPATH!, dockerCompose);
 }
 
+export function getRawData() {
+    const yaml = fs.readFileSync(process.env.DOCKER_COMPOSE_FILEPATH!, "utf8");
+    return yaml;
+}
+
 function getData(filepath: string) {
     const yaml = fs.readFileSync(filepath, "utf8");
     return YAML.parse(yaml) as DockerCompose;

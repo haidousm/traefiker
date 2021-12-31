@@ -11,7 +11,7 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const handleGET = (req: NextApiRequest, res: NextApiResponse) => {
-    res.status(200).json(docker.getAllServices());
+    return res.status(200).json(docker.getRawData());
 };
 
 const handlePOST = (req: NextApiRequest, res: NextApiResponse) => {

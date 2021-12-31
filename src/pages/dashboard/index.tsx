@@ -10,6 +10,7 @@ import useServices from "../../hooks/useServices";
 import axios from "axios";
 import { LoadingOptions } from "../../types/LoadingOptions";
 import LoadingComponent from "../../components/loading/LoadingPopup";
+import YAMLEditor from "../../components/code-editor/YAMLEditor";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {
@@ -195,6 +196,7 @@ const Dashboard: NextPage = () => {
             loadingOptions.updatingService ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
             ) : null}
+            <YAMLEditor />
         </div>
     );
 };

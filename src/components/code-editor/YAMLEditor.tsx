@@ -2,6 +2,7 @@ import { Dialog } from "@headlessui/react";
 import useSWR from "swr";
 import axios from "axios";
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
@@ -12,6 +13,15 @@ function YAMLEditor(props: {
     handleYAMLEditorClose: () => void;
 }) {
     const { data: editorBody, mutate } = useSWR("/api/compose", fetcher);
+
+    useEffect(() => {
+        async function updateBody() {
+            await mutate();
+        }
+        if (props.YAMLEditorOpen) {
+            updateBody();
+        }
+    }, [mutate, props.YAMLEditorOpen]);
 
     const handleYAMLEditorClose = () => {
         props.handleYAMLEditorClose();

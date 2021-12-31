@@ -168,8 +168,9 @@ const Dashboard: NextPage = () => {
         setYAMLEditorOpen(true);
     };
 
-    const handleYAMLEditorClose = () => {
+    const handleYAMLEditorClose = async () => {
         setYAMLEditorOpen(false);
+        await mutate();
     };
 
     return (

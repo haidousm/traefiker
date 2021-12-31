@@ -2,14 +2,23 @@ import { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { Dialog } from "@headlessui/react";
 import useSWR from "swr";
+import axios from "axios";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.text());
 
-function YAMLEditor() {
+function YAMLEditor(props: {
+    YAMLEditorOpen: boolean;
+    handleYAMLEditorClose: () => void;
+}) {
     const { data: editorBody, mutate } = useSWR("/api/compose", fetcher);
+
+    const handleYAMLEditorClose = () => {
+        props.handleYAMLEditorClose();
+    };
+
     return (
         <Dialog
-            open={true}
+            open={props.YAMLEditorOpen}
             onClose={() => {}}
             className="fixed z-10 inset-0 overflow-y-auto"
         >
@@ -41,12 +50,16 @@ function YAMLEditor() {
                         onChange={(e) => {
                             mutate(e || "", false);
                         }}
+                        loading={false}
                     />
                     <div className="flex w-full justify-end mt-4">
                         <button
                             className="bg-indigo-700 hover:bg-indigo-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                             onClick={() => {
-                                console.log(editorBody);
+                                axios.post("/api/compose", {
+                                    YAML: editorBody,
+                                });
+                                handleYAMLEditorClose();
                             }}
                         >
                             Save

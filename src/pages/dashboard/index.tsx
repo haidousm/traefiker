@@ -58,6 +58,8 @@ const Dashboard: NextPage = () => {
         updatingService: false,
     });
 
+    const [YAMLEditorOpen, setYAMLEditorOpen] = useState(true);
+
     const loadingMessages = [
         "Updating Docker Compose File..",
         "Launching Docker Compose..",
@@ -162,6 +164,10 @@ const Dashboard: NextPage = () => {
         await mutate(reorderedServices, false);
     };
 
+    const handleYAMLEditorClose = () => {
+        setYAMLEditorOpen(false);
+    };
+
     return (
         <div>
             <Head>
@@ -196,7 +202,10 @@ const Dashboard: NextPage = () => {
             loadingOptions.updatingService ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
             ) : null}
-            <YAMLEditor />
+            <YAMLEditor
+                YAMLEditorOpen={YAMLEditorOpen}
+                handleYAMLEditorClose={handleYAMLEditorClose}
+            />
         </div>
     );
 };

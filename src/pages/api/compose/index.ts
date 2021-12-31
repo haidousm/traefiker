@@ -15,6 +15,7 @@ const handleGET = (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const handlePOST = (req: NextApiRequest, res: NextApiResponse) => {
-    return res.status(200).json(req.body);
+    docker.writeRawData(req.body.YAML);
+    return res.status(200).json({});
 };
 export default handler;

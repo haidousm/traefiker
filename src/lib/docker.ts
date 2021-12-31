@@ -112,6 +112,10 @@ export function getRawData() {
     return yaml;
 }
 
+export function writeRawData(data: string) {
+    fs.writeFileSync(process.env.DOCKER_COMPOSE_FILEPATH!, data);
+}
+
 function getData(filepath: string) {
     const yaml = fs.readFileSync(filepath, "utf8");
     return YAML.parse(yaml) as DockerCompose;

@@ -1,9 +1,12 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { Dialog } from "@headlessui/react";
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url).then((r) => r.text());
 
 function YAMLEditor() {
-    const [editorBody, setEditorBody] = useState("");
+    const { data: editorBody, mutate } = useSWR("/api/compose", fetcher);
     return (
         <Dialog
             open={true}
@@ -22,7 +25,7 @@ function YAMLEditor() {
                     <Editor
                         height="400px"
                         defaultLanguage="yaml"
-                        defaultValue="// some comment"
+                        value={editorBody}
                         theme="vs-dark"
                         options={{
                             minimap: { enabled: false },
@@ -36,7 +39,7 @@ function YAMLEditor() {
                             fontSize: 14,
                         }}
                         onChange={(e) => {
-                            setEditorBody(e || "");
+                            mutate(e || "", false);
                         }}
                     />
                     <div className="flex w-full justify-end mt-4">

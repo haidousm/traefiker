@@ -26,16 +26,20 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     return reordered;
 };
 
-const createService = async (service: Service) => {
-    return await axios.post("/api/services", { service });
+const createService = async (service: Service, autoReload: boolean) => {
+    return await axios.post(`/api/services?autoreload=${autoReload}`, {
+        service,
+    });
 };
 
 const updateServiceOrdering = async (services: Service[]) => {
     return await axios.put("/api/services/ordering", { services });
 };
 
-const deleteService = async (service: Service) => {
-    return await axios.delete(`/api/services/${service.name}`);
+const deleteService = async (service: Service, autoReload: boolean) => {
+    return await axios.delete(
+        `/api/services/${service.name}?autoreload${autoReload}`
+    );
 };
 
 const Dashboard: NextPage = () => {
@@ -88,7 +92,7 @@ const Dashboard: NextPage = () => {
             service.order = services.length;
         }
 
-        await createService(service);
+        await createService(service, autoReload);
         await mutate();
         setLoadingOptions((prev) => ({
             ...prev,
@@ -110,7 +114,7 @@ const Dashboard: NextPage = () => {
 
     const handleDeleteClicked = async (service: Service) => {
         setLoadingOptions((prev) => ({ ...prev, deletingService: true }));
-        const res = await deleteService(service);
+        const res = await deleteService(service, autoReload);
         if (res.status === 200) {
             const updatedServices = services
                 .map((s) => {
@@ -133,7 +137,6 @@ const Dashboard: NextPage = () => {
 
     const handleAutoReloadClicked = (reload: boolean) => {
         setAutoReload(reload);
-        console.log(reload);
     };
 
     const onDragEnd = async (result: any) => {

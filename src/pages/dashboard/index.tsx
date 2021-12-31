@@ -141,7 +141,7 @@ const Dashboard: NextPage = () => {
 
     const handleRunComposeClicked = async () => {
         setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
-        await axios.get("/api/services/run");
+        await axios.get("/api/compose/run");
         setLoadingOptions((prev) => ({ ...prev, updatingService: false }));
     };
 

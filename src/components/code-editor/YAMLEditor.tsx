@@ -50,7 +50,7 @@ function YAMLEditor(props: {
                         onChange={(e) => {
                             mutate(e || "", false);
                         }}
-                        loading={false}
+                        loading={<div></div>}
                     />
                     <div className="flex w-full justify-end mt-4">
                         <button

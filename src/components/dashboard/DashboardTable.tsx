@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import useServices from "../../hooks/useServices";
 import LoadingRow from "../loading/LoadingRow";
 import { LoadingOptions } from "../../types/LoadingOptions";
+import { useEffect, useState } from "react";
 
 function DashboardTable(props: {
     loadingOptions: LoadingOptions;
@@ -17,6 +18,17 @@ function DashboardTable(props: {
     onDragEnd: (result: any) => void;
 }) {
     const { services } = useServices();
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        setIsLoading(
+            props.loadingOptions.fetchingServices ||
+                props.loadingOptions.creatingService ||
+                props.loadingOptions.deletingService ||
+                props.loadingOptions.updatingService
+        );
+    }, [props.loadingOptions]);
+
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
@@ -150,6 +162,9 @@ function DashboardTable(props: {
                                                             <DashboardTableRow
                                                                 key={
                                                                     service.name
+                                                                }
+                                                                isLoading={
+                                                                    isLoading
                                                                 }
                                                                 service={
                                                                     service

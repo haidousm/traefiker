@@ -75,7 +75,7 @@ export function deleteService(name: string) {
 
 export function launchDockerCompose(callback: () => void) {
     const command = `docker-compose -f ${process.env
-        .DOCKER_COMPOSE_FILEPATH!} up -d`;
+        .DOCKER_COMPOSE_FILEPATH!} up -d --remove-orphans`;
     exec(command, { encoding: "utf8" }, (error, stdout, stderr) => {
         if (error) {
             console.error(`exec error: ${error}`);

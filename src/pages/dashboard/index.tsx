@@ -7,6 +7,7 @@ import LoadingComponent from "../../components/loading/LoadingPopup";
 import Navbar from "../../components/navbar/Navbar";
 import { Service } from "../../types/Service";
 import { resetServerContext } from "react-beautiful-dnd";
+import useServices from "../../hooks/useServices";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {
@@ -24,14 +25,7 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
 };
 
 const Dashboard: NextPage = () => {
-    const [services, setServices] = useState<Service[]>([
-        {
-            name: "",
-            image: "",
-            hosts: [],
-            order: 0,
-        },
-    ]);
+    const { services, mutate } = useServices();
 
     const [isEditing, setIsEditing] = useState(false);
     const [editedService, setEditedService] = useState<Service>();
@@ -46,17 +40,6 @@ const Dashboard: NextPage = () => {
     ];
 
     useEffect(() => {
-        fetch("/api/services")
-            .then((res) => res.json())
-            .then((data) => {
-                const sortedServices = data.sort(
-                    (a: Service, b: Service) => a.order - b.order
-                );
-                setServices(sortedServices);
-            });
-    }, []);
-
-    useEffect(() => {
         async function updateOrders() {
             await fetch("/api/services/order", {
                 method: "POST",
@@ -65,6 +48,7 @@ const Dashboard: NextPage = () => {
                 },
                 body: JSON.stringify({ services }),
             });
+            console.log("hi");
         }
         updateOrders();
     }, [services]);
@@ -79,15 +63,13 @@ const Dashboard: NextPage = () => {
 
         const index = services.findIndex((s) => s.name === service.name);
         if (index !== -1) {
-            setServices((prevServices) => {
-                const updatedServices = [...prevServices];
-                updatedServices[index] = service;
-                return updatedServices;
-            });
+            const updatedServices = [...services];
+            updatedServices[index] = service;
+            await mutate(updatedServices, false);
         } else {
             service.order = services.length;
         }
-        const newService = await (
+        await (
             await fetch("/api/services", {
                 method: "POST",
                 headers: {
@@ -97,9 +79,7 @@ const Dashboard: NextPage = () => {
             })
         ).json();
 
-        if (index === -1) {
-            setServices((prevServices) => [...prevServices, newService]);
-        }
+        await mutate();
         setIsLoading(false);
         setEditedService(undefined);
     };
@@ -120,18 +100,15 @@ const Dashboard: NextPage = () => {
             method: "DELETE",
         });
         if (res.status === 200) {
-            setServices((prevServices) => {
-                const updatedServices = prevServices
-                    .map((s) => {
-                        if (s.order > service.order) {
-                            s.order--;
-                        }
-                        console.log(s);
-                        return s;
-                    })
-                    .filter((s) => s.name !== service.name);
-                return updatedServices;
-            });
+            const updatedServices = services
+                .map((s) => {
+                    if (s.order > service.order) {
+                        s.order--;
+                    }
+                    return s;
+                })
+                .filter((s) => s.name !== service.name);
+            await mutate(updatedServices, false);
             setIsLoading(false);
         }
     };
@@ -145,7 +122,7 @@ const Dashboard: NextPage = () => {
             result.source.index,
             result.destination.index
         );
-        setServices(reorderedServices);
+        await mutate(reorderedServices, false);
     };
 
     return (

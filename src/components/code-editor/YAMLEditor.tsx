@@ -54,6 +54,14 @@ function YAMLEditor(props: {
                     />
                     <div className="flex w-full justify-end mt-4">
                         <button
+                            className="bg-red-700 hover:bg-red-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mx-2"
+                            onClick={() => {
+                                handleYAMLEditorClose();
+                            }}
+                        >
+                            Cancel
+                        </button>
+                        <button
                             className="bg-indigo-700 hover:bg-indigo-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                             onClick={() => {
                                 axios.post("/api/compose", {

@@ -3,7 +3,7 @@ name: Build & Deploy Prod. Docker Image
 on:
   push:
     branches:
-      - 'release-*'
+      - 'releases/**'
   workflow_dispatch:
 
 jobs:
@@ -20,9 +20,11 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker Image
-      run: docker build . --file Dockerfile --tag haidousm/traefiker:1.0.0
+      run: docker build . --file Dockerfile --tag haidousm/traefiker:latest --tag haidousm/traefiker:${GITHUB_REF##*/}
     - name: Push the Docker Image to DockerHub
-      run: docker push haidousm/traefiker:1.0.0
+      run: |
+        docker push haidousm/traefiker:${GITHUB_REF##*/}
+        docker push haidousm/traefiker:latest
 
   deploy:
     name: Deploy Prod. Docker Image

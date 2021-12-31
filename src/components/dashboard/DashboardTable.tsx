@@ -3,6 +3,7 @@ import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import useServices from "../../hooks/useServices";
+import LoadingRow from "../loading/LoadingRow";
 
 function DashboardTable(props: {
     isEditing: boolean;
@@ -13,7 +14,7 @@ function DashboardTable(props: {
     handleDeleteClicked: (service: Service) => void;
     onDragEnd: (result: any) => void;
 }) {
-    const { services } = useServices();
+    const { services, isLoading } = useServices();
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
@@ -80,7 +81,7 @@ function DashboardTable(props: {
                                                     key={column.name}
                                                     scope="col"
                                                     className={
-                                                        "px-6 py-3 text-center text-xs font-medium text-gray-500  uppercase tracking-wider" +
+                                                        "px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" +
                                                         (column.name ===
                                                         "Image Name"
                                                             ? " hidden sm:table-cell"
@@ -112,43 +113,56 @@ function DashboardTable(props: {
                                                         }
                                                     />
                                                 ) : null}
-                                                {services.map((service) => {
-                                                    if (
-                                                        props.isEditing &&
-                                                        service.name ===
-                                                            props.editedService
-                                                                ?.name
-                                                    ) {
+                                                {isLoading ? (
+                                                    <tr>
+                                                        <td colSpan={6}>hi</td>
+                                                    </tr>
+                                                ) : (
+                                                    services.map((service) => {
+                                                        if (
+                                                            props.isEditing &&
+                                                            service.name ===
+                                                                props
+                                                                    .editedService
+                                                                    ?.name
+                                                        ) {
+                                                            return (
+                                                                <DashboardTableRowEditable
+                                                                    key={
+                                                                        service.name
+                                                                    }
+                                                                    service={
+                                                                        service
+                                                                    }
+                                                                    handleCancelClicked={
+                                                                        handleCancelClicked
+                                                                    }
+                                                                    handleSaveClicked={
+                                                                        handleSaveClicked
+                                                                    }
+                                                                />
+                                                            );
+                                                        }
                                                         return (
-                                                            <DashboardTableRowEditable
+                                                            <DashboardTableRow
                                                                 key={
                                                                     service.name
                                                                 }
                                                                 service={
                                                                     service
                                                                 }
-                                                                handleCancelClicked={
-                                                                    handleCancelClicked
+                                                                handleEditClicked={
+                                                                    handleEditClicked
                                                                 }
-                                                                handleSaveClicked={
-                                                                    handleSaveClicked
+                                                                handleDeleteClicked={
+                                                                    handleDeleteClicked
                                                                 }
                                                             />
                                                         );
-                                                    }
-                                                    return (
-                                                        <DashboardTableRow
-                                                            key={service.name}
-                                                            service={service}
-                                                            handleEditClicked={
-                                                                handleEditClicked
-                                                            }
-                                                            handleDeleteClicked={
-                                                                handleDeleteClicked
-                                                            }
-                                                        />
-                                                    );
-                                                })}
+                                                    })
+                                                )}
+
+                                                <LoadingRow columns={columns} />
                                                 {provided.placeholder}
                                             </tbody>
                                         )}

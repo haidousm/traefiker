@@ -19,6 +19,7 @@ const SERVICE_ORDER_PREFIX = "traefiker.{service-name}.order";
 
 const HOSTS_DELIMITER = " || ";
 const PATH_PREFIX_DELIMITER = " && ";
+const MIDDLEWARE_DELIMITER = ",";
 
 export function getAllServices() {
     const dockerCompose = getData(process.env.DOCKER_COMPOSE_FILEPATH!);
@@ -222,51 +223,46 @@ function getRedirectsFromService(name: string, _service: _Service) {
         return -1;
     }
 
-    const fromRedirectLabelRegex = new RegExp(
-        `${REDIRECT_MIDDLEWARE_PREFIXES[0].replace(
-            "{redirect-id}",
-            "([0-9]+)"
-        )}=(.*)`
+    const possibleMiddlewareLabel = labels.filter((label) =>
+        label.startsWith(
+            ROUTER_MIDDLEWARE_PREFIX.replace("{service-name}", name)
+        )
     );
-
-    const toRedirectLabelRegex = new RegExp(
-        `${REDIRECT_MIDDLEWARE_PREFIXES[1].replace(
-            "{redirect-id}",
-            "([0-9]+)"
-        )}=(.*)`
-    );
-
-    const rawRedirects = labels
-        .map((label) => {
-            const fromMatch = label.match(fromRedirectLabelRegex);
-            if (fromMatch) {
-                const id = parseInt(fromMatch[1]);
-                const from = fromMatch[2];
-                return { id, from };
-            }
-            const toMatch = label.match(toRedirectLabelRegex);
-            if (toMatch) {
-                const id = parseInt(toMatch[1]);
-                const to = toMatch[2];
-                return { id, to };
-            }
-        })
-        .filter((redirect) => redirect !== undefined)
-        .sort((a, b) => a!.id - b!.id);
-    let redirects: UrlRedirect[] = [];
-    for (let i = 0; i < rawRedirects.length; i += 2) {
-        if (rawRedirects[i] && rawRedirects[i + 1]) {
-            redirects.push({
-                id: rawRedirects[i]!.id,
-                from: rawRedirects[i]!.from
-                    ? rawRedirects[i]!.from!
-                    : rawRedirects[i + 1]!.to!,
-                to: rawRedirects[i + 1]!.to
-                    ? rawRedirects[i + 1]!.to!
-                    : rawRedirects[i]!.from!,
-            });
-        }
+    if (!possibleMiddlewareLabel.length) {
+        return -1;
     }
+    const middlewareLabel = possibleMiddlewareLabel[0];
+    const redirectMiddlewares = middlewareLabel
+        .split("=")[1]
+        .split(MIDDLEWARE_DELIMITER)
+        .map((redirect) => redirect.trim())
+        .filter((redirect) => redirect.includes("redirectregex"));
+
+    let redirects: UrlRedirect[] = [];
+    redirectMiddlewares.forEach((redirectMiddleware) => {
+        const id = parseInt(redirectMiddleware.split("-")[0]);
+        const from = labels
+            .find((label) =>
+                label.startsWith(
+                    REDIRECT_MIDDLEWARE_PREFIXES[0].replace(
+                        "{redirect-id}",
+                        `${id}`
+                    )
+                )
+            )
+            ?.split("=")[1]!;
+        const to = labels
+            .find((label) =>
+                label.startsWith(
+                    REDIRECT_MIDDLEWARE_PREFIXES[1].replace(
+                        "{redirect-id}",
+                        `${id}`
+                    )
+                )
+            )
+            ?.split("=")[1]!;
+        redirects.push({ id, from, to });
+    });
 
     return redirects;
 }

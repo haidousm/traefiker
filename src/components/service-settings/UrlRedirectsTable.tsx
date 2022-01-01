@@ -1,9 +1,13 @@
 import { TrashIcon } from "@heroicons/react/solid";
+import { useEffect } from "react";
 import { Service } from "../../types/Service";
 import { UrlRedirect } from "../../types/UrlRedirect";
 import UrlRedirectsTableRow from "./UrlRedirectsTableRow";
 
-function UrlRedirectsTable(props: { service: Service }) {
+function UrlRedirectsTable(props: {
+    service: Service;
+    handleDeleteRedirect: (id: number) => void;
+}) {
     const columns = [
         { name: "From (Regex)", screenReaderOnly: false },
         { name: "To", screenReaderOnly: false },
@@ -44,7 +48,11 @@ function UrlRedirectsTable(props: { service: Service }) {
                         (urlRedirect: UrlRedirect) => (
                             <UrlRedirectsTableRow
                                 key={urlRedirect.id}
+                                service={props.service}
                                 urlRedirect={urlRedirect}
+                                handleDeleteRedirect={
+                                    props.handleDeleteRedirect
+                                }
                             />
                         )
                     )

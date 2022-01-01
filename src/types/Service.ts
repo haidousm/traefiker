@@ -5,7 +5,7 @@ export interface Service {
     image: string;
     hosts: string[];
     order: number;
-    urlRedirects?: UrlRedirect[];
+    urlRedirects: UrlRedirect[];
 }
 export interface _Service {
     image: string;

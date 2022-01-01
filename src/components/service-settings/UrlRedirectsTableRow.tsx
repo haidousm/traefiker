@@ -1,7 +1,12 @@
 import { TrashIcon } from "@heroicons/react/solid";
+import { Service } from "../../types/Service";
 import { UrlRedirect } from "../../types/UrlRedirect";
 
-function UrlRedirectsTableRow(props: { urlRedirect: UrlRedirect }) {
+function UrlRedirectsTableRow(props: {
+    service: Service;
+    urlRedirect: UrlRedirect;
+    handleDeleteRedirect: (id: number) => void;
+}) {
     return (
         <tr>
             <td className="px-4 py-1 text-center text-md font-medium text-white tracking-wider border border-white-600">
@@ -13,7 +18,9 @@ function UrlRedirectsTableRow(props: { urlRedirect: UrlRedirect }) {
             <td className="px-4 py-1 text-center text-md font-medium text-white tracking-wider ">
                 <button
                     className="bg-red-700 hover:bg-red-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    onClick={() => {}}
+                    onClick={() => {
+                        props.handleDeleteRedirect(props.urlRedirect.id);
+                    }}
                 >
                     <TrashIcon className="w-5 h-5" />
                 </button>

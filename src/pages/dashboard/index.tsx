@@ -213,9 +213,12 @@ const Dashboard: NextPage = () => {
                 YAMLEditorOpen={YAMLEditorOpen}
                 handleYAMLEditorClose={handleYAMLEditorClose}
             />
-            {services.length !== 0 ? (
-                <ServiceSettingsModal service={services[0]} />
-            ) : null}
+            {/* {services.length !== 0 ? (
+                <ServiceSettingsModal
+                    service={services[0]}
+                    handleSaveClicked={handleSaveClicked}
+                />
+            ) : null} */}
         </div>
     );
 };

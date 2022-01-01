@@ -9,8 +9,8 @@ const HOST_LABEL_PREFIX = "traefik.http.routers.{service-name}.rule";
 const PATH_MIDDLEWARE_PREFIX =
     "traefik.http.middlewares.{path-name}-prefix.stripprefix.prefixes";
 const REDIRECT_MIDDLEWARE_PREFIXES = [
-    "traefik.http.middlewares.{redirect-id}-redirectregex.redirectregex.regex",
-    "traefik.http.middlewares.{redirect-id}-redirectregex.redirectregex.replacement",
+    "traefik.http.middlewares.{redirect-id}-redirect.redirectregex.regex",
+    "traefik.http.middlewares.{redirect-id}-redirect.redirectregex.replacement",
 ];
 const ROUTER_MIDDLEWARE_PREFIX =
     "traefik.http.routers.{service-name}.middlewares";
@@ -30,12 +30,13 @@ export function getAllServices() {
         ) as string;
         const hosts = getFormattedHostsFromService(name, _service);
         const order = getOrderFromService(name, _service);
-        console.log(getRedirectsFromService(name, _service));
+        const urlRedirects = getRedirectsFromService(name, _service);
         return {
             name,
             image: _service.image,
             hosts,
             order: order >= 0 ? order : index,
+            urlRedirects,
         } as Service;
     }) as Service[];
 }
@@ -48,7 +49,8 @@ export function createService(
     name: string,
     image: string,
     hosts: string[],
-    order: number
+    order: number,
+    urlRedirects: UrlRedirect[]
 ) {
     const _service: _Service = {
         image,
@@ -62,10 +64,32 @@ export function createService(
 
     const hostsLabel = transformHostsToHostLabel(name, hosts);
     _service.labels.push(hostsLabel);
+
+    let middleware: string[] = [];
+
     if (hostsLabel.includes("PathPrefix")) {
-        const pathMiddlewareLabels = getPathMiddlewareLabels(name, hosts);
+        const [pathMiddlewareLabels, middlewareNames] =
+            getPathMiddlewareLabels(hosts);
         _service.labels = [..._service.labels, ...pathMiddlewareLabels];
+        middleware = [...middleware, ...middlewareNames];
     }
+
+    if (urlRedirects.length) {
+        const [redirectMiddlewareLabels, middlewareNames] =
+            getRedirectMiddlewareLabels(urlRedirects);
+        _service.labels = [..._service.labels, ...redirectMiddlewareLabels];
+        middleware = [...middleware, ...middlewareNames];
+    }
+
+    if (middleware.length) {
+        _service.labels.push(
+            `${ROUTER_MIDDLEWARE_PREFIX.replace(
+                "{service-name}",
+                name
+            )}=${middleware.join(MIDDLEWARE_DELIMITER)}`
+        );
+    }
+
     return _service;
 }
 
@@ -178,7 +202,7 @@ function transformHostsToHostLabel(name: string, hosts: string[]) {
         .join(HOSTS_DELIMITER)}`;
 }
 
-function getPathMiddlewareLabels(name: string, hosts: string[]) {
+function getPathMiddlewareLabels(hosts: string[]) {
     const paths = hosts
         .map((host) => {
             const path = host.split("/").slice(1).join("/");
@@ -192,12 +216,8 @@ function getPathMiddlewareLabels(name: string, hosts: string[]) {
             path
         )}=/${path}`;
     });
-    const routerMiddlewareLabel = `${ROUTER_MIDDLEWARE_PREFIX.replace(
-        "{service-name}",
-        name
-    )}=${paths.map((path) => `${path}-prefix`).join(PATH_PREFIX_DELIMITER)}`;
 
-    return [...pathMiddlewareLabels, routerMiddlewareLabel];
+    return [pathMiddlewareLabels, paths.map((path) => `${path}-prefix`)];
 }
 
 function getOrderFromService(name: string, _service: _Service) {
@@ -236,7 +256,7 @@ function getRedirectsFromService(name: string, _service: _Service) {
         .split("=")[1]
         .split(MIDDLEWARE_DELIMITER)
         .map((redirect) => redirect.trim())
-        .filter((redirect) => redirect.includes("redirectregex"));
+        .filter((redirect) => redirect.includes("redirect"));
 
     let redirects: UrlRedirect[] = [];
     redirectMiddlewares.forEach((redirectMiddleware) => {
@@ -266,3 +286,25 @@ function getRedirectsFromService(name: string, _service: _Service) {
 
     return redirects;
 }
+
+const getRedirectMiddlewareLabels = (redirects: UrlRedirect[]) => {
+    const middlewareLabels: string[] = [];
+    redirects.forEach((redirect) => {
+        middlewareLabels.push(
+            `${REDIRECT_MIDDLEWARE_PREFIXES[0].replace(
+                "{redirect-id}",
+                `${redirect.id}`
+            )}=${redirect.from}`
+        );
+        middlewareLabels.push(
+            `${REDIRECT_MIDDLEWARE_PREFIXES[1].replace(
+                "{redirect-id}",
+                `${redirect.id}`
+            )}=${redirect.to}`
+        );
+    });
+    return [
+        middlewareLabels,
+        redirects.map((redirect) => `${redirect.id}-redirect`),
+    ];
+};

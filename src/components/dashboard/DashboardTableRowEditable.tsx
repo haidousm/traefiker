@@ -158,6 +158,7 @@ function DashboardTableRowEditable(props: {
                                     ? [...hosts, possibleHost]
                                     : hosts,
                             order: props.service ? props.service.order : 0,
+                            urlRedirects: props.service?.urlRedirects ?? [],
                         });
                     }}
                 >

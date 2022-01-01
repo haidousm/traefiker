@@ -4,6 +4,7 @@ import { Service } from "../../types/Service";
 import UrlRedirectsTable from "./UrlRedirectsTable";
 
 function ServiceSettingsModal(props: {
+    isModifiyingSettings: boolean;
     service: Service;
     handleSaveClicked: (service: Service) => void;
 }) {
@@ -66,7 +67,7 @@ function ServiceSettingsModal(props: {
     };
     return (
         <Dialog
-            open={true}
+            open={props.isModifiyingSettings}
             onClose={() => {}}
             className="fixed z-10 inset-0 overflow-y-auto"
         >

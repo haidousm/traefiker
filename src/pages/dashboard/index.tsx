@@ -48,8 +48,9 @@ const Dashboard: NextPage = () => {
     const { services, isLoading, mutate } = useServices();
 
     const [isEditing, setIsEditing] = useState(false);
-    const [editedService, setEditedService] = useState<Service>();
+    const [isModifiyingSettings, setIsModifiyingSettings] = useState(false);
 
+    const [editedService, setEditedService] = useState<Service>();
     const [autoReload, setAutoReload] = useState(false);
 
     const [loadingOptions, setLoadingOptions] = useState<LoadingOptions>({
@@ -213,12 +214,12 @@ const Dashboard: NextPage = () => {
                 YAMLEditorOpen={YAMLEditorOpen}
                 handleYAMLEditorClose={handleYAMLEditorClose}
             />
-            {services.length !== 0 ? (
-                <ServiceSettingsModal
-                    service={services[0]}
-                    handleSaveClicked={handleSaveClicked}
-                />
-            ) : null}
+
+            <ServiceSettingsModal
+                isModifiyingSettings={isModifiyingSettings}
+                service={editedService!}
+                handleSaveClicked={handleSaveClicked}
+            />
         </div>
     );
 };

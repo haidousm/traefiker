@@ -12,8 +12,12 @@ import { LoadingOptions } from "../../types/LoadingOptions";
 import LoadingComponent from "../../components/loading/LoadingModal";
 import YAMLEditorModal from "../../components/code-editor/YAMLEditorModal";
 import ServiceSettingsModal from "../../components/service-settings/ServiceSettingsModal";
-import { useRecoilState } from "recoil";
-import { servicesState } from "../../atoms/atoms";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+    autoReloadState,
+    isEditingFileState,
+    servicesState,
+} from "../../atoms/atoms";
 
 export const getServices = async () => {
     return await (
@@ -44,7 +48,6 @@ const Dashboard: NextPage = () => {
     const [isModifiyingSettings, setIsModifiyingSettings] = useState(false);
 
     const [editedService, setEditedService] = useState<Service>();
-    const [autoReload, setAutoReload] = useState(false);
 
     const [loadingOptions, setLoadingOptions] = useState<LoadingOptions>({
         fetchingServices: false,
@@ -53,7 +56,8 @@ const Dashboard: NextPage = () => {
         updatingService: false,
     });
 
-    const [YAMLEditorOpen, setYAMLEditorOpen] = useState(false);
+    const autoReload = useRecoilValue(autoReloadState);
+    const isEditingFile = useRecoilValue(isEditingFileState);
 
     const loadingMessages = [
         "Updating Docker Compose File..",
@@ -65,10 +69,6 @@ const Dashboard: NextPage = () => {
     useEffect(() => {
         updateServiceOrdering(services);
     }, [services]);
-
-    const handleNewServiceClicked = () => {
-        setIsEditing(true);
-    };
 
     const handleSaveClicked = async (service: Service) => {
         setIsEditing(false);
@@ -129,26 +129,6 @@ const Dashboard: NextPage = () => {
         }
     };
 
-    const handleRunComposeClicked = async () => {
-        setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
-        await axios.get("/api/compose/run");
-        setLoadingOptions((prev) => ({ ...prev, updatingService: false }));
-    };
-
-    const handleAutoReloadClicked = (reload: boolean) => {
-        setAutoReload(reload);
-        localStorage.setItem("autoReload", reload.toString());
-    };
-
-    const handleYAMLEditorOpen = () => {
-        setYAMLEditorOpen(true);
-    };
-
-    const handleYAMLEditorClose = async () => {
-        setYAMLEditorOpen(false);
-        await getServices();
-    };
-
     return (
         <div>
             <Head>
@@ -163,12 +143,7 @@ const Dashboard: NextPage = () => {
                 <Navbar />
             </nav>
             <main>
-                <DashboardHeader
-                    handleAutoReloadClicked={handleAutoReloadClicked}
-                    handleNewServiceClicked={handleNewServiceClicked}
-                    handleRunComposeClicked={handleRunComposeClicked}
-                    handleYAMLEditorOpen={handleYAMLEditorOpen}
-                />
+                <DashboardHeader />
                 <DashboardTable
                     loadingOptions={loadingOptions}
                     handleSaveClicked={handleSaveClicked}
@@ -183,10 +158,8 @@ const Dashboard: NextPage = () => {
             loadingOptions.updatingService ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
             ) : null}
-            <YAMLEditorModal
-                YAMLEditorOpen={YAMLEditorOpen}
-                handleYAMLEditorClose={handleYAMLEditorClose}
-            />
+
+            {isEditingFile ? <YAMLEditorModal /> : null}
 
             <ServiceSettingsModal
                 isModifiyingSettings={isModifiyingSettings}

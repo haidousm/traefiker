@@ -38,7 +38,6 @@ function DashboardTable(props: {
             const services = await getServices();
             setServices(services);
         })();
-        console.log("hi");
     }, [setServices]);
 
     useEffect(() => {

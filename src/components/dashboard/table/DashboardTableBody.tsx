@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
-import { servicesState } from "../../../atoms/atoms";
+import { isCreatingServiceState, servicesState } from "../../../atoms/atoms";
 import { Service } from "../../../types/Service";
 import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
@@ -29,7 +29,9 @@ function DashboardTableBody() {
     >(undefined);
 
     const [isEditingService, setIsEditingService] = useState(false);
-    const [isCreatingService, setIsCreatingService] = useState(false);
+    const [isCreatingService, setIsCreatingService] = useRecoilState(
+        isCreatingServiceState
+    );
 
     useEffect(() => {
         setIsEditingService(serviceUnderEditing !== undefined);

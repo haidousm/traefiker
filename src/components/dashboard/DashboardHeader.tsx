@@ -1,24 +1,42 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Switch } from "@headlessui/react";
 import { PencilIcon } from "@heroicons/react/solid";
+import axios from "axios";
 import { useEffect, useState } from "react";
+import { useRecoilState } from "recoil";
+import {
+    autoReloadState,
+    isCreatingServiceState,
+    isEditingFileState,
+} from "../../atoms/atoms";
 
-function DashboardHeader(props: {
-    handleAutoReloadClicked: (enabled: boolean) => void;
-    handleNewServiceClicked: () => void;
-    handleRunComposeClicked: () => void;
-    handleYAMLEditorOpen: () => void;
-}) {
-    const [enabled, setEnabled] = useState(false);
+function DashboardHeader() {
+    const [_, setIsCreatingService] = useRecoilState(isCreatingServiceState);
+    const [autoReload, setAutoReload] = useRecoilState(autoReloadState);
+    const [_isEditingFile, setIsEditingFile] =
+        useRecoilState(isEditingFileState);
 
     useEffect(() => {
         const isEnabled = localStorage.getItem("autoReload") === "true";
-        setEnabled(isEnabled);
+        setAutoReload(isEnabled);
     }, []);
 
-    useEffect(() => {
-        props.handleAutoReloadClicked(enabled);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [enabled]);
+    const newServiceClicked = () => {
+        setIsCreatingService(true);
+    };
+
+    const autoReloadToggled = (enabled: boolean) => {
+        localStorage.setItem("autoReload", enabled.toString());
+        setAutoReload(enabled);
+    };
+
+    const editFileClicked = () => {
+        setIsEditingFile(true);
+    };
+
+    const runComposeClicked = async () => {
+        await axios.get("/api/compose/run");
+    };
     return (
         <div>
             <header className="bg-white shadow flex justify-between items-center">
@@ -46,9 +64,7 @@ function DashboardHeader(props: {
                             hover:text-white
                             lg:text-base
                             "
-                        onClick={() => {
-                            props.handleNewServiceClicked();
-                        }}
+                        onClick={newServiceClicked}
                     >
                         Add New Service
                     </button>
@@ -63,15 +79,15 @@ function DashboardHeader(props: {
                                 Auto Reload
                             </Switch.Label>
                             <Switch
-                                checked={enabled}
-                                onChange={setEnabled}
+                                checked={autoReload}
+                                onChange={autoReloadToggled}
                                 className={`${
-                                    enabled ? "bg-green-600" : "bg-gray-200"
+                                    autoReload ? "bg-green-600" : "bg-gray-200"
                                 } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
                             >
                                 <span
                                     className={`${
-                                        enabled
+                                        autoReload
                                             ? "translate-x-6"
                                             : "translate-x-1"
                                     } inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
@@ -100,9 +116,7 @@ function DashboardHeader(props: {
                             items-center
                             justify-center
                             "
-                        onClick={() => {
-                            props.handleYAMLEditorOpen();
-                        }}
+                        onClick={editFileClicked}
                     >
                         <PencilIcon className="w-5 h-5 mr-2" />
                         Edit File
@@ -126,9 +140,7 @@ function DashboardHeader(props: {
                             hover:text-red-800
                             lg:text-base
                             "
-                        onClick={() => {
-                            props.handleRunComposeClicked();
-                        }}
+                        onClick={runComposeClicked}
                     >
                         Run Docker Compose
                     </button>

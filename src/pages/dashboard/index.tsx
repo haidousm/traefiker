@@ -10,7 +10,8 @@ import useServices from "../../hooks/useServices";
 import axios from "axios";
 import { LoadingOptions } from "../../types/LoadingOptions";
 import LoadingComponent from "../../components/loading/LoadingModal";
-import YAMLEditor from "../../components/code-editor/YAMLEditorModal";
+import YAMLEditorModal from "../../components/code-editor/YAMLEditorModal";
+import ServiceSettingsModal from "../../components/service-settings/ServiceSettingsModal";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {
@@ -208,11 +209,12 @@ const Dashboard: NextPage = () => {
             loadingOptions.updatingService ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
             ) : null}
-            {YAMLEditorOpen ? (
-                <YAMLEditor
-                    YAMLEditorOpen={YAMLEditorOpen}
-                    handleYAMLEditorClose={handleYAMLEditorClose}
-                />
+            <YAMLEditorModal
+                YAMLEditorOpen={YAMLEditorOpen}
+                handleYAMLEditorClose={handleYAMLEditorClose}
+            />
+            {services.length !== 0 ? (
+                <ServiceSettingsModal service={services[0]} />
             ) : null}
         </div>
     );

@@ -1,18 +1,11 @@
-export interface DockerCompose {
-    version: string;
-    networks: {
-        [name: string]: {
-            external: boolean;
-        };
-    };
-    services: _Service[];
-}
+import { UrlRedirect } from "./UrlRedirect";
 
 export interface Service {
     name: string;
     image: string;
     hosts: string[];
     order: number;
+    urlRedirects?: UrlRedirect[];
 }
 export interface _Service {
     image: string;

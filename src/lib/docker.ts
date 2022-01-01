@@ -1,7 +1,8 @@
 import { exec } from "child_process";
 import fs from "fs";
 import YAML from "yaml";
-import { _Service, Service, DockerCompose } from "../types/Service";
+import { _Service, Service } from "../types/Service";
+import { DockerCompose } from "../types/DockerCompose";
 
 const HOST_LABEL_PREFIX = "traefik.http.routers.{service-name}.rule";
 const PATH_MIDDLEWARE_PREFIX =

@@ -8,7 +8,7 @@ const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
 const fetcher = (url: string) => fetch(url).then((r) => r.text());
 
-function YAMLEditor(props: {
+function YAMLEditorModal(props: {
     YAMLEditorOpen: boolean;
     handleYAMLEditorClose: () => void;
 }) {
@@ -93,4 +93,4 @@ function YAMLEditor(props: {
     );
 }
 
-export default YAMLEditor;
+export default YAMLEditorModal;

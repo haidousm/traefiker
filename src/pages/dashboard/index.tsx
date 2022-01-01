@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
-import DashboardTable from "../../components/dashboard/DashboardTable";
+import DashboardTable from "../../components/dashboard/table/DashboardTable";
 import Navbar from "../../components/navbar/Navbar";
 import { Service } from "../../types/Service";
 import { resetServerContext } from "react-beautiful-dnd";
@@ -12,20 +12,13 @@ import { LoadingOptions } from "../../types/LoadingOptions";
 import LoadingComponent from "../../components/loading/LoadingModal";
 import YAMLEditorModal from "../../components/code-editor/YAMLEditorModal";
 import ServiceSettingsModal from "../../components/service-settings/ServiceSettingsModal";
+import { useRecoilState } from "recoil";
+import { servicesState } from "../../atoms/atoms";
 
-const reorder = (list: Service[], startIndex: number, endIndex: number) => {
-    if (startIndex === endIndex) {
-        return list;
-    }
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-
-    const reordered = result.map((item, index) => {
-        return { ...item, order: index };
-    });
-
-    return reordered;
+export const getServices = async () => {
+    return await (
+        await axios.get("/api/services")
+    ).data;
 };
 
 const createService = async (service: Service, autoReload: boolean) => {
@@ -45,7 +38,7 @@ const deleteService = async (service: Service, autoReload: boolean) => {
 };
 
 const Dashboard: NextPage = () => {
-    const { services, isLoading, mutate } = useServices();
+    const [services, setServices] = useRecoilState(servicesState);
 
     const [isEditing, setIsEditing] = useState(false);
     const [isModifiyingSettings, setIsModifiyingSettings] = useState(false);
@@ -73,13 +66,6 @@ const Dashboard: NextPage = () => {
         updateServiceOrdering(services);
     }, [services]);
 
-    useEffect(() => {
-        setLoadingOptions((prev) => ({
-            ...prev,
-            fetchingServices: isLoading,
-        }));
-    }, [isLoading]);
-
     const handleNewServiceClicked = () => {
         setIsEditing(true);
     };
@@ -90,7 +76,7 @@ const Dashboard: NextPage = () => {
         const index = services.findIndex((s) => s.name === service.name);
         if (index !== -1) {
             services[index] = service;
-            await mutate(services, false);
+            setServices(services);
             setLoadingOptions((prev) => ({
                 ...prev,
                 updatingService: true && autoReload,
@@ -104,7 +90,7 @@ const Dashboard: NextPage = () => {
         }
 
         await createService(service, autoReload);
-        await mutate();
+        await getServices();
         setLoadingOptions((prev) => ({
             ...prev,
             creatingService: false,
@@ -138,7 +124,7 @@ const Dashboard: NextPage = () => {
                     return s;
                 })
                 .filter((s) => s.name !== service.name);
-            await mutate(updatedServices, false);
+            setServices(updatedServices);
             setLoadingOptions((prev) => ({ ...prev, deletingService: false }));
         }
     };
@@ -154,25 +140,13 @@ const Dashboard: NextPage = () => {
         localStorage.setItem("autoReload", reload.toString());
     };
 
-    const onDragEnd = async (result: any) => {
-        if (!result.destination) {
-            return;
-        }
-        const reorderedServices = reorder(
-            services,
-            result.source.index,
-            result.destination.index
-        );
-        await mutate(reorderedServices, false);
-    };
-
     const handleYAMLEditorOpen = () => {
         setYAMLEditorOpen(true);
     };
 
     const handleYAMLEditorClose = async () => {
         setYAMLEditorOpen(false);
-        await mutate();
+        await getServices();
     };
 
     return (
@@ -203,7 +177,6 @@ const Dashboard: NextPage = () => {
                     editedService={editedService}
                     handleEditClicked={handleEditClicked}
                     handleDeleteClicked={handleDeleteClicked}
-                    onDragEnd={onDragEnd}
                 />
             </main>
             {loadingOptions.deletingService ||

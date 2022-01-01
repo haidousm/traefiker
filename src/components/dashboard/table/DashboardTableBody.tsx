@@ -5,6 +5,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import {
     autoReloadState,
     isCreatingServiceState,
+    loadingFlagsState,
     servicesState,
 } from "../../../atoms/atoms";
 
@@ -54,12 +55,16 @@ function DashboardTableBody() {
     const [isCreatingService, setIsCreatingService] = useRecoilState(
         isCreatingServiceState
     );
-    const autoReload = useRecoilValue(autoReloadState);
+
     const [serviceUnderEditing, setServiceUnderEditing] = useState<
         Service | undefined
     >(undefined);
 
     const [isEditingService, setIsEditingService] = useState(false);
+
+    const [loadingFlags, setLoadingFlags] = useRecoilState(loadingFlagsState);
+
+    const autoReload = useRecoilValue(autoReloadState);
 
     useEffect(() => {
         (async () => {
@@ -96,25 +101,24 @@ function DashboardTableBody() {
             const updatedServices = [...services];
             updatedServices[index] = service;
             setServices(updatedServices);
-            // setLoadingOptions((prev) => ({
-            //     ...prev,
-            //     updatingService: true && autoReload,
-            // }));
+            setLoadingFlags((prev) => ({
+                ...prev,
+                updatingService: true && autoReload,
+            }));
         } else {
-            // setLoadingOptions((prev) => ({
-            //     ...prev,
-            //     creatingService: true && autoReload,
-            // }));
+            setLoadingFlags((prev) => ({
+                ...prev,
+                creatingService: true && autoReload,
+            }));
             service.order = services.length;
         }
         await createService(service, autoReload);
         setServices(await getServices());
-        // setLoadingOptions((prev) => ({
-        //     ...prev,
-        //     creatingService: false,
-        //     updatingService: false,
-        // }));
-        // setEditedService(undefined);
+        setLoadingFlags((prev) => ({
+            ...prev,
+            creatingService: false,
+            updatingService: false,
+        }));
     };
     const cancelClicked = () => {
         setServiceUnderEditing(undefined);
@@ -126,13 +130,14 @@ function DashboardTableBody() {
     };
 
     const deleteClicked = async (service: Service) => {
-        // setLoadingOptions((prev) => ({
-        //     ...prev,
-        //     deletingService: true && autoReload,
-        // }));
+        setLoadingFlags((prev) => ({
+            ...prev,
+            deletingService: true && autoReload,
+        }));
         const res = await deleteService(service, autoReload);
         if (res.status === 200) {
-            const updatedServices = services
+            let updatedServices = services;
+            updatedServices = updatedServices
                 .map((s) => {
                     if (s.order > service.order) {
                         s.order--;
@@ -141,7 +146,7 @@ function DashboardTableBody() {
                 })
                 .filter((s) => s.name !== service.name);
             setServices(updatedServices);
-            // setLoadingOptions((prev) => ({ ...prev, deletingService: false }));
+            setLoadingFlags((prev) => ({ ...prev, deletingService: false }));
         }
     };
 

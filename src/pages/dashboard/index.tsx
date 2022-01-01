@@ -5,19 +5,13 @@ import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/table/DashboardTable";
 import Navbar from "../../components/navbar/Navbar";
 import { resetServerContext } from "react-beautiful-dnd";
-import { LoadingOptions } from "../../types/LoadingOptions";
 import YAMLEditorModal from "../../components/code-editor/YAMLEditorModal";
 import { useRecoilValue } from "recoil";
-import { isEditingFileState } from "../../atoms/atoms";
+import { isEditingFileState, loadingFlagsState } from "../../atoms/atoms";
+import LoadingComponent from "../../components/loading/LoadingModal";
 
 const Dashboard: NextPage = () => {
-    const [loadingOptions, setLoadingOptions] = useState<LoadingOptions>({
-        fetchingServices: false,
-        creatingService: false,
-        deletingService: false,
-        updatingService: false,
-    });
-
+    const loadingFlags = useRecoilValue(loadingFlagsState);
     const isEditingFile = useRecoilValue(isEditingFileState);
 
     const loadingMessages = [
@@ -70,10 +64,9 @@ const Dashboard: NextPage = () => {
                     </div>
                 </div>
             </main>
-            {/* {loadingOptions.deletingService ||
-            loadingOptions.updatingService ? (
+            {loadingFlags.deletingService || loadingFlags.updatingService ? (
                 <LoadingComponent loadingMessages={loadingMessages} />
-            ) : null} */}
+            ) : null}
 
             {isEditingFile ? <YAMLEditorModal /> : null}
         </div>

@@ -1,4 +1,5 @@
 import { atom } from "recoil";
+import { LoadingOptions } from "../types/LoadingOptions";
 import { Service } from "../types/Service";
 
 export const servicesState = atom({
@@ -19,4 +20,14 @@ export const autoReloadState = atom({
 export const isEditingFileState = atom({
     key: "isEditingFile",
     default: false,
+});
+
+export const loadingFlagsState = atom({
+    key: "loadingFlags",
+    default: <LoadingOptions>{
+        fetchingServices: false,
+        creatingService: false,
+        deletingService: false,
+        updatingService: false,
+    },
 });

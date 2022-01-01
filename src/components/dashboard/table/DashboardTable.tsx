@@ -11,15 +11,6 @@ function DashboardTable() {
         { name: "Order", screenReaderOnly: true },
     ];
 
-    // useEffect(() => {
-    //     setIsLoading(
-    //         props.loadingOptions.fetchingServices ||
-    //             props.loadingOptions.creatingService ||
-    //             props.loadingOptions.deletingService ||
-    //             props.loadingOptions.updatingService
-    //     );
-    // }, [props.loadingOptions]);
-
     return (
         <table className="min-w-full divide-y divide-gray-200">
             <DashboardTableHeader columns={columns} />

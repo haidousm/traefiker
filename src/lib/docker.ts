@@ -3,10 +3,15 @@ import fs from "fs";
 import YAML from "yaml";
 import { _Service, Service } from "../types/Service";
 import { DockerCompose } from "../types/DockerCompose";
+import { UrlRedirect } from "../types/UrlRedirect";
 
 const HOST_LABEL_PREFIX = "traefik.http.routers.{service-name}.rule";
 const PATH_MIDDLEWARE_PREFIX =
     "traefik.http.middlewares.{path-name}-prefix.stripprefix.prefixes";
+const REDIRECT_MIDDLEWARE_PREFIXES = [
+    "traefik.http.middlewares.{redirect-id}-redirectregex.redirectregex.regex",
+    "traefik.http.middlewares.{redirect-id}-redirectregex.redirectregex.replacement",
+];
 const ROUTER_MIDDLEWARE_PREFIX =
     "traefik.http.routers.{service-name}.middlewares";
 
@@ -24,6 +29,7 @@ export function getAllServices() {
         ) as string;
         const hosts = getFormattedHostsFromService(name, _service);
         const order = getOrderFromService(name, _service);
+        console.log(getRedirectsFromService(name, _service));
         return {
             name,
             image: _service.image,
@@ -208,4 +214,59 @@ function getOrderFromService(name: string, _service: _Service) {
     const orderLabel = possibleOrderLabel[0];
     const order = parseInt(orderLabel.split("=")[1]);
     return order;
+}
+
+function getRedirectsFromService(name: string, _service: _Service) {
+    const { labels } = _service;
+    if (!labels || !labels.length) {
+        return -1;
+    }
+
+    const fromRedirectLabelRegex = new RegExp(
+        `${REDIRECT_MIDDLEWARE_PREFIXES[0].replace(
+            "{redirect-id}",
+            "([0-9]+)"
+        )}=(.*)`
+    );
+
+    const toRedirectLabelRegex = new RegExp(
+        `${REDIRECT_MIDDLEWARE_PREFIXES[1].replace(
+            "{redirect-id}",
+            "([0-9]+)"
+        )}=(.*)`
+    );
+
+    const rawRedirects = labels
+        .map((label) => {
+            const fromMatch = label.match(fromRedirectLabelRegex);
+            if (fromMatch) {
+                const id = parseInt(fromMatch[1]);
+                const from = fromMatch[2];
+                return { id, from };
+            }
+            const toMatch = label.match(toRedirectLabelRegex);
+            if (toMatch) {
+                const id = parseInt(toMatch[1]);
+                const to = toMatch[2];
+                return { id, to };
+            }
+        })
+        .filter((redirect) => redirect !== undefined)
+        .sort((a, b) => a!.id - b!.id);
+    let redirects: UrlRedirect[] = [];
+    for (let i = 0; i < rawRedirects.length; i += 2) {
+        if (rawRedirects[i] && rawRedirects[i + 1]) {
+            redirects.push({
+                id: rawRedirects[i]!.id,
+                from: rawRedirects[i]!.from
+                    ? rawRedirects[i]!.from!
+                    : rawRedirects[i + 1]!.to!,
+                to: rawRedirects[i + 1]!.to
+                    ? rawRedirects[i + 1]!.to!
+                    : rawRedirects[i]!.from!,
+            });
+        }
+    }
+
+    return redirects;
 }

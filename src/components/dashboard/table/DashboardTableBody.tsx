@@ -1,7 +1,13 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { useRecoilState } from "recoil";
-import { isCreatingServiceState, servicesState } from "../../../atoms/atoms";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+    autoReloadState,
+    isCreatingServiceState,
+    servicesState,
+} from "../../../atoms/atoms";
+
 import { Service } from "../../../types/Service";
 import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
@@ -21,21 +27,54 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     return reordered;
 };
 
+const getServices = async () => {
+    return await (
+        await axios.get("/api/services")
+    ).data;
+};
+
+const createService = async (service: Service, autoReload: boolean) => {
+    return await axios.post(`/api/services?autoreload=${autoReload}`, {
+        service,
+    });
+};
+
+const deleteService = async (service: Service, autoReload: boolean) => {
+    return await axios.delete(
+        `/api/services/${service.name}?autoreload=${autoReload}`
+    );
+};
+
+const updateServiceOrdering = async (services: Service[]) => {
+    return await axios.put("/api/services/ordering", { services });
+};
+
 function DashboardTableBody() {
     const [services, setServices] = useRecoilState(servicesState);
-
+    const [isCreatingService, setIsCreatingService] = useRecoilState(
+        isCreatingServiceState
+    );
+    const autoReload = useRecoilValue(autoReloadState);
     const [serviceUnderEditing, setServiceUnderEditing] = useState<
         Service | undefined
     >(undefined);
 
     const [isEditingService, setIsEditingService] = useState(false);
-    const [isCreatingService, setIsCreatingService] = useRecoilState(
-        isCreatingServiceState
-    );
+
+    useEffect(() => {
+        (async () => {
+            const services = await getServices();
+            setServices(services);
+        })();
+    }, [setServices]);
 
     useEffect(() => {
         setIsEditingService(serviceUnderEditing !== undefined);
     }, [serviceUnderEditing]);
+
+    useEffect(() => {
+        updateServiceOrdering(services);
+    }, [services]);
 
     const onDragEnd = async (result: any) => {
         if (!result.destination) {
@@ -49,7 +88,34 @@ function DashboardTableBody() {
         setServices(reorderedServices);
     };
 
-    const saveClicked = (service: Service) => {};
+    const saveClicked = async (service: Service) => {
+        setServiceUnderEditing(undefined);
+        setIsCreatingService(false);
+        const index = services.findIndex((s) => s.name === service.name);
+        if (index !== -1) {
+            const updatedServices = [...services];
+            updatedServices[index] = service;
+            setServices(updatedServices);
+            // setLoadingOptions((prev) => ({
+            //     ...prev,
+            //     updatingService: true && autoReload,
+            // }));
+        } else {
+            // setLoadingOptions((prev) => ({
+            //     ...prev,
+            //     creatingService: true && autoReload,
+            // }));
+            service.order = services.length;
+        }
+        await createService(service, autoReload);
+        setServices(await getServices());
+        // setLoadingOptions((prev) => ({
+        //     ...prev,
+        //     creatingService: false,
+        //     updatingService: false,
+        // }));
+        // setEditedService(undefined);
+    };
     const cancelClicked = () => {
         setServiceUnderEditing(undefined);
         setIsCreatingService(false);
@@ -59,8 +125,24 @@ function DashboardTableBody() {
         setServiceUnderEditing(service);
     };
 
-    const deleteClicked = (service: Service) => {
-        console.log("delete clicked");
+    const deleteClicked = async (service: Service) => {
+        // setLoadingOptions((prev) => ({
+        //     ...prev,
+        //     deletingService: true && autoReload,
+        // }));
+        const res = await deleteService(service, autoReload);
+        if (res.status === 200) {
+            const updatedServices = services
+                .map((s) => {
+                    if (s.order > service.order) {
+                        s.order--;
+                    }
+                    return s;
+                })
+                .filter((s) => s.name !== service.name);
+            setServices(updatedServices);
+            // setLoadingOptions((prev) => ({ ...prev, deletingService: false }));
+        }
     };
 
     return (
@@ -97,6 +179,7 @@ function DashboardTableBody() {
                                 />
                             )
                         )}
+                        {provided.placeholder}
                     </tbody>
                 )}
             </Droppable>
@@ -105,53 +188,3 @@ function DashboardTableBody() {
 }
 
 export default DashboardTableBody;
-
-/**
- * {props.isEditing && !props.editedService ? (
-                            <DashboardTableRowEditable
-                                handleCancelClicked={handleCancelClicked}
-                                handleSaveClicked={handleSaveClicked}
-                            />
-                        ) : null}
-                        {props.loadingOptions.fetchingServices ? (
-                            <LoadingRow columns={columns} />
-                        ) : (
-                            services.map((service) => {
-                                if (
-                                    props.isEditing &&
-                                    service.name ===
-                                        props.editedService?.name
-                                ) {
-                                    return (
-                                        <DashboardTableRowEditable
-                                            key={service.name}
-                                            service={service}
-                                            handleCancelClicked={
-                                                handleCancelClicked
-                                            }
-                                            handleSaveClicked={
-                                                handleSaveClicked
-                                            }
-                                        />
-                                    );
-                                }
-                                return (
-                                    <DashboardTableRow
-                                        key={service.name}
-                                        isLoading={isLoading}
-                                        service={service}
-                                        handleEditClicked={
-                                            handleEditClicked
-                                        }
-                                        handleDeleteClicked={
-                                            handleDeleteClicked
-                                        }
-                                    />
-                                );
-                            })
-                        )}
-                        {props.loadingOptions.creatingService ? (
-                            <LoadingRow columns={columns} />
-                        ) : null}
-                        {provided.placeholder}
- */

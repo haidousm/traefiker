@@ -9,8 +9,8 @@ import { resetServerContext } from "react-beautiful-dnd";
 import useServices from "../../hooks/useServices";
 import axios from "axios";
 import { LoadingOptions } from "../../types/LoadingOptions";
-import LoadingComponent from "../../components/loading/LoadingPopup";
-import YAMLEditor from "../../components/code-editor/YAMLEditor";
+import LoadingComponent from "../../components/loading/LoadingModal";
+import YAMLEditor from "../../components/code-editor/YAMLEditorModal";
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {

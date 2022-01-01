@@ -1,17 +1,22 @@
-import { TrashIcon } from "@heroicons/react/solid";
-import { useEffect } from "react";
+import { PlusCircleIcon, PlusIcon, TrashIcon } from "@heroicons/react/solid";
+import { useEffect, useState } from "react";
 import { Service } from "../../types/Service";
 import { UrlRedirect } from "../../types/UrlRedirect";
 import UrlRedirectsTableRow from "./UrlRedirectsTableRow";
 
 function UrlRedirectsTable(props: {
     service: Service;
+    handleUpdateUrlRedirect: (
+        id: number,
+        fromUrl: string,
+        toUrl: string
+    ) => void;
+    handleAddNewRedirect: () => void;
     handleDeleteRedirect: (id: number) => void;
 }) {
     const columns = [
         { name: "From (Regex)", screenReaderOnly: false },
         { name: "To", screenReaderOnly: false },
-        { name: "Delete", screenReaderOnly: true },
     ];
 
     return (
@@ -19,15 +24,7 @@ function UrlRedirectsTable(props: {
             <thead>
                 <tr>
                     {columns.map((column) => {
-                        return column.screenReaderOnly ? (
-                            <th
-                                key={column.name}
-                                scope="col"
-                                className="relative px-6"
-                            >
-                                <span className="sr-only">{column.name}</span>
-                            </th>
-                        ) : (
+                        return (
                             <th
                                 key={column.name}
                                 scope="col"
@@ -39,6 +36,18 @@ function UrlRedirectsTable(props: {
                             </th>
                         );
                     })}
+
+                    <th scope="col" className="relative px-6">
+                        <span className="sr-only">Add New Redirect</span>
+                        <button
+                            className="text-green-500 hover:text-green-200 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            onClick={() => {
+                                props.handleAddNewRedirect();
+                            }}
+                        >
+                            <PlusCircleIcon className="w-7 h-7" />
+                        </button>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -48,8 +57,10 @@ function UrlRedirectsTable(props: {
                         (urlRedirect: UrlRedirect) => (
                             <UrlRedirectsTableRow
                                 key={urlRedirect.id}
-                                service={props.service}
                                 urlRedirect={urlRedirect}
+                                handleUpdateUrlRedirect={
+                                    props.handleUpdateUrlRedirect
+                                }
                                 handleDeleteRedirect={
                                     props.handleDeleteRedirect
                                 }

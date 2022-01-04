@@ -16,12 +16,18 @@ const handleGET = (req: NextApiRequest, res: NextApiResponse) => {
 
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     const {
-        service: { name, image, hosts, order },
+        service: { name, image, hosts, order, urlRedirects },
     } = req.body;
 
     const autoreload = req.query.autoreload === "true";
 
-    const _service = docker.createService(name, image, hosts, order);
+    const _service = docker.createService(
+        name,
+        image,
+        hosts,
+        order,
+        urlRedirects
+    );
     docker.saveService(name, _service);
     if (!autoreload) {
         return res.status(200).json(req.body);

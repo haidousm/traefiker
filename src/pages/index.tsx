@@ -16,8 +16,9 @@ const Home: NextPage = () => {
             <nav>
                 <Navbar />
             </nav>
-
-            <main></main>
+            <main>
+                <h1>Welcome to Traefiker.</h1>
+            </main>
         </div>
     );
 };

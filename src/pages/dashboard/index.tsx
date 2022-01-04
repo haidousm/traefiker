@@ -1,64 +1,18 @@
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
-import DashboardTable from "../../components/dashboard/DashboardTable";
+import DashboardTable from "../../components/dashboard/table/DashboardTable";
 import Navbar from "../../components/navbar/Navbar";
-import { Service } from "../../types/Service";
 import { resetServerContext } from "react-beautiful-dnd";
-import useServices from "../../hooks/useServices";
-import axios from "axios";
-import { LoadingOptions } from "../../types/LoadingOptions";
-import LoadingComponent from "../../components/loading/LoadingPopup";
-import YAMLEditor from "../../components/code-editor/YAMLEditor";
-
-const reorder = (list: Service[], startIndex: number, endIndex: number) => {
-    if (startIndex === endIndex) {
-        return list;
-    }
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-
-    const reordered = result.map((item, index) => {
-        return { ...item, order: index };
-    });
-
-    return reordered;
-};
-
-const createService = async (service: Service, autoReload: boolean) => {
-    return await axios.post(`/api/services?autoreload=${autoReload}`, {
-        service,
-    });
-};
-
-const updateServiceOrdering = async (services: Service[]) => {
-    return await axios.put("/api/services/ordering", { services });
-};
-
-const deleteService = async (service: Service, autoReload: boolean) => {
-    return await axios.delete(
-        `/api/services/${service.name}?autoreload=${autoReload}`
-    );
-};
+import FileEditorModal from "../../components/code-editor/FileEditorModal";
+import { useRecoilValue } from "recoil";
+import { isEditingFileState, loadingFlagsState } from "../../atoms/atoms";
+import SpinnerModal from "../../components/loading/SpinnerModal";
+import ServiceSettingsModal from "../../components/service-settings/ServiceSettingsModal";
 
 const Dashboard: NextPage = () => {
-    const { services, isLoading, mutate } = useServices();
-
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedService, setEditedService] = useState<Service>();
-
-    const [autoReload, setAutoReload] = useState(false);
-
-    const [loadingOptions, setLoadingOptions] = useState<LoadingOptions>({
-        fetchingServices: false,
-        creatingService: false,
-        deletingService: false,
-        updatingService: false,
-    });
-
-    const [YAMLEditorOpen, setYAMLEditorOpen] = useState(false);
+    const loadingFlags = useRecoilValue(loadingFlagsState);
+    const isEditingFile = useRecoilValue(isEditingFileState);
 
     const loadingMessages = [
         "Updating Docker Compose File..",
@@ -66,112 +20,6 @@ const Dashboard: NextPage = () => {
         "Doing some magic..",
         "Doing some more magic..",
     ];
-
-    useEffect(() => {
-        updateServiceOrdering(services);
-    }, [services]);
-
-    useEffect(() => {
-        setLoadingOptions((prev) => ({
-            ...prev,
-            fetchingServices: isLoading,
-        }));
-    }, [isLoading]);
-
-    const handleNewServiceClicked = () => {
-        setIsEditing(true);
-    };
-
-    const handleSaveClicked = async (service: Service) => {
-        setIsEditing(false);
-
-        const index = services.findIndex((s) => s.name === service.name);
-        if (index !== -1) {
-            services[index] = service;
-            await mutate(services, false);
-            setLoadingOptions((prev) => ({
-                ...prev,
-                updatingService: true && autoReload,
-            }));
-        } else {
-            setLoadingOptions((prev) => ({
-                ...prev,
-                creatingService: true && autoReload,
-            }));
-            service.order = services.length;
-        }
-
-        await createService(service, autoReload);
-        await mutate();
-        setLoadingOptions((prev) => ({
-            ...prev,
-            creatingService: false,
-            updatingService: false,
-        }));
-        setEditedService(undefined);
-    };
-
-    const handleCancelClicked = () => {
-        setIsEditing(false);
-        setEditedService(undefined);
-    };
-
-    const handleEditClicked = (service: Service) => {
-        setIsEditing(true);
-        setEditedService(service);
-    };
-
-    const handleDeleteClicked = async (service: Service) => {
-        setLoadingOptions((prev) => ({
-            ...prev,
-            deletingService: true && autoReload,
-        }));
-        const res = await deleteService(service, autoReload);
-        if (res.status === 200) {
-            const updatedServices = services
-                .map((s) => {
-                    if (s.order > service.order) {
-                        s.order--;
-                    }
-                    return s;
-                })
-                .filter((s) => s.name !== service.name);
-            await mutate(updatedServices, false);
-            setLoadingOptions((prev) => ({ ...prev, deletingService: false }));
-        }
-    };
-
-    const handleRunComposeClicked = async () => {
-        setLoadingOptions((prev) => ({ ...prev, updatingService: true }));
-        await axios.get("/api/compose/run");
-        setLoadingOptions((prev) => ({ ...prev, updatingService: false }));
-    };
-
-    const handleAutoReloadClicked = (reload: boolean) => {
-        setAutoReload(reload);
-        localStorage.setItem("autoReload", reload.toString());
-    };
-
-    const onDragEnd = async (result: any) => {
-        if (!result.destination) {
-            return;
-        }
-        const reorderedServices = reorder(
-            services,
-            result.source.index,
-            result.destination.index
-        );
-        await mutate(reorderedServices, false);
-    };
-
-    const handleYAMLEditorOpen = () => {
-        setYAMLEditorOpen(true);
-    };
-
-    const handleYAMLEditorClose = async () => {
-        setYAMLEditorOpen(false);
-        await mutate();
-    };
 
     return (
         <div>
@@ -187,33 +35,41 @@ const Dashboard: NextPage = () => {
                 <Navbar />
             </nav>
             <main>
-                <DashboardHeader
-                    handleAutoReloadClicked={handleAutoReloadClicked}
-                    handleNewServiceClicked={handleNewServiceClicked}
-                    handleRunComposeClicked={handleRunComposeClicked}
-                    handleYAMLEditorOpen={handleYAMLEditorOpen}
-                />
-                <DashboardTable
-                    loadingOptions={loadingOptions}
-                    handleSaveClicked={handleSaveClicked}
-                    handleCancelClicked={handleCancelClicked}
-                    isEditing={isEditing}
-                    editedService={editedService}
-                    handleEditClicked={handleEditClicked}
-                    handleDeleteClicked={handleDeleteClicked}
-                    onDragEnd={onDragEnd}
-                />
+                <DashboardHeader />
+                <div className="max-w-7xl mx-auto py-6 px-6 lg:px-8">
+                    <div className="flex flex-col">
+                        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                            <div
+                                className="
+                        py-2
+                        align-middle
+                        inline-block
+                        min-w-full
+                        sm:px-6
+                        lg:px-8
+                    "
+                            >
+                                <div
+                                    className="
+                            shadow
+                            overflow-hidden
+                            border-b border-gray-200
+                            rounded-lg
+                        "
+                                >
+                                    <DashboardTable />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
-            {loadingOptions.deletingService ||
-            loadingOptions.updatingService ? (
-                <LoadingComponent loadingMessages={loadingMessages} />
+            {loadingFlags.deletingService || loadingFlags.updatingService ? (
+                <SpinnerModal loadingMessages={loadingMessages} />
             ) : null}
-            {YAMLEditorOpen ? (
-                <YAMLEditor
-                    YAMLEditorOpen={YAMLEditorOpen}
-                    handleYAMLEditorClose={handleYAMLEditorClose}
-                />
-            ) : null}
+
+            {isEditingFile ? <FileEditorModal /> : null}
+            <ServiceSettingsModal />
         </div>
     );
 };

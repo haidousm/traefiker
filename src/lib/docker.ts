@@ -1,11 +1,17 @@
 import { exec } from "child_process";
 import fs from "fs";
 import YAML from "yaml";
-import { _Service, Service, DockerCompose } from "../types/Service";
+import { _Service, Service } from "../types/Service";
+import { DockerCompose } from "../types/DockerCompose";
+import { UrlRedirect } from "../types/UrlRedirect";
 
 const HOST_LABEL_PREFIX = "traefik.http.routers.{service-name}.rule";
 const PATH_MIDDLEWARE_PREFIX =
     "traefik.http.middlewares.{path-name}-prefix.stripprefix.prefixes";
+const REDIRECT_MIDDLEWARE_PREFIXES = [
+    "traefik.http.middlewares.{redirect-id}-redirect-{service-name}.redirectregex.regex",
+    "traefik.http.middlewares.{redirect-id}-redirect-{service-name}.redirectregex.replacement",
+];
 const ROUTER_MIDDLEWARE_PREFIX =
     "traefik.http.routers.{service-name}.middlewares";
 
@@ -13,6 +19,7 @@ const SERVICE_ORDER_PREFIX = "traefiker.{service-name}.order";
 
 const HOSTS_DELIMITER = " || ";
 const PATH_PREFIX_DELIMITER = " && ";
+const MIDDLEWARE_DELIMITER = ",";
 
 export function getAllServices() {
     const dockerCompose = getData(process.env.DOCKER_COMPOSE_FILEPATH!);
@@ -23,11 +30,13 @@ export function getAllServices() {
         ) as string;
         const hosts = getFormattedHostsFromService(name, _service);
         const order = getOrderFromService(name, _service);
+        const urlRedirects = getRedirectsFromService(name, _service);
         return {
             name,
             image: _service.image,
             hosts,
             order: order >= 0 ? order : index,
+            urlRedirects,
         } as Service;
     }) as Service[];
 }
@@ -40,7 +49,8 @@ export function createService(
     name: string,
     image: string,
     hosts: string[],
-    order: number
+    order: number,
+    urlRedirects: UrlRedirect[]
 ) {
     const _service: _Service = {
         image,
@@ -54,10 +64,32 @@ export function createService(
 
     const hostsLabel = transformHostsToHostLabel(name, hosts);
     _service.labels.push(hostsLabel);
+
+    let middleware: string[] = [];
+
     if (hostsLabel.includes("PathPrefix")) {
-        const pathMiddlewareLabels = getPathMiddlewareLabels(name, hosts);
+        const [pathMiddlewareLabels, middlewareNames] =
+            getPathMiddlewareLabels(hosts);
         _service.labels = [..._service.labels, ...pathMiddlewareLabels];
+        middleware = [...middleware, ...middlewareNames];
     }
+
+    if (urlRedirects.length) {
+        const [redirectMiddlewareLabels, middlewareNames] =
+            getRedirectMiddlewareLabels(name, urlRedirects);
+        _service.labels = [..._service.labels, ...redirectMiddlewareLabels];
+        middleware = [...middleware, ...middlewareNames];
+    }
+
+    if (middleware.length) {
+        _service.labels.push(
+            `${ROUTER_MIDDLEWARE_PREFIX.replace(
+                "{service-name}",
+                name
+            )}=${middleware.join(MIDDLEWARE_DELIMITER)}`
+        );
+    }
+
     return _service;
 }
 
@@ -170,7 +202,7 @@ function transformHostsToHostLabel(name: string, hosts: string[]) {
         .join(HOSTS_DELIMITER)}`;
 }
 
-function getPathMiddlewareLabels(name: string, hosts: string[]) {
+function getPathMiddlewareLabels(hosts: string[]) {
     const paths = hosts
         .map((host) => {
             const path = host.split("/").slice(1).join("/");
@@ -184,12 +216,8 @@ function getPathMiddlewareLabels(name: string, hosts: string[]) {
             path
         )}=/${path}`;
     });
-    const routerMiddlewareLabel = `${ROUTER_MIDDLEWARE_PREFIX.replace(
-        "{service-name}",
-        name
-    )}=${paths.map((path) => `${path}-prefix`).join(PATH_PREFIX_DELIMITER)}`;
 
-    return [...pathMiddlewareLabels, routerMiddlewareLabel];
+    return [pathMiddlewareLabels, paths.map((path) => `${path}-prefix`)];
 }
 
 function getOrderFromService(name: string, _service: _Service) {
@@ -208,3 +236,74 @@ function getOrderFromService(name: string, _service: _Service) {
     const order = parseInt(orderLabel.split("=")[1]);
     return order;
 }
+
+function getRedirectsFromService(name: string, _service: _Service) {
+    const { labels } = _service;
+    if (!labels || !labels.length) {
+        return [];
+    }
+
+    const possibleMiddlewareLabel = labels.filter((label) =>
+        label.startsWith(
+            ROUTER_MIDDLEWARE_PREFIX.replace("{service-name}", name)
+        )
+    );
+    if (!possibleMiddlewareLabel.length) {
+        return [];
+    }
+    const middlewareLabel = possibleMiddlewareLabel[0];
+    const redirectMiddlewares = middlewareLabel
+        .split("=")[1]
+        .split(MIDDLEWARE_DELIMITER)
+        .map((redirect) => redirect.trim())
+        .filter((redirect) => redirect.includes("redirect"));
+
+    let redirects: UrlRedirect[] = [];
+    redirectMiddlewares.forEach((redirectMiddleware) => {
+        const id = parseInt(redirectMiddleware.split("-")[0]);
+        const from = labels
+            .find((label) =>
+                label.startsWith(
+                    REDIRECT_MIDDLEWARE_PREFIXES[0]
+                        .replace("{redirect-id}", `${id}`)
+                        .replace("{service-name}", name)
+                )
+            )
+            ?.split("=")[1]!;
+        const to = labels
+            .find((label) =>
+                label.startsWith(
+                    REDIRECT_MIDDLEWARE_PREFIXES[1]
+                        .replace("{redirect-id}", `${id}`)
+                        .replace("{service-name}", name)
+                )
+            )
+            ?.split("=")[1]!;
+        redirects.push({ id, from, to });
+    });
+
+    return redirects;
+}
+
+const getRedirectMiddlewareLabels = (
+    name: string,
+    redirects: UrlRedirect[]
+) => {
+    const middlewareLabels: string[] = [];
+    redirects.forEach((redirect) => {
+        middlewareLabels.push(
+            `${REDIRECT_MIDDLEWARE_PREFIXES[0]
+                .replace("{redirect-id}", `${redirect.id}`)
+                .replace("{service-name}", name)}=${redirect.from}`
+        );
+        middlewareLabels.push(
+            `${REDIRECT_MIDDLEWARE_PREFIXES[1]
+                .replace("{redirect-id}", `${redirect.id}`)
+                .replace("{service-name}", name)}=${redirect.to}`
+        );
+    });
+    return [
+        middlewareLabels,
+        redirects.map((redirect) => `${redirect.id}-redirect-${name}`),
+    ];
+};

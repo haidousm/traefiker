@@ -1,4 +1,4 @@
-function LoadingRow(props: { columns: any }) {
+function SkeletonRow(props: { columns: any }) {
     return (
         <tr className=" animate-pulse">
             {props.columns.map((column: any) => {
@@ -36,4 +36,4 @@ function LoadingRow(props: { columns: any }) {
     );
 }
 
-export default LoadingRow;
+export default SkeletonRow;

@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { Service } from "../../types/Service";
+import { Service } from "../../../types/Service";
 import ReactTooltip from "react-tooltip";
 
-function DashboardTableRowEditable(props: {
+interface Props {
     service?: Service;
-    handleSaveClicked: (service: Service) => void;
-    handleCancelClicked: () => void;
-}) {
+    saveClicked: (service: Service) => void;
+    cancelClicked: () => void;
+}
+
+function DashboardTableRowEditable({
+    service,
+    saveClicked,
+    cancelClicked,
+}: Props) {
     const [name, setName] = useState("");
     const [image, setImage] = useState("");
     const [hosts, setHosts] = useState<string[]>([]);
     const [possibleHost, setPossibleHost] = useState("");
 
     useEffect(() => {
-        if (props.service) {
-            setName(props.service.name);
-            setImage(props.service.image);
-            setHosts(props.service.hosts);
+        if (service) {
+            setName(service.name);
+            setImage(service.image);
+            setHosts(service.hosts);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -136,11 +142,12 @@ function DashboardTableRowEditable(props: {
                     />
                 </span>
             </td>
+            <td></td>
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button
                     className="text-red-600 hover:text-red-900"
                     onClick={() => {
-                        props.handleCancelClicked();
+                        cancelClicked();
                     }}
                 >
                     Cancel
@@ -150,20 +157,22 @@ function DashboardTableRowEditable(props: {
                 <button
                     className="text-indigo-600 hover:text-indigo-900"
                     onClick={() => {
-                        props.handleSaveClicked({
+                        saveClicked({
                             name: name,
                             image: image,
                             hosts:
                                 possibleHost !== ""
                                     ? [...hosts, possibleHost]
                                     : hosts,
-                            order: props.service ? props.service.order : 0,
+                            order: service ? service.order : 0,
+                            urlRedirects: service?.urlRedirects ?? [],
                         });
                     }}
                 >
                     Save
                 </button>
             </td>
+            <td></td>
         </tr>
     );
 }

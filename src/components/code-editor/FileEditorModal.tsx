@@ -2,34 +2,39 @@ import { Dialog } from "@headlessui/react";
 import useSWR from "swr";
 import axios from "axios";
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { useRecoilState } from "recoil";
+import { isEditingFileState, servicesState } from "../../atoms/atoms";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
 const fetcher = (url: string) => fetch(url).then((r) => r.text());
 
-function YAMLEditor(props: {
-    YAMLEditorOpen: boolean;
-    handleYAMLEditorClose: () => void;
-}) {
+const getServices = async () => {
+    return await (
+        await axios.get("/api/services")
+    ).data;
+};
+
+function FileEditorModal() {
     const { data: editorBody, mutate } = useSWR("/api/compose", fetcher);
+    const [, setIsEditingFile] = useRecoilState(isEditingFileState);
+    const [, setServices] = useRecoilState(servicesState);
 
-    useEffect(() => {
-        async function updateBody() {
-            await mutate();
-        }
-        if (props.YAMLEditorOpen) {
-            updateBody();
-        }
-    }, [mutate, props.YAMLEditorOpen]);
-
-    const handleYAMLEditorClose = () => {
-        props.handleYAMLEditorClose();
+    const saveFile = async () => {
+        axios.post("/api/compose", {
+            YAML: editorBody,
+        });
+        await closeEditor();
+    };
+    const closeEditor = async () => {
+        setIsEditingFile(false);
+        const services = await getServices();
+        setServices(services);
     };
 
     return (
         <Dialog
-            open={props.YAMLEditorOpen}
+            open={true}
             onClose={() => {}}
             className="fixed z-10 inset-0 overflow-y-auto"
         >
@@ -69,20 +74,13 @@ function YAMLEditor(props: {
                     <div className="flex w-full justify-end mt-4">
                         <button
                             className="bg-red-700 hover:bg-red-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mx-2"
-                            onClick={() => {
-                                handleYAMLEditorClose();
-                            }}
+                            onClick={closeEditor}
                         >
                             Cancel
                         </button>
                         <button
                             className="bg-indigo-700 hover:bg-indigo-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                            onClick={() => {
-                                axios.post("/api/compose", {
-                                    YAML: editorBody,
-                                });
-                                handleYAMLEditorClose();
-                            }}
+                            onClick={saveFile}
                         >
                             Save
                         </button>
@@ -93,4 +91,4 @@ function YAMLEditor(props: {
     );
 }
 
-export default YAMLEditor;
+export default FileEditorModal;

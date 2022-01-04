@@ -1,18 +1,27 @@
-import { Service } from "../../types/Service";
+import { Service } from "../../../types/Service";
 import { Draggable } from "react-beautiful-dnd";
-import { MenuIcon } from "@heroicons/react/solid";
+import { MenuIcon, SwitchHorizontalIcon } from "@heroicons/react/solid";
 import seedrandom from "seedrandom";
 
-function DashboardTableRow(props: {
-    isLoading: boolean;
+interface Props {
     service: Service;
-    handleEditClicked: (service: Service) => void;
-    handleDeleteClicked: (service: Service) => void;
-}) {
+    isLoading: boolean;
+    redirectsClicked: (service: Service) => void;
+    editClicked: (service: Service) => void;
+    deleteClicked: (service: Service) => void;
+}
+
+function DashboardTableRow({
+    service,
+    isLoading,
+    redirectsClicked,
+    editClicked,
+    deleteClicked,
+}: Props) {
     return (
         <Draggable
-            draggableId={`${seedrandom(props.service.name).quick()}`}
-            index={props.service.order ? props.service.order : 0}
+            draggableId={`${seedrandom(service.name).quick()}`}
+            index={service.order ? service.order : 0}
         >
             {(provided) => (
                 <tr
@@ -35,7 +44,7 @@ function DashboardTableRow(props: {
                 text-blue-800
             "
                         >
-                            {props.service.name}
+                            {service.name}
                         </span>
                     </td>
                     <td className="hidden sm:table-cell px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
@@ -53,11 +62,11 @@ function DashboardTableRow(props: {
                 text-sky-800
             "
                         >
-                            {props.service.image}
+                            {service.image}
                         </span>
                     </td>
                     <td className="px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
-                        {props.service.hosts.map((host, index) => (
+                        {service.hosts.map((host, index) => (
                             <a
                                 href={`https://${host}`}
                                 key={index}
@@ -84,7 +93,21 @@ function DashboardTableRow(props: {
                             </a>
                         ))}
                     </td>
-
+                    <td
+                        className="hidden lg:table-cell lg:px-6 lg:py-4 whitespace-nowrap text-right  text-xs
+                lg:text-sm font-medium"
+                    >
+                        <button
+                            className="text-orange-600 hover:text-orange-900 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:cursor-not-allowed flex items-center content-center"
+                            onClick={() => {
+                                redirectsClicked(service);
+                            }}
+                            disabled={isLoading}
+                        >
+                            <SwitchHorizontalIcon className="w-5 h-5 mr-2" />{" "}
+                            Redirects
+                        </button>
+                    </td>
                     <td
                         className="hidden lg:table-cell lg:px-6 lg:py-4 whitespace-nowrap text-right  text-xs
                 lg:text-sm font-medium"
@@ -92,9 +115,9 @@ function DashboardTableRow(props: {
                         <button
                             className="text-indigo-600 hover:text-indigo-900 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:cursor-not-allowed"
                             onClick={() => {
-                                props.handleEditClicked(props.service);
+                                editClicked(service);
                             }}
-                            disabled={props.isLoading}
+                            disabled={isLoading}
                         >
                             Edit
                         </button>
@@ -106,9 +129,9 @@ function DashboardTableRow(props: {
                         <button
                             className="text-red-600 hover:text-red-900 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:cursor-not-allowed"
                             onClick={() => {
-                                props.handleDeleteClicked(props.service);
+                                deleteClicked(service);
                             }}
-                            disabled={props.isLoading}
+                            disabled={isLoading}
                         >
                             Delete
                         </button>

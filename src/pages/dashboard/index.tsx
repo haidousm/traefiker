@@ -1,14 +1,13 @@
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
-import { useState } from "react";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/table/DashboardTable";
 import Navbar from "../../components/navbar/Navbar";
 import { resetServerContext } from "react-beautiful-dnd";
-import YAMLEditorModal from "../../components/code-editor/YAMLEditorModal";
+import FileEditorModal from "../../components/code-editor/FileEditorModal";
 import { useRecoilValue } from "recoil";
 import { isEditingFileState, loadingFlagsState } from "../../atoms/atoms";
-import LoadingComponent from "../../components/loading/LoadingModal";
+import SpinnerModal from "../../components/loading/SpinnerModal";
 
 const Dashboard: NextPage = () => {
     const loadingFlags = useRecoilValue(loadingFlagsState);
@@ -65,10 +64,10 @@ const Dashboard: NextPage = () => {
                 </div>
             </main>
             {loadingFlags.deletingService || loadingFlags.updatingService ? (
-                <LoadingComponent loadingMessages={loadingMessages} />
+                <SpinnerModal loadingMessages={loadingMessages} />
             ) : null}
 
-            {isEditingFile ? <YAMLEditorModal /> : null}
+            {isEditingFile ? <FileEditorModal /> : null}
         </div>
     );
 };

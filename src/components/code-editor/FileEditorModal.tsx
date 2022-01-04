@@ -2,27 +2,34 @@ import { Dialog } from "@headlessui/react";
 import useSWR from "swr";
 import axios from "axios";
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
 import { useRecoilState } from "recoil";
-import { isEditingFileState } from "../../atoms/atoms";
+import { isEditingFileState, servicesState } from "../../atoms/atoms";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
 const fetcher = (url: string) => fetch(url).then((r) => r.text());
 
-function YAMLEditorModal() {
-    const { data: editorBody, mutate } = useSWR("/api/compose", fetcher);
-    const [_isEditingFile, setIsEditingFile] =
-        useRecoilState(isEditingFileState);
+const getServices = async () => {
+    return await (
+        await axios.get("/api/services")
+    ).data;
+};
 
-    const saveFile = () => {
+function FileEditorModal() {
+    const { data: editorBody, mutate } = useSWR("/api/compose", fetcher);
+    const [, setIsEditingFile] = useRecoilState(isEditingFileState);
+    const [, setServices] = useRecoilState(servicesState);
+
+    const saveFile = async () => {
         axios.post("/api/compose", {
             YAML: editorBody,
         });
-        closeEditor();
+        await closeEditor();
     };
-    const closeEditor = () => {
+    const closeEditor = async () => {
         setIsEditingFile(false);
+        const services = await getServices();
+        setServices(services);
     };
 
     return (
@@ -84,4 +91,4 @@ function YAMLEditorModal() {
     );
 }
 
-export default YAMLEditorModal;
+export default FileEditorModal;

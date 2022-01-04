@@ -14,6 +14,7 @@
         "@types/react-beautiful-dnd": "^13.1.2",
         "@types/seedrandom": "^3.0.1",
         "axios": "^0.24.0",
+        "intercept-stdout": "^0.1.2",
         "monaco-editor": "^0.31.1",
         "next": "12.0.7",
         "react": "17.0.2",

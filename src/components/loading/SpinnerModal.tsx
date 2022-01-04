@@ -1,7 +1,7 @@
 import { Dialog } from "@headlessui/react";
 import { useEffect, useState } from "react";
 
-function LoadingComponent(props: { loadingMessages: string[] }) {
+function SpinnerModal(props: { loadingMessages: string[] }) {
     const [currentMessage, setCurrentMessage] = useState(
         props.loadingMessages[0]
     );
@@ -64,4 +64,4 @@ function LoadingComponent(props: { loadingMessages: string[] }) {
     );
 }
 
-export default LoadingComponent;
+export default SpinnerModal;

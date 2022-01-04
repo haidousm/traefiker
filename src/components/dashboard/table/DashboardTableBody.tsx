@@ -10,8 +10,16 @@ import {
 } from "../../../atoms/atoms";
 
 import { Service } from "../../../types/Service";
+import SkeletonRow from "../../loading/SkeletonRow";
 import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
+
+interface Props {
+    columns: {
+        name: string;
+        screenReaderOnly: boolean;
+    }[];
+}
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     if (startIndex === endIndex) {
@@ -50,7 +58,7 @@ const updateServiceOrdering = async (services: Service[]) => {
     return await axios.put("/api/services/ordering", { services });
 };
 
-function DashboardTableBody() {
+function DashboardTableBody({ columns }: Props) {
     const [services, setServices] = useRecoilState(servicesState);
     const [isCreatingService, setIsCreatingService] = useRecoilState(
         isCreatingServiceState
@@ -113,7 +121,8 @@ function DashboardTableBody() {
             service.order = services.length;
         }
         await createService(service, autoReload);
-        setServices(await getServices());
+        const updatedServices = await getServices();
+        setServices(updatedServices);
         setLoadingFlags((prev) => ({
             ...prev,
             creatingService: false,
@@ -134,6 +143,7 @@ function DashboardTableBody() {
             ...prev,
             deletingService: true && autoReload,
         }));
+
         const res = await deleteService(service, autoReload);
         if (res.status === 200) {
             let updatedServices = services;
@@ -178,13 +188,20 @@ function DashboardTableBody() {
                                 <DashboardTableRow
                                     key={service.name}
                                     service={service}
-                                    isLoading={false}
+                                    isLoading={
+                                        loadingFlags.creatingService ||
+                                        loadingFlags.updatingService ||
+                                        loadingFlags.deletingService
+                                    }
                                     editClicked={editClicked}
                                     deleteClicked={deleteClicked}
                                 />
                             )
                         )}
                         {provided.placeholder}
+                        {loadingFlags.creatingService && autoReload ? (
+                            <SkeletonRow columns={columns} />
+                        ) : null}
                     </tbody>
                 )}
             </Droppable>

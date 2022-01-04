@@ -8,6 +8,7 @@ import {
     autoReloadState,
     isCreatingServiceState,
     isEditingFileState,
+    loadingFlagsState,
 } from "../../atoms/atoms";
 
 function DashboardHeader() {
@@ -15,6 +16,8 @@ function DashboardHeader() {
     const [autoReload, setAutoReload] = useRecoilState(autoReloadState);
     const [_isEditingFile, setIsEditingFile] =
         useRecoilState(isEditingFileState);
+
+    const [, setLoadingFlags] = useRecoilState(loadingFlagsState);
 
     useEffect(() => {
         const isEnabled = localStorage.getItem("autoReload") === "true";
@@ -35,7 +38,9 @@ function DashboardHeader() {
     };
 
     const runComposeClicked = async () => {
+        setLoadingFlags((prev) => ({ ...prev, updatingService: true }));
         await axios.get("/api/compose/run");
+        setLoadingFlags((prev) => ({ ...prev, updatingService: false }));
     };
     return (
         <div>

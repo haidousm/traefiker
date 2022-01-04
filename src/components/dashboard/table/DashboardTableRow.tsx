@@ -72,6 +72,7 @@ function DashboardTableRow({
                                 key={index}
                                 target={"_blank"}
                                 rel="noreferrer"
+                                className="block"
                             >
                                 <span
                                     className="

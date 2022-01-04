@@ -81,13 +81,14 @@ function DashboardTableRowEditable({
                     />
                 </span>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-center grid grid-cols-3 gap-3">
+            <td className="px-6 py-4 whitespace-nowrap text-center">
                 {hosts.map((host, index) => {
                     return (
                         <span
                             data-tip="CLICK TO REMOVE"
                             key={index}
                             className="
+                            m-1
                                     px-2
                                     py-2
                                     text-xs
@@ -100,6 +101,7 @@ function DashboardTableRowEditable({
                                     relative
                                     hover:bg-amber-800
                                     hover:text-amber-100
+                                    block
                             "
                             onClick={() => {
                                 setHosts(hosts.filter((_, i) => i !== index));
@@ -112,9 +114,9 @@ function DashboardTableRowEditable({
                 })}
                 <span
                     className="
+                    m-1
                             px-4
                             py-2
-                            inline-flex
                             text-sm
                             leading-5
                             font-semibold
@@ -122,6 +124,7 @@ function DashboardTableRowEditable({
                             bg-amber-100
                             text-amber-800
                             col-start-2
+                            block
                     "
                 >
                     <input
@@ -142,7 +145,6 @@ function DashboardTableRowEditable({
                     />
                 </span>
             </td>
-            <td></td>
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button
                     className="text-red-600 hover:text-red-900"
@@ -172,7 +174,6 @@ function DashboardTableRowEditable({
                     Save
                 </button>
             </td>
-            <td></td>
         </tr>
     );
 }

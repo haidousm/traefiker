@@ -1,11 +1,12 @@
 import { Service } from "../../../types/Service";
 import { Draggable } from "react-beautiful-dnd";
-import { MenuIcon } from "@heroicons/react/solid";
+import { MenuIcon, SwitchHorizontalIcon } from "@heroicons/react/solid";
 import seedrandom from "seedrandom";
 
 interface Props {
     service: Service;
     isLoading: boolean;
+    redirectsClicked: (service: Service) => void;
     editClicked: (service: Service) => void;
     deleteClicked: (service: Service) => void;
 }
@@ -13,6 +14,7 @@ interface Props {
 function DashboardTableRow({
     service,
     isLoading,
+    redirectsClicked,
     editClicked,
     deleteClicked,
 }: Props) {
@@ -91,7 +93,21 @@ function DashboardTableRow({
                             </a>
                         ))}
                     </td>
-
+                    <td
+                        className="hidden lg:table-cell lg:px-6 lg:py-4 whitespace-nowrap text-right  text-xs
+                lg:text-sm font-medium"
+                    >
+                        <button
+                            className="text-orange-600 hover:text-orange-900 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:cursor-not-allowed flex items-center content-center"
+                            onClick={() => {
+                                redirectsClicked(service);
+                            }}
+                            disabled={isLoading}
+                        >
+                            <SwitchHorizontalIcon className="w-5 h-5 mr-2" />{" "}
+                            Redirects
+                        </button>
+                    </td>
                     <td
                         className="hidden lg:table-cell lg:px-6 lg:py-4 whitespace-nowrap text-right  text-xs
                 lg:text-sm font-medium"

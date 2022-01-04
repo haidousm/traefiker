@@ -6,6 +6,7 @@ import {
     autoReloadState,
     isCreatingServiceState,
     loadingFlagsState,
+    redirectsModalState,
     servicesState,
 } from "../../../atoms/atoms";
 
@@ -64,13 +65,15 @@ function DashboardTableBody({ columns }: Props) {
         isCreatingServiceState
     );
 
+    const [loadingFlags, setLoadingFlags] = useRecoilState(loadingFlagsState);
+
+    const [, setRedirectsModalOptions] = useRecoilState(redirectsModalState);
+
     const [serviceUnderEditing, setServiceUnderEditing] = useState<
         Service | undefined
     >(undefined);
 
     const [isEditingService, setIsEditingService] = useState(false);
-
-    const [loadingFlags, setLoadingFlags] = useRecoilState(loadingFlagsState);
 
     const autoReload = useRecoilValue(autoReloadState);
 
@@ -160,6 +163,13 @@ function DashboardTableBody({ columns }: Props) {
         }
     };
 
+    const redirectsClicked = (service: Service) => {
+        setRedirectsModalOptions({
+            isAddingRedirects: true,
+            service: service,
+        });
+    };
+
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="list">
@@ -193,6 +203,7 @@ function DashboardTableBody({ columns }: Props) {
                                         loadingFlags.updatingService ||
                                         loadingFlags.deletingService
                                     }
+                                    redirectsClicked={redirectsClicked}
                                     editClicked={editClicked}
                                     deleteClicked={deleteClicked}
                                 />

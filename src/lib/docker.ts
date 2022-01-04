@@ -240,7 +240,7 @@ function getOrderFromService(name: string, _service: _Service) {
 function getRedirectsFromService(name: string, _service: _Service) {
     const { labels } = _service;
     if (!labels || !labels.length) {
-        return -1;
+        return [];
     }
 
     const possibleMiddlewareLabel = labels.filter((label) =>
@@ -249,7 +249,7 @@ function getRedirectsFromService(name: string, _service: _Service) {
         )
     );
     if (!possibleMiddlewareLabel.length) {
-        return -1;
+        return [];
     }
     const middlewareLabel = possibleMiddlewareLabel[0];
     const redirectMiddlewares = middlewareLabel

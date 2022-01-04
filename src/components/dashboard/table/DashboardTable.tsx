@@ -6,6 +6,7 @@ function DashboardTable() {
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
         { name: "Service Hosts", screenReaderOnly: false },
+        { name: "Add Redirects", screenReaderOnly: true },
         { name: "Edit", screenReaderOnly: true },
         { name: "Delete", screenReaderOnly: true },
         { name: "Order", screenReaderOnly: true },

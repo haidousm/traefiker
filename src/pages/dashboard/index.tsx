@@ -8,6 +8,7 @@ import FileEditorModal from "../../components/code-editor/FileEditorModal";
 import { useRecoilValue } from "recoil";
 import { isEditingFileState, loadingFlagsState } from "../../atoms/atoms";
 import SpinnerModal from "../../components/loading/SpinnerModal";
+import ServiceSettingsModal from "../../components/service-settings/ServiceSettingsModal";
 
 const Dashboard: NextPage = () => {
     const loadingFlags = useRecoilValue(loadingFlagsState);
@@ -68,6 +69,7 @@ const Dashboard: NextPage = () => {
             ) : null}
 
             {isEditingFile ? <FileEditorModal /> : null}
+            <ServiceSettingsModal />
         </div>
     );
 };

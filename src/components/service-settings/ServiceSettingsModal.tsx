@@ -1,24 +1,58 @@
 import { Dialog } from "@headlessui/react";
+import axios from "axios";
 import { useEffect, useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+    autoReloadState,
+    loadingFlagsState,
+    redirectsModalState,
+    servicesState,
+} from "../../atoms/atoms";
 import { Service } from "../../types/Service";
-import UrlRedirectsTable from "./UrlRedirectsTable";
+import UrlRedirectsTable from "./table/UrlRedirectsTable";
 
-function ServiceSettingsModal(props: {
-    isModifiyingSettings: boolean;
-    service: Service;
-    handleSaveClicked: (service: Service) => void;
-}) {
-    const [service, setService] = useState(props.service);
+const createService = async (service: Service, autoReload: boolean) => {
+    return await axios.post(`/api/services?autoreload=${autoReload}`, {
+        service,
+    });
+};
+
+function ServiceSettingsModal() {
+    const [redirectsModalOptions, setRedirectsModalOptions] =
+        useRecoilState(redirectsModalState);
+
+    const [loadingFlags, setLoadingFlags] = useRecoilState(loadingFlagsState);
+
+    const autoReload = useRecoilValue(autoReloadState);
+    const [service, setService] = useState<Service>(
+        redirectsModalOptions.service
+    );
 
     useEffect(() => {
-        setService(props.service);
-    }, [props.service]);
+        setService(redirectsModalOptions.service);
+    }, [redirectsModalOptions.service]);
 
-    const handleSaveClicked = () => {
-        props.handleSaveClicked(service);
+    const saveClicked = async () => {
+        closeModal();
+        setLoadingFlags({
+            ...loadingFlags,
+            updatingService: true,
+        });
+        await createService(service, autoReload);
+        setLoadingFlags({
+            ...loadingFlags,
+            updatingService: false,
+        });
     };
 
-    const handleAddNewRedirect = () => {
+    const closeModal = () => {
+        setRedirectsModalOptions((state) => ({
+            ...state,
+            isAddingRedirects: false,
+        }));
+    };
+
+    const addNewRedirect = () => {
         setService((prevService) => {
             return {
                 ...prevService,
@@ -34,11 +68,7 @@ function ServiceSettingsModal(props: {
         });
     };
 
-    const handleUpdateUrlRedirect = (
-        id: number,
-        fromUrl: string,
-        toUrl: string
-    ) => {
+    const updateUrlRedirect = (id: number, fromUrl: string, toUrl: string) => {
         setService((prevService) => {
             return {
                 ...prevService,
@@ -57,7 +87,7 @@ function ServiceSettingsModal(props: {
         });
     };
 
-    const handleDeleteRedirect = (id: number) => {
+    const deleteRedirect = (id: number) => {
         setService({
             ...service,
             urlRedirects: service.urlRedirects!.filter(
@@ -65,39 +95,40 @@ function ServiceSettingsModal(props: {
             ),
         });
     };
+
     return (
         <Dialog
-            open={props.isModifiyingSettings}
+            open={redirectsModalOptions.isAddingRedirects}
             onClose={() => {}}
             className="fixed z-10 inset-0 overflow-y-auto"
         >
             <div className="flex items-center justify-center min-h-screen">
                 <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-                <div className="relative bg-gray-800 rounded w-3/4 mx-auto flex flex-col justify-center items-center p-4 shadow-lg ">
-                    <UrlRedirectsTable
-                        service={service}
-                        handleAddNewRedirect={handleAddNewRedirect}
-                        handleUpdateUrlRedirect={handleUpdateUrlRedirect}
-                        handleDeleteRedirect={handleDeleteRedirect}
-                    />
-                    <div className="flex justify-end mt-4 mr-6 w-full">
-                        <button
-                            className="bg-red-700 hover:bg-red-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mx-2"
-                            onClick={() => {}}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            className="bg-indigo-700 hover:bg-indigo-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                            onClick={() => {
-                                handleSaveClicked();
-                            }}
-                        >
-                            Save
-                        </button>
+                {service !== undefined ? (
+                    <div className="relative bg-gray-800 rounded w-3/4 mx-auto flex flex-col justify-center items-center p-4 shadow-lg ">
+                        <UrlRedirectsTable
+                            service={service}
+                            handleAddNewRedirect={addNewRedirect}
+                            handleUpdateUrlRedirect={updateUrlRedirect}
+                            handleDeleteRedirect={deleteRedirect}
+                        />
+                        <div className="flex justify-end mt-4 mr-6 w-full">
+                            <button
+                                className="bg-red-700 hover:bg-red-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mx-2"
+                                onClick={closeModal}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-indigo-700 hover:bg-indigo-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                onClick={saveClicked}
+                            >
+                                Save
+                            </button>
+                        </div>
                     </div>
-                </div>
+                ) : null}
             </div>
         </Dialog>
     );

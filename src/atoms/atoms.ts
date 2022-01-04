@@ -31,3 +31,11 @@ export const loadingFlagsState = atom({
         updatingService: false,
     },
 });
+
+export const redirectsModalState = atom({
+    key: "isAddingRedirects",
+    default: {
+        isAddingRedirects: false,
+        service: <Service>{},
+    },
+});

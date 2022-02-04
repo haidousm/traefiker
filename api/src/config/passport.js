@@ -1,8 +1,6 @@
-import fs from "fs";
-import { PassportStatic } from "passport";
-import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
-
-import { User } from "../models/User";
+const fs = require("fs");
+const { Strategy, ExtractJwt } = require("passport-jwt");
+const User = require("../models/User");
 
 const PUB_KEY = fs.readFileSync(`${__dirname}/keys/public.pem`);
 
@@ -12,9 +10,9 @@ const jwtOptions = {
     algorithms: ["RS256"],
 };
 
-const setupPassport = (passport: PassportStatic) => {
+const setupPassport = (passport) => {
     passport.use(
-        new JWTStrategy(jwtOptions, async (jwt_payload, done) => {
+        new Strategy(jwtOptions, async (jwt_payload, done) => {
             try {
                 const user = await User.findById(jwt_payload.sub);
                 if (user) {
@@ -28,4 +26,4 @@ const setupPassport = (passport: PassportStatic) => {
     );
 };
 
-export default setupPassport;
+module.exports = setupPassport;

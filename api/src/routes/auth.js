@@ -1,6 +1,6 @@
-import express from "express";
-import { User } from "../models/User";
-import { validatePassword, issueJWT } from "../utils/password";
+const express = require("express");
+const User = require("../models/User");
+const { validatePassword, issueJWT } = require("../utils/password");
 
 const router = express.Router();
 
@@ -17,4 +17,4 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ message: "Invalid credentials" });
 });
 
-export default router;
+module.exports = router;

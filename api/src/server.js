@@ -1,14 +1,14 @@
-import express from "express";
-import path from "path";
-import dotenv from "dotenv";
-import passport from "passport";
+const express = require("express");
+const path = require("path");
+const dotenv = require("dotenv");
+const passport = require("passport");
 
-import connectDB from "./config/db";
-import setupPassport from "./config/passport";
+const connectDB = require("./config/db");
+const setupPassport = require("./config/passport");
 
-import authRouter from "./routes/auth";
-import servicesRouter from "./routes/services";
-import dockerRouter from "./routes/docker";
+const authRouter = require("./routes/auth");
+const servicesRouter = require("./routes/services");
+const dockerRouter = require("./routes/docker");
 
 dotenv.config({
     path: path.resolve(__dirname, "./config/config.env"),

@@ -1,5 +1,5 @@
-import express from "express";
-import docker from "../config/docker";
+const express = require("express");
+const docker = require("../config/docker");
 const router = express.Router();
 
 router.get("/pull/:image", async (req, res) => {
@@ -8,4 +8,4 @@ router.get("/pull/:image", async (req, res) => {
     stream.pipe(res);
 });
 
-export default router;
+module.exports = router;

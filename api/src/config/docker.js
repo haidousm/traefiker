@@ -1,3 +1,3 @@
-import Docker from "dockerode";
+const Docker = require("dockerode");
 const docker = new Docker({ socketPath: "/var/run/docker.sock" });
-export default docker;
+module.exports = docker;

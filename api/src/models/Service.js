@@ -1,16 +1,6 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-interface ServiceModel extends mongoose.Document {
-    name: string;
-    image: string;
-    hosts: string[];
-    order: number;
-    createdAt: Date;
-    dockerId: string;
-    tag: string;
-}
-
-const ServiceSchema = new mongoose.Schema<ServiceModel>({
+const ServiceSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -45,6 +35,6 @@ ServiceSchema.set("toJSON", {
     virtuals: true,
 });
 
-const Service = mongoose.model<ServiceModel>("Service", ServiceSchema);
+const Service = mongoose.model("Service", ServiceSchema);
 
-export { ServiceModel, Service };
+module.exports = Service;

@@ -1,5 +1,5 @@
-import fs from "fs";
-import crypto from "crypto";
+const fs = require("fs");
+const crypto = require("crypto");
 
 const keyPair = crypto.generateKeyPairSync("rsa", {
     modulusLength: 4096,

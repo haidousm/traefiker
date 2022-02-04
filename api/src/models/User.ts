@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 
-interface UserModel extends mongoose.Document {
+interface UserModel {
+    id: Types.ObjectId;
     username: string;
     hash: string;
     salt: string;

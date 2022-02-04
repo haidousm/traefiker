@@ -6,6 +6,8 @@ import passport from "passport";
 import connectDB from "./config/db";
 import setupPassport from "./config/passport";
 
+import authRouter from "./routes/auth";
+
 dotenv.config({
     path: path.resolve(__dirname, "./config/config.env"),
 });
@@ -14,9 +16,11 @@ connectDB();
 setupPassport(passport);
 
 const app = express();
-app.get("/", (_req, res) => {
-    res.send("hi");
-});
+
+app.use(passport.initialize());
+app.use(express.json());
+
+app.use("/api/auth", authRouter);
 
 const port = 8080;
 app.listen(port, () => console.log(`Server started on port ${port}`));

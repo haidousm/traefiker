@@ -1,38 +1,30 @@
-import { CallbackError } from "mongoose";
+import fs from "fs";
 import { PassportStatic } from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
-import { User, UserModel } from "../models/User";
-import { validatePassword } from "../utils/password";
+import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
+
+import { User } from "../models/User";
+
+const PUB_KEY = fs.readFileSync(`${__dirname}/keys/public.pem`);
+
+const jwtOptions = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: PUB_KEY,
+    algorithms: ["RS256"],
+};
 
 const setupPassport = (passport: PassportStatic) => {
-    passport.serializeUser((user: UserModel, done) => {
-        done(null, user.id);
-    });
-
-    passport.deserializeUser((id: string, done) => {
-        User.findById(id, (err: CallbackError, user: UserModel) => {
-            done(err, user);
-        });
-    });
-
     passport.use(
-        new LocalStrategy(
-            { usernameField: "username", passwordField: "password" },
-            async (username: string, password: string, done) => {
-                const user = await User.findOne({ username });
-                if (!user) {
-                    return done(null, false, {
-                        message: "Incorrect username.",
-                    });
+        new JWTStrategy(jwtOptions, async (jwt_payload, done) => {
+            try {
+                const user = await User.findById(jwt_payload.sub);
+                if (user) {
+                    return done(null, user);
                 }
-                if (!validatePassword(password, user.hash, user.salt)) {
-                    return done(null, false, {
-                        message: "Incorrect password.",
-                    });
-                }
-                return done(null, user);
+                return done(null, false);
+            } catch (err) {
+                return done(err, false);
             }
-        )
+        })
     );
 };
 

@@ -8,6 +8,7 @@
     "private": true,
     "main": "dist/server.js",
     "scripts": {
+        "gen-keys": "tsc && node dist/config/genKeys.js",
         "start": "yarn lint && tsc && node .",
         "dev": "yarn lint && yarn nodemon src/server.ts",
         "lint": "yarn eslint . --ext .ts"
@@ -16,7 +17,7 @@
         "@types/express": "^4.17.13",
         "@types/node": "^17.0.14",
         "@types/passport": "^1.0.7",
-        "@types/passport-local": "^1.0.34",
+        "@types/passport-jwt": "^3.0.6",
         "@typescript-eslint/eslint-plugin": "^5.10.2",
         "@typescript-eslint/parser": "^5.10.2",
         "eslint": "^8.8.0",
@@ -27,8 +28,9 @@
     "dependencies": {
         "dotenv": "^16.0.0",
         "express": "^4.17.2",
+        "jsonwebtoken": "^8.5.1",
         "mongoose": "^6.2.0",
         "passport": "^0.5.2",
-        "passport-local": "^1.0.0"
+        "passport-jwt": "^4.0.0"
     }
 }

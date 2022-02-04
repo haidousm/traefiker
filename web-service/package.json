@@ -11,8 +11,6 @@
         "@headlessui/react": "^1.4.2",
         "@heroicons/react": "^1.0.5",
         "@monaco-editor/react": "^4.3.1",
-        "@types/react-beautiful-dnd": "^13.1.2",
-        "@types/seedrandom": "^3.0.1",
         "axios": "^0.24.0",
         "intercept-stdout": "^0.1.2",
         "monaco-editor": "^0.31.1",
@@ -34,6 +32,8 @@
         "eslint-config-next": "12.0.7",
         "postcss": "^8.4.5",
         "tailwindcss": "^3.0.7",
-        "typescript": "4.5.4"
+        "typescript": "4.5.4",
+        "@types/react-beautiful-dnd": "^13.1.2",
+        "@types/seedrandom": "^3.0.1"
     }
 }

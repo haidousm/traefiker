@@ -13,12 +13,6 @@ const Home: NextPage = () => {
                 />
                 <link rel="icon" href="traefik-logo.png" />
             </Head>
-            <nav>
-                <Navbar />
-            </nav>
-            <main>
-                <h1>Welcome to Traefiker.</h1>
-            </main>
         </div>
     );
 };

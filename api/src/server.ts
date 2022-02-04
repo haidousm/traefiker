@@ -1,6 +1,15 @@
 import express from "express";
-const app = express();
+import path from "path";
+import dotenv from "dotenv";
+import connectDB from "./config/db";
 
+dotenv.config({
+    path: path.resolve(__dirname, "./config/config.env"),
+});
+
+connectDB();
+
+const app = express();
 app.get("/", (req, res) => {
     res.send("hi");
 });

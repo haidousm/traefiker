@@ -6,6 +6,8 @@ interface ServiceModel extends mongoose.Document {
     hosts: string[];
     order: number;
     createdAt: Date;
+    dockerId: string;
+    tag: string;
 }
 
 const ServiceSchema = new mongoose.Schema<ServiceModel>({
@@ -28,6 +30,14 @@ const ServiceSchema = new mongoose.Schema<ServiceModel>({
     createdAt: {
         type: Date,
         default: Date.now,
+    },
+    dockerId: {
+        type: String,
+        required: false,
+    },
+    tag: {
+        type: String,
+        required: false,
     },
 });
 

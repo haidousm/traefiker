@@ -35,7 +35,7 @@ const launchService = async (service) => {
 const launchContainer = async (service, fullImageName) => {
     const container = await docker.createContainer({
         Image: fullImageName,
-        name: `traefiker_${service.name}`,
+        name: service.tag,
     });
 
     service.dockerId = container.id;

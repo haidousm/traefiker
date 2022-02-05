@@ -4,6 +4,7 @@ const ServiceSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
+        unique: true,
     },
     status: {
         type: String,
@@ -29,6 +30,7 @@ const ServiceSchema = new mongoose.Schema({
     dockerId: {
         type: String,
         required: false,
+        unique: true,
     },
     tag: {
         type: String,

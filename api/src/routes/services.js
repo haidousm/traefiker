@@ -2,7 +2,7 @@ const express = require("express");
 const Service = require("../models/Service");
 const Image = require("../models/Image");
 
-const launchService = require("../utils/docker");
+const { docker, launchService } = require("../utils/docker");
 
 const router = express.Router();
 
@@ -71,7 +71,13 @@ const createService = async (serviceRequest, image) => {
     });
 
     if (oldService) {
-        await oldService.remove();
+        if (oldService.dockerId) {
+            const container = docker.getContainer(oldService.dockerId);
+            await container.stop();
+            await container.remove();
+        } else {
+            await oldService.remove();
+        }
     }
     await service.save();
     return service;

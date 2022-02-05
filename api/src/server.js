@@ -7,7 +7,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const setupPassport = require("./config/passport");
 
-const { io } = require("./config/socket");
+const io = require("./config/socket");
 
 dotenv.config({
     path: path.resolve(__dirname, "./config/config.env"),

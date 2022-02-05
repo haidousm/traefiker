@@ -1,6 +1,9 @@
-const Image = require("../models/Image");
-const docker = require("../config/docker");
+const Docker = require("dockerode");
 const io = require("../config/socket");
+
+const Image = require("../models/Image");
+
+const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
 const launchService = async (service) => {
     const image = await Image.findById(service.image);
@@ -19,7 +22,7 @@ const launchService = async (service) => {
                 },
                 (chunk) => {
                     const notification = {
-                        route: "launchService",
+                        method: "launchService",
                         chunk,
                     };
                     io.sockets.emit("notifications", notification);
@@ -40,4 +43,4 @@ const launchContainer = async (service, fullImageName) => {
     await container.start();
 };
 
-module.exports = launchService;
+module.exports = { docker, launchService };

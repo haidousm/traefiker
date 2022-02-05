@@ -1,8 +1,9 @@
 const express = require("express");
 const Service = require("../models/Service");
 const Image = require("../models/Image");
-const docker = require("../config/docker");
-const streamNotifications = require("../utils/notifications");
+
+const launchService = require("../utils/docker");
+
 const router = express.Router();
 
 router.get("/", async (_req, res) => {
@@ -14,22 +15,16 @@ router.post("/", async (req, res) => {
     const serviceRequest = req.body;
     const fullImageName = serviceRequest.image;
 
-    const image = await getOrCreateImage(req, res, fullImageName);
+    const image = await getOrCreateImage(fullImageName);
     if (image === -1) {
         return res.status(400).json({
             message: "Invalid image name",
         });
     }
 
-    const service = new Service({
-        name: serviceRequest.name,
-        status: "created",
-        image: image._id,
-        hosts: serviceRequest.hosts,
-        order: serviceRequest.order,
-    });
-    await service.save();
+    const service = await createService(serviceRequest, image);
 
+    await launchService(service, fullImageName);
     res.json(service);
 });
 
@@ -60,6 +55,26 @@ const getOrCreateImage = async (fullImageName) => {
     }
 
     return image;
+};
+
+const createService = async (serviceRequest, image) => {
+    const service = new Service({
+        name: serviceRequest.name,
+        status: "created",
+        image: image._id,
+        hosts: serviceRequest.hosts,
+        order: serviceRequest.order,
+    });
+
+    const oldService = await Service.findOne({
+        name: service.name,
+    });
+
+    if (oldService) {
+        await oldService.remove();
+    }
+    await service.save();
+    return service;
 };
 
 module.exports = router;

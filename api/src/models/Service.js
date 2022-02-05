@@ -10,7 +10,7 @@ const ServiceSchema = new mongoose.Schema({
         enum: ["created", "running", "stopped"],
     },
     image: {
-        type: mongoose.type.objectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Image",
         required: true,
     },

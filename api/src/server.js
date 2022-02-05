@@ -30,7 +30,6 @@ app.use("/api/auth", require("./routes/auth"));
 
 app.use(passport.authenticate("jwt", { session: false }));
 app.use("/api/services", require("./routes/services"));
-app.use("/api/docker", require("./routes/docker"));
 
 const http = require("http");
 const server = http.createServer(app);

@@ -23,5 +23,4 @@ ImageSchema.set("toJSON", {
     virtuals: true,
 });
 
-const Service = mongoose.model("Service", ImageSchema);
-module.exports = Service;
+module.exports = mongoose.model("Image", ImageSchema);

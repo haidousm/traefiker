@@ -9,6 +9,7 @@
         "sourceType": "script"
     },
     "rules": {
-        "no-control-regex": 0
+        "no-control-regex": 0,
+        "no-unused-vars": 0
     }
 }

@@ -5,8 +5,13 @@ const ServiceSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    image: {
+    status: {
         type: String,
+        enum: ["created", "running", "stopped"],
+    },
+    image: {
+        type: mongoose.type.objectId,
+        ref: "Image",
         required: true,
     },
     hosts: {
@@ -35,6 +40,4 @@ ServiceSchema.set("toJSON", {
     virtuals: true,
 });
 
-const Service = mongoose.model("Service", ServiceSchema);
-
-module.exports = Service;
+module.exports = mongoose.model("Service", ServiceSchema);

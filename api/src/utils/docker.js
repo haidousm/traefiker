@@ -11,6 +11,10 @@ const createContainer = async (service, image) => {
             labelObj[element.split("=")[0]] = element.split("=")[1];
         });
 
+        if (service.containerId) {
+            await deleteContainer(service);
+        }
+
         const container = await docker.createContainer({
             Image: image.resolvedName,
             name: service.tag,
@@ -20,6 +24,7 @@ const createContainer = async (service, image) => {
             },
         });
         service.containerId = container.id;
+        service.status = "created";
         await service.save();
     });
 };
@@ -27,11 +32,15 @@ const createContainer = async (service, image) => {
 const startContainer = async (service) => {
     const container = docker.getContainer(service.containerId);
     await container.start();
+    service.state = "running";
+    await service.save();
 };
 
 const stopContainer = async (service) => {
     const container = docker.getContainer(service.containerId);
     await container.stop();
+    service.state = "stopped";
+    await service.save();
 };
 
 const deleteContainer = async (service) => {
@@ -49,10 +58,33 @@ const getContainerHealth = async (service) => {
     return data.State;
 };
 
+const updateContainer = async (service, image) => {
+    const labels = service.getServiceLabels();
+    const labelObj = {};
+
+    labels.forEach((element) => {
+        labelObj[element.split("=")[0]] = element.split("=")[1];
+    });
+
+    await deleteContainer(service);
+    const container = await docker.createContainer({
+        Image: image.resolvedName,
+        name: service.tag,
+        Labels: labelObj,
+        HostConfig: {
+            NetworkMode: service.network,
+        },
+    });
+    service.containerId = container.id;
+    service.status = "created";
+    await service.save();
+};
+
 module.exports = {
     createContainer,
     startContainer,
     stopContainer,
     deleteContainer,
     getContainerHealth,
+    updateContainer,
 };

@@ -7,6 +7,7 @@ const {
     stopContainer,
     deleteContainer,
     getContainerHealth,
+    updateContainer,
 } = require("../utils/docker");
 const { getOrCreateImage, createService } = require("../utils/services");
 
@@ -66,6 +67,36 @@ router.get("/:name", async (req, res) => {
 });
 
 /**
+ * @route PUT /services/:name
+ * @desc Update a service
+ * @access Private
+ * @param {string} name - The name of the service
+ */
+
+router.put("/:name", async (req, res) => {
+    const name = req.params.name;
+    const service = await Service.findOne({
+        name,
+    }).populate("image");
+    if (!service) {
+        return res.status(404).json({
+            message: "Service not found",
+        });
+    }
+
+    const updateRequest = req.body;
+
+    const hosts = updateRequest.hosts;
+    if (hosts) {
+        service.hosts = hosts;
+        await service.save();
+        await updateContainer(service, service.image);
+        await startContainer(service);
+    }
+    res.json(service);
+});
+
+/**
  * @route PUT /services/start/:name
  * @desc Start a service
  * @access Private
@@ -81,8 +112,6 @@ router.put("/start/:name", async (req, res) => {
         });
     }
     await startContainer(service);
-    service.status = "running";
-    await service.save();
     res.json(service);
 });
 

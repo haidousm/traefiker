@@ -15,6 +15,11 @@ const ServiceSchema = new mongoose.Schema({
         ref: "Image",
         required: true,
     },
+    network: {
+        type: String,
+        required: false,
+        default: "web",
+    },
     hosts: {
         type: [String],
         required: true,

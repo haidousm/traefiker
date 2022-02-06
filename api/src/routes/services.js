@@ -62,7 +62,7 @@ router.get("/:name", async (req, res) => {
             message: "Service not found",
         });
     }
-    res.json(service.getServiceLabels());
+    res.json(service);
 });
 
 /**

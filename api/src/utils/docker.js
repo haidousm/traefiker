@@ -4,9 +4,20 @@ const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 const createContainer = async (service, image) => {
     const pullStream = await docker.pull(image.resolvedName);
     docker.modem.followProgress(pullStream, async () => {
+        const labels = service.getServiceLabels();
+        const labelObj = {};
+
+        labels.forEach((element) => {
+            labelObj[element.split("=")[0]] = element.split("=")[1];
+        });
+
         const container = await docker.createContainer({
             Image: image.resolvedName,
             name: service.tag,
+            Labels: labelObj,
+            HostConfig: {
+                NetworkMode: service.network,
+            },
         });
         service.containerId = container.id;
         await service.save();

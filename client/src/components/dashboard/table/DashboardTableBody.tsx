@@ -170,12 +170,28 @@ function DashboardTableBody({ columns }: Props) {
     };
 
     const startServiceClicked = async (service: Service) => {
+        setServices(
+            services.map((s) => {
+                if (s.name === service.name) {
+                    return { ...s, status: "running" };
+                }
+                return s;
+            })
+        );
         await startService(service);
         const updatedServices = await getServices();
         setServices(updatedServices);
     };
 
     const stopServiceClicked = async (service: Service) => {
+        setServices(
+            services.map((s) => {
+                if (s.name === service.name) {
+                    return { ...s, status: "stopped" };
+                }
+                return s;
+            })
+        );
         await stopService(service);
         const updatedServices = await getServices();
         setServices(updatedServices);

@@ -1,18 +1,12 @@
 import { PlusCircleIcon, PlusIcon, TrashIcon } from "@heroicons/react/solid";
-import { useEffect, useState } from "react";
-import { Service } from "../../../types/Service";
-import { UrlRedirect } from "../../../types/UrlRedirect";
+import { Redirect } from "../../../types/UrlRedirect";
 import UrlRedirectsTableRow from "./UrlRedirectsTableRow";
 
 function UrlRedirectsTable(props: {
-    service: Service;
-    handleUpdateUrlRedirect: (
-        id: number,
-        fromUrl: string,
-        toUrl: string
-    ) => void;
+    redirects: Redirect[];
+    handleUpdateRedirect: (redirect: Redirect) => void;
     handleAddNewRedirect: () => void;
-    handleDeleteRedirect: (id: number) => void;
+    handleDeleteRedirect: (redirect: Redirect) => void;
 }) {
     const columns = [
         { name: "From (Regex)", screenReaderOnly: false },
@@ -51,15 +45,13 @@ function UrlRedirectsTable(props: {
                 </tr>
             </thead>
             <tbody>
-                {props.service.redirects !== undefined &&
-                props.service.redirects.length !== 0 ? (
-                    props.service.redirects!.map((urlRedirect: UrlRedirect) => (
+                {props.redirects !== undefined &&
+                props.redirects.length !== 0 ? (
+                    props.redirects!.map((urlRedirect: Redirect, i) => (
                         <UrlRedirectsTableRow
-                            key={urlRedirect.id}
+                            key={i}
                             urlRedirect={urlRedirect}
-                            handleUpdateUrlRedirect={
-                                props.handleUpdateUrlRedirect
-                            }
+                            handleUpdateRedirect={props.handleUpdateRedirect}
                             handleDeleteRedirect={props.handleDeleteRedirect}
                         />
                     ))

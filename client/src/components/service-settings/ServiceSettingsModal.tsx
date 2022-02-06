@@ -9,11 +9,16 @@ import {
     servicesState,
 } from "../../atoms/atoms";
 import { Service } from "../../types/Service";
+import { Redirect } from "../../types/UrlRedirect";
 import UrlRedirectsTable from "./table/UrlRedirectsTable";
 
-const createService = async (service: Service, autoReload: boolean) => {
-    return await axios.post(`/api/services?autoreload=${autoReload}`, {
-        service,
+const ROOT_API_URL = "http://localhost:8081";
+
+const updateService = async (service: Service) => {
+    return await axios.put(`${ROOT_API_URL}/api/services/${service.name}`, {
+        hosts: service.hosts,
+        image: service.image.resolvedName,
+        redirects: service.redirects,
     });
 };
 
@@ -28,20 +33,25 @@ function ServiceSettingsModal() {
         redirectsModalOptions.service
     );
 
+    const [redirects, setRedirects] = useState<Redirect[] | undefined>();
+
     useEffect(() => {
         setService(redirectsModalOptions.service);
+        setRedirects(redirectsModalOptions.service.redirects);
     }, [redirectsModalOptions.service]);
 
     const saveClicked = async () => {
         closeModal();
-        setLoadingFlags({
-            ...loadingFlags,
-            updatingService: true,
+
+        const noIdsRedirects = redirects!.map((redirect) => {
+            return {
+                from: redirect.from,
+                to: redirect.to,
+            };
         });
-        await createService(service, autoReload);
-        setLoadingFlags({
-            ...loadingFlags,
-            updatingService: false,
+        await updateService({
+            ...service,
+            redirects: noIdsRedirects,
         });
     };
 
@@ -53,47 +63,34 @@ function ServiceSettingsModal() {
     };
 
     const addNewRedirect = () => {
-        setService((prevService) => {
-            return {
-                ...prevService,
-                redirects: [
-                    ...prevService.redirects,
-                    {
-                        id: prevService.redirects.length,
-                        from: "",
-                        to: "",
-                    },
-                ],
-            };
+        setRedirects((prevRedirects) => {
+            return [
+                ...prevRedirects!,
+                {
+                    _id: prevRedirects ? `${prevRedirects.length + 1}` : "0",
+                    from: "",
+                    to: "",
+                },
+            ];
         });
     };
 
-    const updateUrlRedirect = (id: number, fromUrl: string, toUrl: string) => {
-        setService((prevService) => {
-            return {
-                ...prevService,
-                redirects: prevService.redirects.map((urlRedirect) => {
-                    if (urlRedirect.id === id) {
-                        return {
-                            ...urlRedirect,
-                            from: fromUrl,
-                            to: toUrl,
-                        };
-                    } else {
-                        return urlRedirect;
-                    }
-                }),
-            };
+    const updateRedirect = (redirect: Redirect) => {
+        setRedirects((prevRedirects) => {
+            return prevRedirects!.map((prevRedirect) => {
+                if (prevRedirect._id == redirect._id) {
+                    return redirect;
+                }
+                return prevRedirect;
+            });
         });
     };
 
-    const deleteRedirect = (id: number) => {
-        setService({
-            ...service,
-            redirects: service.redirects!.filter(
-                (urlRedirect) => urlRedirect.id !== id
-            ),
+    const deleteRedirect = (redirect: Redirect) => {
+        const newRedirects = redirects!.filter((prevRedirect) => {
+            return prevRedirect._id !== redirect._id;
         });
+        setRedirects(newRedirects);
     };
 
     return (
@@ -108,9 +105,9 @@ function ServiceSettingsModal() {
                 {service !== undefined ? (
                     <div className="relative bg-gray-800 rounded w-3/4 mx-auto flex flex-col justify-center items-center p-4 shadow-lg ">
                         <UrlRedirectsTable
-                            service={service}
+                            redirects={redirects!}
+                            handleUpdateRedirect={updateRedirect}
                             handleAddNewRedirect={addNewRedirect}
-                            handleUpdateUrlRedirect={updateUrlRedirect}
                             handleDeleteRedirect={deleteRedirect}
                         />
                         <div className="flex justify-end mt-4 mr-6 w-full">

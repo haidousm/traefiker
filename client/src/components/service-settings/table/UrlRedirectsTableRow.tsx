@@ -1,21 +1,21 @@
 import { TrashIcon } from "@heroicons/react/solid";
 import { useEffect, useState } from "react";
-import { UrlRedirect } from "../../../types/UrlRedirect";
+import { Redirect } from "../../../types/UrlRedirect";
 
 function UrlRedirectsTableRow(props: {
-    urlRedirect: UrlRedirect;
-    handleUpdateUrlRedirect: (
-        id: number,
-        fromUrl: string,
-        toUrl: string
-    ) => void;
-    handleDeleteRedirect: (id: number) => void;
+    urlRedirect: Redirect;
+    handleUpdateRedirect: (redirect: Redirect) => void;
+    handleDeleteRedirect: (redirect: Redirect) => void;
 }) {
     const [fromUrl, setFromUrl] = useState(props.urlRedirect.from);
     const [toUrl, setToUrl] = useState(props.urlRedirect.to);
 
     useEffect(() => {
-        props.handleUpdateUrlRedirect(props.urlRedirect.id, fromUrl, toUrl);
+        props.handleUpdateRedirect({
+            ...props.urlRedirect,
+            from: fromUrl,
+            to: toUrl,
+        });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fromUrl, toUrl]);
 
@@ -49,7 +49,7 @@ function UrlRedirectsTableRow(props: {
                 <button
                     className="bg-transparent text-red-700 hover:text-red-400 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline "
                     onClick={() => {
-                        props.handleDeleteRedirect(props.urlRedirect.id);
+                        props.handleDeleteRedirect(props.urlRedirect);
                     }}
                 >
                     <TrashIcon className="w-7 h-7" />

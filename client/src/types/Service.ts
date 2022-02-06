@@ -1,5 +1,5 @@
 import { Image } from "./Image";
-import { UrlRedirect } from "./UrlRedirect";
+import { Redirect } from "./UrlRedirect";
 
 export interface Service {
     id?: string;
@@ -7,7 +7,7 @@ export interface Service {
     image: Image;
     hosts: string[];
     order: number;
-    redirects: UrlRedirect[];
+    redirects?: Redirect[];
 }
 export interface _Service {
     image: string;

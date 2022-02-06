@@ -101,9 +101,9 @@ function DashboardTableBody({ columns }: Props) {
         setIsEditingService(serviceUnderEditing !== undefined);
     }, [serviceUnderEditing]);
 
-    useEffect(() => {
-        updateServiceOrdering(services);
-    }, [services]);
+    // useEffect(() => {
+    //     updateServiceOrdering(services);
+    // }, [services]);
 
     const onDragEnd = async (result: any) => {
         if (!result.destination) {

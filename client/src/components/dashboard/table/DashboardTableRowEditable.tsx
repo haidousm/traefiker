@@ -35,25 +35,24 @@ function DashboardTableRowEditable({
                     className="
         inline-flex
         rounded-md
-        bg-gray-400
+        bg-blue-100
         px-4
         py-2
         text-sm
         font-semibold
         leading-5
-        text-gray-600
+        text-blue-800
     "
                 >
                     <input
                         id="name"
                         type="text"
-                        className="outline-non w-full bg-transparent text-center"
+                        className="w-full bg-transparent text-center outline-none "
                         placeholder="Service name.."
                         value={name}
                         onChange={(e) => {
                             setName(e.target.value);
                         }}
-                        disabled={true}
                     />
                 </span>
             </td>

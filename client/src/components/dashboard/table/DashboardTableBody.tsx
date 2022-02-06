@@ -64,7 +64,7 @@ const updateService = async (service: Service) => {
 
 const deleteService = async (service: Service, autoReload: boolean) => {
     return await axios.delete(
-        `/api/services/${service.name}?autoreload=${autoReload}`
+        `${ROOT_API_URL}/api/services/delete/${service.name}`
     );
 };
 
@@ -143,25 +143,9 @@ function DashboardTableBody({ columns }: Props) {
     };
 
     const deleteClicked = async (service: Service) => {
-        setLoadingFlags((prev) => ({
-            ...prev,
-            deletingService: true && autoReload,
-        }));
-
-        const res = await deleteService(service, autoReload);
-        if (res.status === 200) {
-            let updatedServices = services;
-            updatedServices = updatedServices
-                .map((s) => {
-                    if (s.order > service.order) {
-                        s.order--;
-                    }
-                    return s;
-                })
-                .filter((s) => s.name !== service.name);
-            setServices(updatedServices);
-            setLoadingFlags((prev) => ({ ...prev, deletingService: false }));
-        }
+        await deleteService(service, autoReload);
+        const updatedServices = await getServices();
+        setServices(updatedServices);
     };
 
     const redirectsClicked = (service: Service) => {

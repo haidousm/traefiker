@@ -165,7 +165,7 @@ router.put("/stop/:name", async (req, res) => {
  * @param {string} name - The name of the service
  */
 
-router.put("/delete/:name", async (req, res) => {
+router.delete("/delete/:name", async (req, res) => {
     const serviceName = req.params.name;
     const service = await Service.findOne({
         name: serviceName,

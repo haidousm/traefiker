@@ -84,12 +84,16 @@ function DashboardTableRow({
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    style={{
-                        borderLeftWidth: "32px",
-                    }}
-                    className={`${getStatusColor()} border-l-red-600`}
                 >
-                    <td className="whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4">
+                    <td
+                        className={
+                            "whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4 " +
+                            getStatusColor()
+                        }
+                        style={{
+                            borderLeftWidth: "32px",
+                        }}
+                    >
                         <span
                             className="
                 inline-flex

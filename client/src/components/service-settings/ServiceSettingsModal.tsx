@@ -56,10 +56,10 @@ function ServiceSettingsModal() {
         setService((prevService) => {
             return {
                 ...prevService,
-                urlRedirects: [
-                    ...prevService.urlRedirects,
+                redirects: [
+                    ...prevService.redirects,
                     {
-                        id: prevService.urlRedirects.length,
+                        id: prevService.redirects.length,
                         from: "",
                         to: "",
                     },
@@ -72,7 +72,7 @@ function ServiceSettingsModal() {
         setService((prevService) => {
             return {
                 ...prevService,
-                urlRedirects: prevService.urlRedirects.map((urlRedirect) => {
+                redirects: prevService.redirects.map((urlRedirect) => {
                     if (urlRedirect.id === id) {
                         return {
                             ...urlRedirect,
@@ -90,7 +90,7 @@ function ServiceSettingsModal() {
     const deleteRedirect = (id: number) => {
         setService({
             ...service,
-            urlRedirects: service.urlRedirects!.filter(
+            redirects: service.redirects!.filter(
                 (urlRedirect) => urlRedirect.id !== id
             ),
         });

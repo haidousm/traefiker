@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Service } from "../../../types/Service";
+import { Image } from "../../../types/Image";
 import ReactTooltip from "react-tooltip";
 
 interface Props {
@@ -14,7 +15,7 @@ function DashboardTableRowEditable({
     cancelClicked,
 }: Props) {
     const [name, setName] = useState("");
-    const [image, setImage] = useState("");
+    const [image, setImage] = useState<Image | undefined>();
     const [hosts, setHosts] = useState<string[]>([]);
     const [possibleHost, setPossibleHost] = useState("");
 
@@ -43,7 +44,7 @@ function DashboardTableRowEditable({
         text-blue-800
     "
                 >
-                    <input
+                    {/* <input
                         id="name"
                         type="text"
                         className="w-full bg-transparent outline-none text-center"
@@ -52,7 +53,23 @@ function DashboardTableRowEditable({
                         onChange={(e) => {
                             setName(e.target.value);
                         }}
-                    />
+                    /> */}
+                    <span
+                        className="
+                px-4
+                py-2
+                inline-flex
+                text-xs
+                lg:text-sm
+                leading-5
+                font-semibold
+                rounded-md
+                bg-blue-100
+                text-blue-800
+            "
+                    >
+                        {name}
+                    </span>
                 </span>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-center ">
@@ -74,9 +91,12 @@ function DashboardTableRowEditable({
                         type="text"
                         className="w-full bg-transparent outline-none text-center"
                         placeholder="Image name.."
-                        value={image}
+                        value={image ? image.resolvedName : ""}
                         onChange={(e) => {
-                            setImage(e.target.value);
+                            setImage({
+                                ...image!,
+                                resolvedName: e.target.value,
+                            });
                         }}
                     />
                 </span>
@@ -161,13 +181,13 @@ function DashboardTableRowEditable({
                     onClick={() => {
                         saveClicked({
                             name: name,
-                            image: image,
+                            image: image!,
                             hosts:
                                 possibleHost !== ""
                                     ? [...hosts, possibleHost]
                                     : hosts,
                             order: service ? service.order : 0,
-                            urlRedirects: service?.urlRedirects ?? [],
+                            redirects: service?.redirects ?? [],
                         });
                     }}
                 >

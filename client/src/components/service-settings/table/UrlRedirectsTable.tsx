@@ -51,22 +51,18 @@ function UrlRedirectsTable(props: {
                 </tr>
             </thead>
             <tbody>
-                {props.service.urlRedirects !== undefined &&
-                props.service.urlRedirects.length !== 0 ? (
-                    props.service.urlRedirects!.map(
-                        (urlRedirect: UrlRedirect) => (
-                            <UrlRedirectsTableRow
-                                key={urlRedirect.id}
-                                urlRedirect={urlRedirect}
-                                handleUpdateUrlRedirect={
-                                    props.handleUpdateUrlRedirect
-                                }
-                                handleDeleteRedirect={
-                                    props.handleDeleteRedirect
-                                }
-                            />
-                        )
-                    )
+                {props.service.redirects !== undefined &&
+                props.service.redirects.length !== 0 ? (
+                    props.service.redirects!.map((urlRedirect: UrlRedirect) => (
+                        <UrlRedirectsTableRow
+                            key={urlRedirect.id}
+                            urlRedirect={urlRedirect}
+                            handleUpdateUrlRedirect={
+                                props.handleUpdateUrlRedirect
+                            }
+                            handleDeleteRedirect={props.handleDeleteRedirect}
+                        />
+                    ))
                 ) : (
                     <tr>
                         <td

@@ -62,7 +62,7 @@ function DashboardTableRow({
                 text-sky-800
             "
                         >
-                            {service.image}
+                            {service.image.resolvedName}
                         </span>
                     </td>
                     <td className="px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">

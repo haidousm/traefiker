@@ -26,7 +26,7 @@ app.use(express.json());
 
 app.use("/api/auth", require("./routes/auth"));
 
-app.use(passport.authenticate("jwt", { session: false }));
+// app.use(passport.authenticate("jwt", { session: false }));
 app.use("/api/services", require("./routes/services"));
 
 const port = 8081 || process.env.PORT;

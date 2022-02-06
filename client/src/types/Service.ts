@@ -1,11 +1,13 @@
+import { Image } from "./Image";
 import { UrlRedirect } from "./UrlRedirect";
 
 export interface Service {
+    id?: string;
     name: string;
-    image: string;
+    image: Image;
     hosts: string[];
     order: number;
-    urlRedirects: UrlRedirect[];
+    redirects: UrlRedirect[];
 }
 export interface _Service {
     image: string;

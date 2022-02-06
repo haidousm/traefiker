@@ -23,13 +23,6 @@ const Dashboard: NextPage = () => {
         "Doing some more magic..",
     ];
 
-    useEffect(() => {
-        const socket = io("http://localhost:8080");
-        socket.on("notification", (data) => {
-            console.log(data);
-        });
-    }, []);
-
     return (
         <div>
             <Head>

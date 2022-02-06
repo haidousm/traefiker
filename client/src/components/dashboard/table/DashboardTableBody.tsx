@@ -15,6 +15,8 @@ import SkeletonRow from "../../loading/SkeletonRow";
 import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
 
+const ROOT_API_URL = "http://localhost:8081";
+
 interface Props {
     columns: {
         name: string;
@@ -39,13 +41,24 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
 
 const getServices = async () => {
     return await (
-        await axios.get("/api/services")
+        await axios.get(`${ROOT_API_URL}/api/services`)
     ).data;
 };
 
 const createService = async (service: Service, autoReload: boolean) => {
-    return await axios.post(`/api/services?autoreload=${autoReload}`, {
-        service,
+    return await axios.post(`${ROOT_API_URL}/api/services/create`, {
+        name: service.name,
+        image: service.image.resolvedName,
+        hosts: service.hosts,
+        redirects: service.redirects,
+        order: service.order ?? 0,
+    });
+};
+
+const updateService = async (service: Service) => {
+    return await axios.put(`${ROOT_API_URL}/api/services/${service.name}`, {
+        hosts: service.hosts,
+        image: service.image.resolvedName,
     });
 };
 
@@ -112,25 +125,17 @@ function DashboardTableBody({ columns }: Props) {
             const updatedServices = [...services];
             updatedServices[index] = service;
             setServices(updatedServices);
-            setLoadingFlags((prev) => ({
-                ...prev,
-                updatingService: true && autoReload,
-            }));
+            await updateService(service);
         } else {
             setLoadingFlags((prev) => ({
                 ...prev,
                 creatingService: true && autoReload,
             }));
             service.order = services.length;
+            await createService(service, autoReload);
         }
-        await createService(service, autoReload);
         const updatedServices = await getServices();
         setServices(updatedServices);
-        setLoadingFlags((prev) => ({
-            ...prev,
-            creatingService: false,
-            updatingService: false,
-        }));
     };
     const cancelClicked = () => {
         setServiceUnderEditing(undefined);

@@ -39,7 +39,6 @@ const ServiceSchema = new mongoose.Schema({
     containerId: {
         type: String,
         required: false,
-        unique: true,
     },
     tag: {
         type: String,

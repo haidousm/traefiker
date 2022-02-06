@@ -21,30 +21,6 @@ const HOSTS_DELIMITER = " || ";
 const PATH_PREFIX_DELIMITER = " && ";
 const MIDDLEWARE_DELIMITER = ",";
 
-export function getAllServices() {
-    const dockerCompose = getData(process.env.DOCKER_COMPOSE_FILEPATH!);
-    const _services: _Service[] = Object.values(dockerCompose.services);
-    return _services.map((_service, index) => {
-        const name = Object.keys(dockerCompose.services).find(
-            (key: any) => dockerCompose.services[key] === _service
-        ) as string;
-        const hosts = getFormattedHostsFromService(name, _service);
-        const order = getOrderFromService(name, _service);
-        const urlRedirects = getRedirectsFromService(name, _service);
-        return {
-            name,
-            image: _service.image,
-            hosts,
-            order: order >= 0 ? order : index,
-            urlRedirects,
-        } as Service;
-    }) as Service[];
-}
-
-export function getServiceByName(name: string) {
-    return getAllServices().find((service) => service.name === name);
-}
-
 export function createService(
     name: string,
     image: string,

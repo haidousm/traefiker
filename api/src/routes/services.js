@@ -20,7 +20,7 @@ const router = express.Router();
  */
 
 router.get("/", async (_req, res) => {
-    const services = await Service.find();
+    const services = await Service.find().populate("image");
     res.json(services);
 });
 
@@ -89,9 +89,24 @@ router.put("/:name", async (req, res) => {
     const hosts = updateRequest.hosts;
     if (hosts) {
         service.hosts = hosts;
+    }
+
+    const image = updateRequest.image;
+    if (image) {
+        const newImage = await getOrCreateImage(image);
+        if (newImage === -1) {
+            return res.status(400).json({
+                message: "Invalid image name",
+            });
+        }
+        service.image = newImage;
+    }
+
+    if (hosts || image) {
         await updateContainer(service, service.image);
         await startContainer(service);
     }
+
     res.json(service);
 });
 

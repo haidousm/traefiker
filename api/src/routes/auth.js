@@ -4,6 +4,12 @@ const { validatePassword, issueJWT } = require("../utils/password");
 
 const router = express.Router();
 
+/**
+ * @route POST /auth/login
+ * @desc Login user
+ * @access Public
+ */
+
 router.post("/login", async (req, res) => {
     const user = await User.findOne({ username: req.body.username });
     if (!user) {

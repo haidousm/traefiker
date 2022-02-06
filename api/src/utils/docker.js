@@ -1,46 +1,47 @@
 const Docker = require("dockerode");
-const io = require("../config/socket");
-
-const Image = require("../models/Image");
-
 const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
-const launchService = async (service) => {
-    const image = await Image.findById(service.image);
-    const fullImageName = `${
-        image.repository === "_" ? "" : `${image.repository}/`
-    }${image.name}:${image.tag}`;
-    docker.pull(fullImageName, (err, stream) => {
-        if (err) {
-            console.log(fullImageName);
-            console.error(err);
-        } else {
-            docker.modem.followProgress(
-                stream,
-                async () => {
-                    await launchContainer(service, fullImageName);
-                },
-                (chunk) => {
-                    const notification = {
-                        method: "launchService",
-                        chunk,
-                    };
-                    io.sockets.emit("notifications", notification);
-                }
-            );
-        }
+const createContainer = async (service, image) => {
+    const pullStream = await docker.pull(image.resolvedName);
+    docker.modem.followProgress(pullStream, async () => {
+        const container = await docker.createContainer({
+            Image: image.resolvedName,
+            name: service.tag,
+        });
+        service.containerId = container.id;
+        await service.save();
     });
 };
 
-const launchContainer = async (service, fullImageName) => {
-    const container = await docker.createContainer({
-        Image: fullImageName,
-        name: service.tag,
-    });
-
-    service.dockerId = container.id;
-    await service.save();
+const startContainer = async (service) => {
+    const container = docker.getContainer(service.containerId);
     await container.start();
 };
 
-module.exports = { docker, launchService };
+const stopContainer = async (service) => {
+    const container = docker.getContainer(service.containerId);
+    await container.stop();
+};
+
+const deleteContainer = async (service) => {
+    const container = docker.getContainer(service.containerId);
+    const containerState = (await container.inspect()).State;
+    if (containerState.Running) {
+        await container.stop();
+    }
+    await container.remove();
+};
+
+const getContainerHealth = async (service) => {
+    const container = docker.getContainer(service.containerId);
+    const data = await container.inspect();
+    return data.State;
+};
+
+module.exports = {
+    createContainer,
+    startContainer,
+    stopContainer,
+    deleteContainer,
+    getContainerHealth,
+};

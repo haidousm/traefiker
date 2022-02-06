@@ -27,7 +27,7 @@ const ServiceSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    dockerId: {
+    containerId: {
         type: String,
         required: false,
         unique: true,

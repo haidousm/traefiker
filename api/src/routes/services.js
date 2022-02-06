@@ -46,6 +46,26 @@ router.post("/create", async (req, res) => {
 });
 
 /**
+ * @route GET /services/:name
+ * @desc Get a service
+ * @access Private
+ * @param {string} name - The name of the service
+ */
+
+router.get("/:name", async (req, res) => {
+    const name = req.params.name;
+    const service = await Service.findOne({
+        name,
+    });
+    if (!service) {
+        return res.status(404).json({
+            message: "Service not found",
+        });
+    }
+    res.json(service);
+});
+
+/**
  * @route PUT /services/start/:name
  * @desc Start a service
  * @access Private

@@ -35,7 +35,7 @@ const getOrCreateImage = async (resolvedName) => {
 const createService = async (serviceRequest, image) => {
     const service = new Service({
         name: serviceRequest.name,
-        status: "created",
+        status: "pulling",
         image: image._id,
         hosts: serviceRequest.hosts,
         order: serviceRequest.order,

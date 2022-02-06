@@ -8,7 +8,7 @@ const ServiceSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["created", "running", "stopped"],
+        enum: ["pulling", "created", "running", "stopped"],
     },
     image: {
         type: mongoose.Schema.Types.ObjectId,

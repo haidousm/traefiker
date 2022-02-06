@@ -1,6 +1,6 @@
 import { TrashIcon } from "@heroicons/react/solid";
 import { useEffect, useState } from "react";
-import { Redirect } from "../../../types/UrlRedirect";
+import { Redirect } from "../../../types/Redirect";
 
 function UrlRedirectsTableRow(props: {
     urlRedirect: Redirect;

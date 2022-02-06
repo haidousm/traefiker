@@ -1,5 +1,5 @@
 import { Image } from "./Image";
-import { Redirect } from "./UrlRedirect";
+import { Redirect } from "./Redirect";
 
 export interface Service {
     id?: string;
@@ -9,9 +9,4 @@ export interface Service {
     order: number;
     redirects?: Redirect[];
     status: string;
-}
-export interface _Service {
-    image: string;
-    labels: string[];
-    networks: string[];
 }

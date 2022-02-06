@@ -1,5 +1,5 @@
 import { PlusCircleIcon, PlusIcon, TrashIcon } from "@heroicons/react/solid";
-import { Redirect } from "../../../types/UrlRedirect";
+import { Redirect } from "../../../types/Redirect";
 import UrlRedirectsTableRow from "./UrlRedirectsTableRow";
 
 function UrlRedirectsTable(props: {

@@ -9,20 +9,8 @@ import { useRecoilValue } from "recoil";
 import { isEditingFileState, loadingFlagsState } from "../../atoms/atoms";
 import SpinnerModal from "../../components/loading/SpinnerModal";
 import ServiceSettingsModal from "../../components/service-settings/ServiceSettingsModal";
-import { useEffect } from "react";
-import { io } from "socket.io-client";
 
 const Dashboard: NextPage = () => {
-    const loadingFlags = useRecoilValue(loadingFlagsState);
-    const isEditingFile = useRecoilValue(isEditingFileState);
-
-    const loadingMessages = [
-        "Updating Docker Compose File..",
-        "Launching Docker Compose..",
-        "Doing some magic..",
-        "Doing some more magic..",
-    ];
-
     return (
         <div>
             <Head>
@@ -66,12 +54,6 @@ const Dashboard: NextPage = () => {
                     </div>
                 </div>
             </main>
-            {loadingFlags.deletingService || loadingFlags.updatingService ? (
-                <SpinnerModal loadingMessages={loadingMessages} />
-            ) : null}
-
-            {isEditingFile ? <FileEditorModal /> : null}
-            <ServiceSettingsModal />
         </div>
     );
 };

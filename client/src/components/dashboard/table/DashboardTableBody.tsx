@@ -141,11 +141,19 @@ function DashboardTableBody({ columns }: Props) {
             setServices(updatedServices);
             await updateService(service);
         } else {
+            setLoadingFlags({
+                ...loadingFlags,
+                creatingService: true,
+            });
             service.order = services.length;
             await createService(service, autoReload);
         }
         const updatedServices = await getServices();
         setServices(updatedServices);
+        setLoadingFlags({
+            ...loadingFlags,
+            creatingService: false,
+        });
     };
     const cancelClicked = () => {
         setServiceUnderEditing(undefined);
@@ -239,7 +247,7 @@ function DashboardTableBody({ columns }: Props) {
                             )
                         )}
                         {provided.placeholder}
-                        {loadingFlags.creatingService && autoReload ? (
+                        {loadingFlags.creatingService ? (
                             <SkeletonRow columns={columns} />
                         ) : null}
                     </tbody>

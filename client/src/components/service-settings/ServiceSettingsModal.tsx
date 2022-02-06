@@ -9,7 +9,7 @@ import {
     servicesState,
 } from "../../atoms/atoms";
 import { Service } from "../../types/Service";
-import { Redirect } from "../../types/UrlRedirect";
+import { Redirect } from "../../types/Redirect";
 import UrlRedirectsTable from "./table/UrlRedirectsTable";
 
 const ROOT_API_URL = "http://localhost:8081";

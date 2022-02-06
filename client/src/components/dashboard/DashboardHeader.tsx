@@ -74,7 +74,7 @@ function DashboardHeader() {
                         Add New Service
                     </button>
                 </div>
-                <div
+                {/* <div
                     className="mx-12 py-6 px-4 sm:px-6 lg:px-8 items-center hidden
                             lg:flex"
                 >
@@ -149,7 +149,7 @@ function DashboardHeader() {
                     >
                         Run Docker Compose
                     </button>
-                </div>
+                </div> */}
             </header>
         </div>
     );

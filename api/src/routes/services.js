@@ -89,7 +89,6 @@ router.put("/:name", async (req, res) => {
     const hosts = updateRequest.hosts;
     if (hosts) {
         service.hosts = hosts;
-        await service.save();
         await updateContainer(service, service.image);
         await startContainer(service);
     }

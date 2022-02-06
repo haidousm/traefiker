@@ -32,14 +32,14 @@ const createContainer = async (service, image) => {
 const startContainer = async (service) => {
     const container = docker.getContainer(service.containerId);
     await container.start();
-    service.state = "running";
+    service.status = "running";
     await service.save();
 };
 
 const stopContainer = async (service) => {
     const container = docker.getContainer(service.containerId);
     await container.stop();
-    service.state = "stopped";
+    service.status = "stopped";
     await service.save();
 };
 

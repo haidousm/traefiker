@@ -44,7 +44,7 @@ function DashboardTableRowEditable({
         text-blue-800
     "
                 >
-                    {/* <input
+                    <input
                         id="name"
                         type="text"
                         className="w-full bg-transparent outline-none text-center"
@@ -53,23 +53,7 @@ function DashboardTableRowEditable({
                         onChange={(e) => {
                             setName(e.target.value);
                         }}
-                    /> */}
-                    <span
-                        className="
-                px-4
-                py-2
-                inline-flex
-                text-xs
-                lg:text-sm
-                leading-5
-                font-semibold
-                rounded-md
-                bg-blue-100
-                text-blue-800
-            "
-                    >
-                        {name}
-                    </span>
+                    />
                 </span>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-center ">

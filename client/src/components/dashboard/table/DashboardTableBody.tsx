@@ -127,10 +127,6 @@ function DashboardTableBody({ columns }: Props) {
             setServices(updatedServices);
             await updateService(service);
         } else {
-            setLoadingFlags((prev) => ({
-                ...prev,
-                creatingService: true && autoReload,
-            }));
             service.order = services.length;
             await createService(service, autoReload);
         }

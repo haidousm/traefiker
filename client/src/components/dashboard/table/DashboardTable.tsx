@@ -9,6 +9,7 @@ function DashboardTable() {
         { name: "Add Redirects", screenReaderOnly: true },
         { name: "Edit", screenReaderOnly: true },
         { name: "Delete", screenReaderOnly: true },
+        { name: "Run/Stop", screenReaderOnly: true },
         { name: "Order", screenReaderOnly: true },
     ];
 

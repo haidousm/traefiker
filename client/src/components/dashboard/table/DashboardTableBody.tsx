@@ -74,6 +74,16 @@ const updateServiceOrdering = async (services: Service[]) => {
     });
 };
 
+const startService = async (service: Service) => {
+    return await axios.put(
+        `${ROOT_API_URL}/api/services/start/${service.name}`
+    );
+};
+
+const stopService = async (service: Service) => {
+    return await axios.put(`${ROOT_API_URL}/api/services/stop/${service.name}`);
+};
+
 function DashboardTableBody({ columns }: Props) {
     const [services, setServices] = useRecoilState(servicesState);
     const [isCreatingService, setIsCreatingService] = useRecoilState(
@@ -159,6 +169,18 @@ function DashboardTableBody({ columns }: Props) {
         });
     };
 
+    const startServiceClicked = async (service: Service) => {
+        await startService(service);
+        const updatedServices = await getServices();
+        setServices(updatedServices);
+    };
+
+    const stopServiceClicked = async (service: Service) => {
+        await stopService(service);
+        const updatedServices = await getServices();
+        setServices(updatedServices);
+    };
+
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="list">
@@ -195,6 +217,8 @@ function DashboardTableBody({ columns }: Props) {
                                     redirectsClicked={redirectsClicked}
                                     editClicked={editClicked}
                                     deleteClicked={deleteClicked}
+                                    startServiceClicked={startServiceClicked}
+                                    stopServiceClicked={stopServiceClicked}
                                 />
                             )
                         )}

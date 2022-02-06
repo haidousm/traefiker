@@ -1,6 +1,11 @@
 import { Service } from "../../../types/Service";
 import { Draggable } from "react-beautiful-dnd";
-import { MenuIcon, SwitchHorizontalIcon } from "@heroicons/react/solid";
+import {
+    MenuIcon,
+    RefreshIcon,
+    SwitchHorizontalIcon,
+} from "@heroicons/react/solid";
+import { StopIcon } from "@heroicons/react/outline";
 import seedrandom from "seedrandom";
 
 interface Props {
@@ -9,6 +14,8 @@ interface Props {
     redirectsClicked: (service: Service) => void;
     editClicked: (service: Service) => void;
     deleteClicked: (service: Service) => void;
+    startServiceClicked: (service: Service) => void;
+    stopServiceClicked: (service: Service) => void;
 }
 
 function DashboardTableRow({
@@ -17,7 +24,36 @@ function DashboardTableRow({
     redirectsClicked,
     editClicked,
     deleteClicked,
+    startServiceClicked,
+    stopServiceClicked,
 }: Props) {
+    const getActionIcon = () => {
+        switch (service.status) {
+            case "running":
+                return (
+                    <StopIcon
+                        className="cursor-pointer text-red-600 h-8 w-8 hover:text-red-800"
+                        onClick={() => {
+                            stopServiceClicked(service);
+                        }}
+                    />
+                );
+            case "stopped":
+                return (
+                    <RefreshIcon
+                        className="cursor-pointer h-8 w-8 text-green-600 hover:text-green-800"
+                        onClick={() => {
+                            startServiceClicked(service);
+                        }}
+                    />
+                );
+            default:
+                return (
+                    <RefreshIcon className="disabled cursor-pointer h-8 w-8 bg-gray-600" />
+                );
+        }
+    };
+
     return (
         <Draggable
             draggableId={`${seedrandom(service.name).quick()}`}
@@ -136,6 +172,12 @@ function DashboardTableRow({
                         >
                             Delete
                         </button>
+                    </td>
+
+                    <td className="hidden lg:table-cell text-right p-1">
+                        <div className="flex justify-end m-2">
+                            {getActionIcon()}
+                        </div>
                     </td>
                     <td className="hidden lg:table-cell text-right p-1">
                         <div className="flex justify-end m-2">

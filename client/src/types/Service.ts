@@ -8,6 +8,7 @@ export interface Service {
     hosts: string[];
     order: number;
     redirects?: Redirect[];
+    status: string;
 }
 export interface _Service {
     image: string;

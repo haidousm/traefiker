@@ -14,7 +14,7 @@ function UrlRedirectsTable(props: {
     ];
 
     return (
-        <table className="border-separate min-w-full">
+        <table className="min-w-full border-separate">
             <thead>
                 <tr>
                     {columns.map((column) => {
@@ -23,7 +23,7 @@ function UrlRedirectsTable(props: {
                                 key={column.name}
                                 scope="col"
                                 className={
-                                    "px-4 py-1 bg-gray-700 text-center text-md font-medium text-white tracking-wider border border-white-600"
+                                    "text-md border-white-600 border bg-gray-700 px-4 py-1 text-center font-medium tracking-wider text-white"
                                 }
                             >
                                 {column.name}
@@ -34,12 +34,12 @@ function UrlRedirectsTable(props: {
                     <th scope="col" className="relative px-6">
                         <span className="sr-only">Add New Redirect</span>
                         <button
-                            className="text-green-500 hover:text-green-200 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            className="focus:shadow-outline rounded py-2 px-4 font-bold text-green-500 hover:text-green-200 focus:outline-none"
                             onClick={() => {
                                 props.handleAddNewRedirect();
                             }}
                         >
-                            <PlusCircleIcon className="w-7 h-7" />
+                            <PlusCircleIcon className="h-7 w-7" />
                         </button>
                     </th>
                 </tr>
@@ -59,7 +59,7 @@ function UrlRedirectsTable(props: {
                     <tr>
                         <td
                             colSpan={2}
-                            className="px-4 py-1 text-center text-md font-medium text-white tracking-wider border border-white-600"
+                            className="text-md border-white-600 border px-4 py-1 text-center font-medium tracking-wider text-white"
                         >
                             No Url Redirects Found
                         </td>

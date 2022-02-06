@@ -21,11 +21,11 @@ function UrlRedirectsTableRow(props: {
 
     return (
         <tr>
-            <td className="px-4 py-1 text-md font-medium text-white tracking-wider border border-white-600 w-auto">
+            <td className="text-md border-white-600 w-auto border px-4 py-1 font-medium tracking-wider text-white">
                 <input
                     id="From Url"
                     type="text"
-                    className="w-full bg-transparent outline-none border-b-2 border-white"
+                    className="w-full border-b-2 border-white bg-transparent outline-none"
                     placeholder="From Url.."
                     value={fromUrl}
                     onChange={(e) => {
@@ -33,11 +33,11 @@ function UrlRedirectsTableRow(props: {
                     }}
                 />
             </td>
-            <td className="px-4 py-1  text-md font-medium text-white tracking-wider border border-white-600 w-auto">
+            <td className="text-md border-white-600  w-auto border px-4 py-1 font-medium tracking-wider text-white">
                 <input
                     id="To Url"
                     type="text"
-                    className="w-full bg-transparent outline-none border-b-2 border-white"
+                    className="w-full border-b-2 border-white bg-transparent outline-none"
                     placeholder="To Url.."
                     value={toUrl}
                     onChange={(e) => {
@@ -45,14 +45,14 @@ function UrlRedirectsTableRow(props: {
                     }}
                 />
             </td>
-            <td className="px-4 py-1 text-center text-md font-medium text-white tracking-wider  ">
+            <td className="text-md px-4 py-1 text-center font-medium tracking-wider text-white  ">
                 <button
-                    className="bg-transparent text-red-700 hover:text-red-400 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline "
+                    className="focus:shadow-outline rounded bg-transparent py-2 px-4 font-bold text-red-700 hover:text-red-400 focus:outline-none "
                     onClick={() => {
                         props.handleDeleteRedirect(props.urlRedirect);
                     }}
                 >
-                    <TrashIcon className="w-7 h-7" />
+                    <TrashIcon className="h-7 w-7" />
                 </button>
             </td>
         </tr>

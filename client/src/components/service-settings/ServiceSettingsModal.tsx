@@ -26,13 +26,9 @@ function ServiceSettingsModal() {
     const [redirectsModalOptions, setRedirectsModalOptions] =
         useRecoilState(redirectsModalState);
 
-    const [loadingFlags, setLoadingFlags] = useRecoilState(loadingFlagsState);
-
-    const autoReload = useRecoilValue(autoReloadState);
     const [service, setService] = useState<Service>(
         redirectsModalOptions.service
     );
-
     const [redirects, setRedirects] = useState<Redirect[] | undefined>();
 
     useEffect(() => {
@@ -97,28 +93,28 @@ function ServiceSettingsModal() {
         <Dialog
             open={redirectsModalOptions.isAddingRedirects}
             onClose={() => {}}
-            className="fixed z-10 inset-0 overflow-y-auto"
+            className="fixed inset-0 z-10 overflow-y-auto"
         >
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex min-h-screen items-center justify-center">
                 <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
                 {service !== undefined ? (
-                    <div className="relative bg-gray-800 rounded w-3/4 mx-auto flex flex-col justify-center items-center p-4 shadow-lg ">
+                    <div className="relative mx-auto flex w-3/4 flex-col items-center justify-center rounded bg-gray-800 p-4 shadow-lg ">
                         <UrlRedirectsTable
                             redirects={redirects!}
                             handleUpdateRedirect={updateRedirect}
                             handleAddNewRedirect={addNewRedirect}
                             handleDeleteRedirect={deleteRedirect}
                         />
-                        <div className="flex justify-end mt-4 mr-6 w-full">
+                        <div className="mt-4 mr-6 flex w-full justify-end">
                             <button
-                                className="bg-red-700 hover:bg-red-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mx-2"
+                                className="focus:shadow-outline mx-2 rounded bg-red-700 py-2 px-4 font-bold text-white hover:bg-red-400 focus:outline-none"
                                 onClick={closeModal}
                             >
                                 Cancel
                             </button>
                             <button
-                                className="bg-indigo-700 hover:bg-indigo-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                className="focus:shadow-outline rounded bg-indigo-700 py-2 px-4 font-bold text-white hover:bg-indigo-400 focus:outline-none"
                                 onClick={saveClicked}
                             >
                                 Save

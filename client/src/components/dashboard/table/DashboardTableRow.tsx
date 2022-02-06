@@ -1,11 +1,6 @@
 import { Service } from "../../../types/Service";
 import { Draggable } from "react-beautiful-dnd";
-import {
-    MenuIcon,
-    RefreshIcon,
-    SwitchHorizontalIcon,
-} from "@heroicons/react/solid";
-import { StopIcon } from "@heroicons/react/outline";
+import { MenuIcon, SwitchHorizontalIcon } from "@heroicons/react/solid";
 import seedrandom from "seedrandom";
 
 interface Props {
@@ -32,7 +27,7 @@ function DashboardTableRow({
             case "running":
                 return (
                     <button
-                        className="bg-red-600 hover:bg-red-900 disabled:bg-gray-600 disabled:hover:bg-gray-600 disabled:cursor-not-allowed p-2 text-white rounded-md"
+                        className="rounded-md bg-red-600 p-2 text-white hover:bg-red-900 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:hover:bg-gray-600"
                         onClick={() => {
                             stopServiceClicked(service);
                         }}
@@ -44,7 +39,7 @@ function DashboardTableRow({
             case "created":
                 return (
                     <button
-                        className="bg-green-600 hover:bg-green-900 disabled:bg-gray-600 disabled:hover:bg-gray-600 disabled:cursor-not-allowed p-2 text-white rounded-md"
+                        className="rounded-md bg-green-600 p-2 text-white hover:bg-green-900 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:hover:bg-gray-600"
                         onClick={() => {
                             startServiceClicked(service);
                         }}
@@ -55,7 +50,7 @@ function DashboardTableRow({
             default:
                 return (
                     <button
-                        className="bg-green-600 hover:bg-green-900 disabled:bg-gray-600 disabled:hover:bg-gray-600 disabled:cursor-not-allowed p-2 text-white rounded-md"
+                        className="rounded-md bg-green-600 p-2 text-white hover:bg-green-900 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:hover:bg-gray-600"
                         onClick={() => {
                             startServiceClicked(service);
                         }}
@@ -70,12 +65,12 @@ function DashboardTableRow({
     const getStatusColor = () => {
         switch (service.status) {
             case "running":
-                return "bg-green-600";
+                return "border-green-600";
             case "stopped":
             case "created":
-                return "bg-red-600";
+                return "border-red-600";
             default:
-                return "bg-gray-600";
+                return "border-gray-600";
         }
     };
 
@@ -89,49 +84,48 @@ function DashboardTableRow({
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
+                    style={{
+                        borderLeftWidth: "32px",
+                    }}
+                    className={`${getStatusColor()} border-l-red-600`}
                 >
-                    <td
-                        className={
-                            "w-px hidden lg:table-cell " + getStatusColor()
-                        }
-                    ></td>
-                    <td className="px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
+                    <td className="whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4">
                         <span
                             className="
-                px-4
-                py-2
                 inline-flex
-                text-xs
-                lg:text-sm
-                leading-5
-                font-semibold
                 rounded-md
                 bg-blue-100
+                px-4
+                py-2
+                text-xs
+                font-semibold
+                leading-5
                 text-blue-800
+                lg:text-sm
             "
                         >
                             {service.name}
                         </span>
                     </td>
-                    <td className="hidden sm:table-cell px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
+                    <td className="hidden whitespace-nowrap px-2 py-1 text-center sm:table-cell lg:px-6 lg:py-4">
                         <span
                             className="
-                px-4
-                py-2
                 inline-flex
-                text-xs
-                lg:text-sm
-                leading-5
-                font-semibold
                 rounded-md
                 bg-sky-100
+                px-4
+                py-2
+                text-xs
+                font-semibold
+                leading-5
                 text-sky-800
+                lg:text-sm
             "
                         >
                             {service.image.resolvedName}
                         </span>
                     </td>
-                    <td className="px-2 py-1 lg:px-6 lg:py-4 whitespace-nowrap text-center">
+                    <td className="whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4">
                         {service.hosts.map((host, index) => (
                             <a
                                 href={`https://${host}`}
@@ -142,17 +136,17 @@ function DashboardTableRow({
                             >
                                 <span
                                     className="
-                                    px-4
-                                    py-2
+                                    m-1
                                     inline-flex
-                                    text-xs
-                                    lg:text-sm
-                                    leading-5
-                                    font-semibold
                                     rounded-md
                                     bg-amber-100
+                                    px-4
+                                    py-2
+                                    text-xs
+                                    font-semibold
+                                    leading-5
                                     text-amber-800
-                                    m-1
+                                    lg:text-sm
                             "
                                 >
                                     {host}
@@ -161,34 +155,34 @@ function DashboardTableRow({
                         ))}
                     </td>
                     <td
-                        className="hidden lg:table-cell lg:px-6 lg:py-4 whitespace-nowrap text-right  text-xs
-                lg:text-sm font-medium"
+                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
+                lg:py-4 lg:text-sm"
                     >
                         <button
-                            className="text-orange-600 hover:text-orange-900 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:cursor-not-allowed flex items-center content-center"
+                            className="flex content-center items-center text-orange-600 hover:text-orange-900 disabled:cursor-not-allowed disabled:text-gray-600 disabled:hover:text-gray-600"
                             onClick={() => {
                                 redirectsClicked(service);
                             }}
                             disabled={isLoading}
                         >
-                            <SwitchHorizontalIcon className="w-5 h-5 mr-2" />{" "}
+                            <SwitchHorizontalIcon className="mr-2 h-5 w-5" />{" "}
                             Redirects
                         </button>
                     </td>
                     <td
-                        className="hidden lg:table-cell lg:px-6 lg:py-4 whitespace-nowrap text-right  text-xs
-                lg:text-sm font-medium"
+                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
+                lg:py-4 lg:text-sm"
                     >
-                        <div className="flex justify-end m-2">
+                        <div className="m-2 flex justify-end">
                             {getActionIcon()}
                         </div>
                     </td>
                     <td
-                        className="hidden lg:table-cell lg:px-6 lg:py-4 whitespace-nowrap text-right  text-xs
-                lg:text-sm font-medium"
+                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
+                lg:py-4 lg:text-sm"
                     >
                         <button
-                            className="text-indigo-600 hover:text-indigo-900 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:cursor-not-allowed"
+                            className="text-indigo-600 hover:text-indigo-900 disabled:cursor-not-allowed disabled:text-gray-600 disabled:hover:text-gray-600"
                             onClick={() => {
                                 editClicked(service);
                             }}
@@ -198,11 +192,11 @@ function DashboardTableRow({
                         </button>
                     </td>
                     <td
-                        className="hidden lg:table-cell lg:px-6 lg:py-4 whitespace-nowrap text-right  text-xs
-                lg:text-sm font-medium"
+                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
+                lg:py-4 lg:text-sm"
                     >
                         <button
-                            className="text-red-600 hover:text-red-900 disabled:text-gray-600 disabled:hover:text-gray-600 disabled:cursor-not-allowed"
+                            className="text-red-600 hover:text-red-900 disabled:cursor-not-allowed disabled:text-gray-600 disabled:hover:text-gray-600"
                             onClick={() => {
                                 deleteClicked(service);
                             }}
@@ -212,9 +206,9 @@ function DashboardTableRow({
                         </button>
                     </td>
 
-                    <td className="hidden lg:table-cell text-right p-1">
-                        <div className="flex justify-end m-2">
-                            <MenuIcon className="w-5 h-5" />
+                    <td className="hidden p-1 text-right lg:table-cell">
+                        <div className="m-2 flex justify-end">
+                            <MenuIcon className="h-5 w-5" />
                         </div>
                     </td>
                 </tr>

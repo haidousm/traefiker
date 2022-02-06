@@ -45,7 +45,7 @@ const getServices = async () => {
     ).data;
 };
 
-const createService = async (service: Service, autoReload: boolean) => {
+const createService = async (service: Service) => {
     return await axios.post(`${ROOT_API_URL}/api/services/create`, {
         name: service.name,
         image: service.image.resolvedName,
@@ -62,7 +62,7 @@ const updateService = async (service: Service) => {
     });
 };
 
-const deleteService = async (service: Service, autoReload: boolean) => {
+const deleteService = async (service: Service) => {
     return await axios.delete(
         `${ROOT_API_URL}/api/services/delete/${service.name}`
     );
@@ -89,9 +89,7 @@ function DashboardTableBody({ columns }: Props) {
     const [isCreatingService, setIsCreatingService] = useRecoilState(
         isCreatingServiceState
     );
-
     const [loadingFlags, setLoadingFlags] = useRecoilState(loadingFlagsState);
-
     const [, setRedirectsModalOptions] = useRecoilState(redirectsModalState);
 
     const [serviceUnderEditing, setServiceUnderEditing] = useState<
@@ -99,8 +97,6 @@ function DashboardTableBody({ columns }: Props) {
     >(undefined);
 
     const [isEditingService, setIsEditingService] = useState(false);
-
-    const autoReload = useRecoilValue(autoReloadState);
 
     useEffect(() => {
         (async () => {
@@ -146,7 +142,7 @@ function DashboardTableBody({ columns }: Props) {
                 creatingService: true,
             });
             service.order = services.length;
-            await createService(service, autoReload);
+            await createService(service);
         }
         const updatedServices = await getServices();
         setServices(updatedServices);
@@ -165,7 +161,10 @@ function DashboardTableBody({ columns }: Props) {
     };
 
     const deleteClicked = async (service: Service) => {
-        await deleteService(service, autoReload);
+        setServices((prevServices) =>
+            prevServices.filter((s) => s.name !== service.name)
+        );
+        await deleteService(service);
         const updatedServices = await getServices();
         setServices(updatedServices);
     };
@@ -210,7 +209,7 @@ function DashboardTableBody({ columns }: Props) {
             <Droppable droppableId="list">
                 {(provided) => (
                     <tbody
-                        className="bg-white divide-y divide-gray-200"
+                        className="divide-y divide-gray-200 bg-white"
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                     >

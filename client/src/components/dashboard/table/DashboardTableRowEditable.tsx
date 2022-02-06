@@ -30,25 +30,24 @@ function DashboardTableRowEditable({
 
     return (
         <tr>
-            <td></td>
-            <td className="px-6 py-4 whitespace-nowrap text-center">
+            <td className="whitespace-nowrap px-6 py-4 text-center">
                 <span
                     className="
-        px-4
-        py-2
         inline-flex
-        text-sm
-        leading-5
-        font-semibold
         rounded-md
         bg-blue-100
+        px-4
+        py-2
+        text-sm
+        font-semibold
+        leading-5
         text-blue-800
     "
                 >
                     <input
                         id="name"
                         type="text"
-                        className="w-full bg-transparent outline-none text-center"
+                        className="w-full bg-transparent text-center outline-none"
                         placeholder="Service name.."
                         value={name}
                         onChange={(e) => {
@@ -57,24 +56,24 @@ function DashboardTableRowEditable({
                     />
                 </span>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-center ">
+            <td className="whitespace-nowrap px-6 py-4 text-center ">
                 <span
                     className="
-        px-4
-        py-2
         inline-flex
-        text-sm
-        leading-5
-        font-semibold
         rounded-md
         bg-sky-100
+        px-4
+        py-2
+        text-sm
+        font-semibold
+        leading-5
         text-sky-800
     "
                 >
                     <input
                         id="image"
                         type="text"
-                        className="w-full bg-transparent outline-none text-center"
+                        className="w-full bg-transparent text-center outline-none"
                         placeholder="Image name.."
                         value={image ? image.resolvedName : ""}
                         onChange={(e) => {
@@ -86,27 +85,27 @@ function DashboardTableRowEditable({
                     />
                 </span>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-center">
+            <td className="whitespace-nowrap px-6 py-4 text-center">
                 {hosts.map((host, index) => {
                     return (
                         <span
                             data-tip="CLICK TO REMOVE"
                             key={index}
                             className="
-                            m-1
+                            relative
+                                    m-1
+                                    block
+                                    cursor-pointer
+                                    rounded-md
+                                    bg-amber-100
                                     px-2
                                     py-2
                                     text-xs
-                                    leading-5
                                     font-semibold
-                                    rounded-md
-                                    bg-amber-100
+                                    leading-5
                                     text-amber-800
-                                    cursor-pointer
-                                    relative
                                     hover:bg-amber-800
                                     hover:text-amber-100
-                                    block
                             "
                             onClick={() => {
                                 setHosts(hosts.filter((_, i) => i !== index));
@@ -119,23 +118,23 @@ function DashboardTableRowEditable({
                 })}
                 <span
                     className="
-                    m-1
+                    col-start-2
+                            m-1
+                            block
+                            rounded-md
+                            bg-amber-100
                             px-4
                             py-2
                             text-sm
-                            leading-5
                             font-semibold
-                            rounded-md
-                            bg-amber-100
+                            leading-5
                             text-amber-800
-                            col-start-2
-                            block
                     "
                 >
                     <input
                         id="host"
                         type="text"
-                        className="w-full bg-transparent outline-none text-center"
+                        className="w-full bg-transparent text-center outline-none"
                         placeholder="Host name.."
                         onKeyPress={(e) => {
                             if (e.key === "Enter") {
@@ -150,7 +149,7 @@ function DashboardTableRowEditable({
                     />
                 </span>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                 <button
                     className="text-red-600 hover:text-red-900"
                     onClick={() => {
@@ -160,7 +159,7 @@ function DashboardTableRowEditable({
                     Cancel
                 </button>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                 <button
                     className="text-indigo-600 hover:text-indigo-900"
                     onClick={() => {

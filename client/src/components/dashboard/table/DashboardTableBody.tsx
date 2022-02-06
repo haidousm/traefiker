@@ -69,7 +69,9 @@ const deleteService = async (service: Service, autoReload: boolean) => {
 };
 
 const updateServiceOrdering = async (services: Service[]) => {
-    return await axios.put("/api/services/ordering", { services });
+    return await axios.put(`${ROOT_API_URL}/api/services/order`, {
+        services,
+    });
 };
 
 function DashboardTableBody({ columns }: Props) {
@@ -93,7 +95,9 @@ function DashboardTableBody({ columns }: Props) {
     useEffect(() => {
         (async () => {
             const services = await getServices();
-            setServices(services);
+            setServices(
+                services.sort((a: Service, b: Service) => a.order - b.order)
+            );
         })();
     }, [setServices]);
 
@@ -101,9 +105,9 @@ function DashboardTableBody({ columns }: Props) {
         setIsEditingService(serviceUnderEditing !== undefined);
     }, [serviceUnderEditing]);
 
-    // useEffect(() => {
-    //     updateServiceOrdering(services);
-    // }, [services]);
+    useEffect(() => {
+        updateServiceOrdering(services);
+    }, [services]);
 
     const onDragEnd = async (result: any) => {
         if (!result.destination) {

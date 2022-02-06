@@ -47,6 +47,23 @@ router.post("/create", async (req, res) => {
 });
 
 /**
+ * @route PUT /services/order
+ * @desc Update the order of services
+ * @access Private
+ */
+
+router.put("/order", async (req, res) => {
+    const { services } = req.body;
+    services.forEach(async (service) => {
+        const { name, order } = service;
+        const serviceToUpdate = await Service.findOne({ name });
+        serviceToUpdate.order = order;
+        await serviceToUpdate.save();
+    });
+    res.json(services);
+});
+
+/**
  * @route GET /services/:name
  * @desc Get a service
  * @access Private
@@ -107,11 +124,11 @@ router.put("/:name", async (req, res) => {
         service.redirects = redirects;
     }
 
+    await service.save();
     if (hosts || image || redirects) {
         await updateContainer(service, service.image);
         await startContainer(service);
     }
-
     res.json(service);
 });
 

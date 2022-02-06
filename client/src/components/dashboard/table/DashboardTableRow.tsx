@@ -41,6 +41,7 @@ function DashboardTableRow({
                     </button>
                 );
             case "stopped":
+            case "created":
                 return (
                     <button
                         className="bg-green-600 hover:bg-green-900 disabled:bg-gray-600 disabled:hover:bg-gray-600 disabled:cursor-not-allowed p-2 text-white rounded-md"
@@ -71,6 +72,7 @@ function DashboardTableRow({
             case "running":
                 return "bg-green-600";
             case "stopped":
+            case "created":
                 return "bg-red-600";
             default:
                 return "bg-gray-600";

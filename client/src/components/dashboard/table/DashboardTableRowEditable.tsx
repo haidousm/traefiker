@@ -30,6 +30,7 @@ function DashboardTableRowEditable({
 
     return (
         <tr>
+            <td></td>
             <td className="px-6 py-4 whitespace-nowrap text-center">
                 <span
                     className="
@@ -172,6 +173,7 @@ function DashboardTableRowEditable({
                                     : hosts,
                             order: service ? service.order : 0,
                             redirects: service?.redirects ?? [],
+                            status: service?.status ?? "pulling",
                         });
                     }}
                 >

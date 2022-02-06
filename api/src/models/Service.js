@@ -19,6 +19,10 @@ const ServiceSchema = new mongoose.Schema({
         type: [String],
         required: true,
     },
+    redirects: {
+        type: [{ from: String, to: String }],
+        required: false,
+    },
     order: {
         type: Number,
         required: true,
@@ -45,12 +49,19 @@ ServiceSchema.set("toJSON", {
 ServiceSchema.methods.getServiceLabels = function () {
     const hostLabel = transformHostsToLabel(this);
     const pathPrefixMiddlewareLabels = getPathPrefixMiddlewareLabels(this);
+    const redirectMiddlewareLabels = getRedirectMiddlewareLabels(this);
 
     const middlewareLabel = getMiddlewareLabel(this, [
         ...pathPrefixMiddlewareLabels,
+        ...redirectMiddlewareLabels,
     ]);
 
-    return [hostLabel, ...pathPrefixMiddlewareLabels, middlewareLabel];
+    return [
+        hostLabel,
+        ...pathPrefixMiddlewareLabels,
+        ...redirectMiddlewareLabels,
+        middlewareLabel,
+    ];
 };
 
 const transformHostsToLabel = (service) => {
@@ -79,15 +90,34 @@ const getPathPrefixMiddlewareLabels = (service) => {
     });
 };
 
+const getRedirectMiddlewareLabels = (service) => {
+    const redirects = service.redirects;
+    if (!redirects) {
+        return [];
+    }
+    const labels = [];
+    redirects.forEach((redirect, i) => {
+        const from = redirect.from;
+        const to = redirect.to;
+        labels.push(
+            `traefik.http.middlewares.${i}-redirect-${service.name}.redirectregex.regex=${from}`,
+            `traefik.http.middlewares.${i}-redirect-${service.name}.redirectregex.replacement=${to}`
+        );
+    });
+    return labels;
+};
+
 const getMiddlewareLabel = (service, middlewares) => {
     const regex = /traefik\.http.middlewares\.(.+?)\..*/;
     const middlewareNames = middlewares.map((middleware) => {
         const matches = regex.exec(middleware);
         return matches[1];
     });
+
+    const uniqueMiddlewareNames = [...new Set(middlewareNames)];
     return `traefik.http.routers.${
         service.name
-    }.middlewares=${middlewareNames.join(",")}`;
+    }.middlewares=${uniqueMiddlewareNames.join(",")}`;
 };
 
 module.exports = mongoose.model("Service", ServiceSchema);

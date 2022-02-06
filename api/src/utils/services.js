@@ -38,6 +38,7 @@ const createService = async (serviceRequest, image) => {
         status: "pulling",
         image: image._id,
         hosts: serviceRequest.hosts,
+        redirects: serviceRequest.redirects,
         order: serviceRequest.order,
         tag: `traefiker_${serviceRequest.name}`,
     });

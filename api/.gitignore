@@ -2,3 +2,4 @@ node_modules
 dist
 
 **/config.env
+src/config/keys/

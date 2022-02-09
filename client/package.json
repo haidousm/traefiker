@@ -2,7 +2,7 @@
     "name": "traefiker",
     "private": true,
     "scripts": {
-        "dev": "next dev",
+        "dev": "PORT=8020 next dev",
         "build": "next build",
         "start": "next start",
         "lint": "next lint"

@@ -21,7 +21,7 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
-ENV PORT 8080
+ENV PORT 8020
 ENV NEXT_PUBLIC_API_URL http://localhost:8081/api
 
 ENV NEXT_TELEMETRY_DISABLED 1

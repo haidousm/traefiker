@@ -10,7 +10,7 @@ WORKDIR /src/app
 COPY --from=build /src/app .
 
 ENV NODE_ENV production
-ENV PORT 3000
+ENV PORT 8010
 
 CMD ["yarn", "start"]
 

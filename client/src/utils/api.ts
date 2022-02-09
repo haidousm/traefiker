@@ -4,7 +4,7 @@ import getConfig from "next/config";
 const { publicRuntimeConfig } = getConfig();
 
 const ROOT_API_URL =
-    publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+    publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:8010";
 
 const getServices = async () => {
     return await (

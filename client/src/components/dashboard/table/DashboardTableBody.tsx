@@ -75,6 +75,12 @@ function DashboardTableBody({ columns }: Props) {
         updateServiceOrdering(services);
     }, [services]);
 
+    const sortAndSetServices = async (services: Service[]) => {
+        setServices(
+            services.sort((a: Service, b: Service) => a.order - b.order)
+        );
+    };
+
     const onDragEnd = async (result: any) => {
         if (!result.destination) {
             return;
@@ -84,7 +90,7 @@ function DashboardTableBody({ columns }: Props) {
             result.source.index,
             result.destination.index
         );
-        setServices(reorderedServices);
+        sortAndSetServices(reorderedServices);
     };
 
     const saveClicked = async (service: Service) => {
@@ -94,7 +100,7 @@ function DashboardTableBody({ columns }: Props) {
         if (index !== -1) {
             const updatedServices = [...services];
             updatedServices[index] = service;
-            setServices(updatedServices);
+            sortAndSetServices(updatedServices);
             await updateService(service);
         } else {
             setLoadingFlags({
@@ -105,7 +111,7 @@ function DashboardTableBody({ columns }: Props) {
             await createService(service);
         }
         const updatedServices = await getServices();
-        setServices(updatedServices);
+        sortAndSetServices(updatedServices);
         setLoadingFlags({
             ...loadingFlags,
             creatingService: false,
@@ -126,7 +132,7 @@ function DashboardTableBody({ columns }: Props) {
         );
         await deleteService(service);
         const updatedServices = await getServices();
-        setServices(updatedServices);
+        sortAndSetServices(updatedServices);
     };
 
     const redirectsClicked = (service: Service) => {
@@ -147,7 +153,7 @@ function DashboardTableBody({ columns }: Props) {
         );
         await startService(service);
         const updatedServices = await getServices();
-        setServices(updatedServices);
+        sortAndSetServices(updatedServices);
     };
 
     const stopServiceClicked = async (service: Service) => {
@@ -161,7 +167,7 @@ function DashboardTableBody({ columns }: Props) {
         );
         await stopService(service);
         const updatedServices = await getServices();
-        setServices(updatedServices);
+        sortAndSetServices(updatedServices);
     };
 
     return (

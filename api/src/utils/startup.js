@@ -6,6 +6,7 @@ const {
     parseResolvedName,
     parseHostLabels,
     parseRedirectLabels,
+    parseTraefikerLabels,
 } = require("./services");
 const { getAllContainers, getAllImages } = require("./docker");
 
@@ -31,9 +32,7 @@ const createContainers = async (images) => {
         const image = images.find(
             (image) => image.resolvedName === container.Image
         );
-        const serviceTag = container.Names[0].replace("/", "");
-        const serviceName =
-            container.Labels["traefiker.service.name"] ?? serviceTag;
+        const serviceName = container.Names[0].replace("/", "");
 
         const labels = Object.keys(container.Labels).map(
             (key) => `${key}=${container.Labels[key]}`
@@ -41,6 +40,8 @@ const createContainers = async (images) => {
 
         const hosts = parseHostLabels(labels);
         const redirects = parseRedirectLabels(labels);
+        const traefikerLabels = parseTraefikerLabels(labels);
+
         const service = new Service({
             name: serviceName,
             status: container.State == "running" ? "running" : "stopped",
@@ -48,11 +49,10 @@ const createContainers = async (images) => {
             hosts: hosts,
             redirects: redirects,
             order: i,
-            tag: serviceTag,
+            tag: traefikerLabels.tag === "" ? serviceName : traefikerLabels.tag,
             containerId: container.Id,
             network: container.HostConfig.NetworkMode,
         });
-
         return await service.save();
     });
     return await Promise.all(containerPromises);

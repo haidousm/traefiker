@@ -133,10 +133,20 @@ const parseRedirectLabels = (labels) => {
     return redirects;
 };
 
+const parseTraefikerLabels = (labels) => {
+    const tagLabel = labels.find((label) => label.includes("traefiker.tag"));
+    const tag = tagLabel ? tagLabel.split("=")[1] : "";
+
+    return {
+        tag,
+    };
+};
+
 module.exports = {
     getOrCreateImage,
     createService,
     parseResolvedName,
     parseHostLabels,
     parseRedirectLabels,
+    parseTraefikerLabels,
 };

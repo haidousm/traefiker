@@ -59,18 +59,30 @@ const getContainerHealth = async (service) => {
 };
 
 const updateContainer = async (service, image) => {
-    const labels = service.getServiceLabels();
-    const labelObj = {};
+    const containers = await getAllContainers();
+    const oldContainer = containers.find(
+        (container) => container.Id === service.containerId
+    );
 
+    const containerLabels = oldContainer.Labels;
+
+    const labels = service.getServiceLabels();
     labels.forEach((element) => {
-        labelObj[element.split("=")[0]] = element.split("=")[1];
+        containerLabels[element.split("=")[0]] = element.split("=")[1];
+    });
+
+    Object.keys(containerLabels).map((key) => {
+        if (!containerLabels[key] || containerLabels[key] === "") {
+            delete containerLabels[key];
+        }
     });
 
     await deleteContainer(service);
+
     const container = await docker.createContainer({
         Image: image.resolvedName,
-        name: service.tag,
-        Labels: labelObj,
+        name: service.name,
+        Labels: containerLabels,
         HostConfig: {
             NetworkMode: service.network,
         },

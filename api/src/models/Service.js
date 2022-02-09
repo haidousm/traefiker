@@ -60,12 +60,21 @@ ServiceSchema.methods.getServiceLabels = function () {
         ...redirectMiddlewareLabels,
     ]);
 
-    return [
-        hostLabel,
+    const labels = [
         ...pathPrefixMiddlewareLabels,
         ...redirectMiddlewareLabels,
-        middlewareLabel,
+        `traefiker.tag=${this.tag}`,
     ];
+
+    if (hostLabel.split("=")[1] && hostLabel.split("=")[1] !== "") {
+        labels.push(hostLabel);
+    }
+
+    if (hostLabel.split("=")[1] && middlewareLabel.split("=")[1] !== "") {
+        labels.push(middlewareLabel);
+    }
+
+    return labels;
 };
 
 const transformHostsToLabel = (service) => {

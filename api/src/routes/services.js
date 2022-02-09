@@ -130,7 +130,7 @@ router.put("/:name", async (req, res) => {
     }
 
     await service.save();
-    if (hosts || image || redirects) {
+    if (hosts || image || redirects || tag) {
         await updateContainer(service, service.image);
         await startContainer(service);
     }

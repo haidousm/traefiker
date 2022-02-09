@@ -15,6 +15,9 @@ const createImages = async () => {
     const imagePromises = images.map(async (image) => {
         const resolvedName = image.RepoTags[0];
         const { repository, imageName, tag } = parseResolvedName(resolvedName);
+        if (imageName.includes("traefik") || imageName.includes("traefiker")) {
+            return Promise.resolve();
+        }
         const newImage = new Image({
             repository,
             name: imageName,
@@ -29,6 +32,12 @@ const createImages = async () => {
 const createContainers = async (images) => {
     const containers = await getAllContainers();
     const containerPromises = containers.map(async (container, i) => {
+        if (
+            container.Image.includes("traefik") ||
+            container.Image.includes("traefiker")
+        ) {
+            return Promise.resolve();
+        }
         const image = images.find(
             (image) => image.resolvedName === container.Image
         );

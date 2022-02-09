@@ -3,7 +3,7 @@ WORKDIR /src/app
 COPY . .
 RUN yarn install && yarn gen-keys
 
-FROM mhart/alpine-node:16
+FROM node:alpine
 LABEL Maintainer="Moussa Haidous <haidous.m@gmail.com>"
 LABEL Description=""
 WORKDIR /src/app

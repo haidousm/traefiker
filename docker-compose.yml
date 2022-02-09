@@ -3,17 +3,19 @@ networks:
   web:
     external: true
 services:
-  web:
-    image: haidousm/traefiker-client:SNAPSHOT
-    labels:
-      - traefik.http.routers.web.rule=Host(`admin.localhost`)
-    networks:
-      - web
   api:
-    image: haidousm/traefiker-api:SNAPSHOT
+    image: haidousm/traefiker-api:latest
     labels:
-      - traefik.http.routers.api.rule=Host(`admin.localhost`) && PathPrefix(`/api`)
+      - traefik.http.routers.api.rule=Host(`admin.localhost`) && PathPrefix("/api")
       - traefik.http.middlewares.api-prefix.stripprefix.prefixes=/api
       - traefik.http.routers.api.middlewares=api-prefix
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - web
+  web:
+    image: haidousm/traefiker-web:latest
+    labels:
+      - traefik.http.routers.web.rule=Host(`admin.localhost`)
     networks:
       - web

@@ -13,6 +13,9 @@ const { getAllContainers, getAllImages } = require("./docker");
 const createImages = async () => {
     const images = await getAllImages();
     const imagePromises = images.map(async (image) => {
+        if (image.RepoTags === undefined || image.RepoTags === null) {
+            return Promise.resolve();
+        }
         const resolvedName = image.RepoTags[0];
         const { repository, imageName, tag } = parseResolvedName(resolvedName);
         if (imageName.includes("traefik") || imageName.includes("traefiker")) {

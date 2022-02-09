@@ -15,7 +15,7 @@ const createContainer = async (service, image) => {
             await deleteContainer(service);
         }
 
-        labelObj[`traefik.http.routers.${service.name}.tls`] = true;
+        labelObj[`traefik.http.routers.${service.name}.tls`] = "true";
         labelObj[`traefik.http.routers.${service.name}.tls.certresolver`] =
             "lets-encrypt";
 

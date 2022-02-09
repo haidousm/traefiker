@@ -1,7 +1,7 @@
 FROM node:alpine as build
 WORKDIR /src/app
 COPY . .
-RUN yarn install
+RUN yarn install && yarn gen-keys
 
 FROM mhart/alpine-node:16
 LABEL Maintainer="Moussa Haidous <haidous.m@gmail.com>"

@@ -124,6 +124,11 @@ router.put("/:name", async (req, res) => {
         service.redirects = redirects;
     }
 
+    const tag = updateRequest.tag;
+    if (tag) {
+        service.tag = tag;
+    }
+
     await service.save();
     if (hosts || image || redirects) {
         await updateContainer(service, service.image);

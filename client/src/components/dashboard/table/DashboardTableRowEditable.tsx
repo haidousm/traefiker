@@ -14,14 +14,14 @@ function DashboardTableRowEditable({
     saveClicked,
     cancelClicked,
 }: Props) {
-    const [name, setName] = useState("");
+    const [tag, setTag] = useState("");
     const [image, setImage] = useState<Image | undefined>();
     const [hosts, setHosts] = useState<string[]>([]);
     const [possibleHost, setPossibleHost] = useState("");
 
     useEffect(() => {
         if (service) {
-            setName(service.name);
+            setTag(service.tag);
             setImage(service.image);
             setHosts(service.hosts);
         }
@@ -48,10 +48,10 @@ function DashboardTableRowEditable({
                         id="name"
                         type="text"
                         className="w-full bg-transparent text-center outline-none "
-                        placeholder="Service name.."
-                        value={name}
+                        placeholder="Service tag.."
+                        value={tag}
                         onChange={(e) => {
-                            setName(e.target.value);
+                            setTag(e.target.value);
                         }}
                     />
                 </span>
@@ -164,7 +164,8 @@ function DashboardTableRowEditable({
                     className="text-indigo-600 hover:text-indigo-900"
                     onClick={() => {
                         saveClicked({
-                            name: name,
+                            name: service?.name ?? tag,
+                            tag: tag,
                             image: image!,
                             hosts:
                                 possibleHost !== ""

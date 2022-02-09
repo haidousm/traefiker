@@ -3,7 +3,7 @@ import DashboardTableBody from "./DashboardTableBody";
 
 function DashboardTable() {
     const columns = [
-        { name: "Service Name", screenReaderOnly: false },
+        { name: "Service Tag", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
         { name: "Service Hosts", screenReaderOnly: false },
         { name: "Add Redirects", screenReaderOnly: true },

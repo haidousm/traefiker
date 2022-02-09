@@ -30,13 +30,13 @@ const getOrCreateImage = async (resolvedName) => {
 
 const createService = async (serviceRequest, image) => {
     const service = new Service({
-        name: serviceRequest.name,
+        name: `traefiker_${serviceRequest.name}`,
         status: "pulling",
         image: image._id,
         hosts: serviceRequest.hosts,
         redirects: serviceRequest.redirects,
         order: serviceRequest.order,
-        tag: `traefiker_${serviceRequest.name}`,
+        tag: serviceRequest.name,
     });
 
     const oldService = await Service.findOne({

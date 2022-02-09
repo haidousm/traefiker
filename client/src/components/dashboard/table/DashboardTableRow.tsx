@@ -108,7 +108,7 @@ function DashboardTableRow({
                 lg:text-sm
             "
                         >
-                            {service.name}
+                            {service.tag}
                         </span>
                     </td>
                     <td className="hidden whitespace-nowrap px-2 py-1 text-center sm:table-cell lg:px-6 lg:py-4">

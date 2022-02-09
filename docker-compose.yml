@@ -19,3 +19,5 @@ services:
       - traefik.http.routers.web.rule=Host(`admin.localhost`)
     networks:
       - web
+    environment:
+      - NEXT_PUBLIC_API_URL=http://admin.localhost/api

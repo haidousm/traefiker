@@ -21,10 +21,11 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
-EXPOSE 8080
-
 ENV PORT 8080
+ENV NEXT_PUBLIC_API_URL http://localhost:8081/api
 
 ENV NEXT_TELEMETRY_DISABLED 1
+
+EXPOSE $PORT
 
 CMD ["node_modules/.bin/next", "start"]

@@ -1,7 +1,10 @@
 import axios from "axios";
 import { Service } from "../types/Service";
+import getConfig from "next/config";
+const { publicRuntimeConfig } = getConfig();
 
-const ROOT_API_URL = "http://localhost:3000/api";
+const ROOT_API_URL =
+    publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 const getServices = async () => {
     return await (

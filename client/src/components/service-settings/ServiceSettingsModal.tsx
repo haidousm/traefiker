@@ -2,25 +2,11 @@ import { Dialog } from "@headlessui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import {
-    autoReloadState,
-    loadingFlagsState,
-    redirectsModalState,
-    servicesState,
-} from "../../atoms/atoms";
+import { redirectsModalState } from "../../atoms/atoms";
 import { Service } from "../../types/Service";
 import { Redirect } from "../../types/Redirect";
 import UrlRedirectsTable from "./table/UrlRedirectsTable";
-
-const ROOT_API_URL = "http://localhost:8081";
-
-const updateService = async (service: Service) => {
-    return await axios.put(`${ROOT_API_URL}/api/services/${service.name}`, {
-        hosts: service.hosts,
-        image: service.image.resolvedName,
-        redirects: service.redirects,
-    });
-};
+import { updateService } from "../../utils/api";
 
 function ServiceSettingsModal() {
     const [redirectsModalOptions, setRedirectsModalOptions] =

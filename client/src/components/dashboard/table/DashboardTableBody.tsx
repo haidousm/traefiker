@@ -1,9 +1,7 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { useRecoilState } from "recoil";
 import {
-    autoReloadState,
     isCreatingServiceState,
     loadingFlagsState,
     redirectsModalState,
@@ -11,11 +9,18 @@ import {
 } from "../../../atoms/atoms";
 
 import { Service } from "../../../types/Service";
+import {
+    createService,
+    deleteService,
+    getServices,
+    startService,
+    stopService,
+    updateService,
+    updateServiceOrdering,
+} from "../../../utils/api";
 import SkeletonRow from "../../loading/SkeletonRow";
 import DashboardTableRow from "./DashboardTableRow";
 import DashboardTableRowEditable from "./DashboardTableRowEditable";
-
-const ROOT_API_URL = "http://localhost:8081";
 
 interface Props {
     columns: {
@@ -37,51 +42,6 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     });
 
     return reordered;
-};
-
-const getServices = async () => {
-    return await (
-        await axios.get(`${ROOT_API_URL}/api/services`)
-    ).data;
-};
-
-const createService = async (service: Service) => {
-    return await axios.post(`${ROOT_API_URL}/api/services/create`, {
-        name: service.name,
-        image: service.image.resolvedName,
-        hosts: service.hosts,
-        redirects: service.redirects,
-        order: service.order ?? 0,
-    });
-};
-
-const updateService = async (service: Service) => {
-    return await axios.put(`${ROOT_API_URL}/api/services/${service.name}`, {
-        hosts: service.hosts,
-        image: service.image.resolvedName,
-    });
-};
-
-const deleteService = async (service: Service) => {
-    return await axios.delete(
-        `${ROOT_API_URL}/api/services/delete/${service.name}`
-    );
-};
-
-const updateServiceOrdering = async (services: Service[]) => {
-    return await axios.put(`${ROOT_API_URL}/api/services/order`, {
-        services,
-    });
-};
-
-const startService = async (service: Service) => {
-    return await axios.put(
-        `${ROOT_API_URL}/api/services/start/${service.name}`
-    );
-};
-
-const stopService = async (service: Service) => {
-    return await axios.put(`${ROOT_API_URL}/api/services/stop/${service.name}`);
 };
 
 function DashboardTableBody({ columns }: Props) {

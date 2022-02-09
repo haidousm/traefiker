@@ -29,5 +29,5 @@ app.use("/api/auth", require("./routes/auth"));
 // app.use(passport.authenticate("jwt", { session: false }));
 app.use("/api/services", require("./routes/services"));
 
-const port = 8081 || process.env.PORT;
+const port = process.env.PORT || 8080;
 app.listen(port, () => console.log(`Server started on port ${port}`));

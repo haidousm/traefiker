@@ -80,6 +80,18 @@ const updateContainer = async (service, image) => {
     await service.save();
 };
 
+const getAllContainers = async () => {
+    const containers = await docker.listContainers({
+        all: true,
+    });
+    return containers;
+};
+
+const getAllImages = async () => {
+    const images = await docker.listImages();
+    return images;
+};
+
 module.exports = {
     createContainer,
     startContainer,
@@ -87,4 +99,6 @@ module.exports = {
     deleteContainer,
     getContainerHealth,
     updateContainer,
+    getAllContainers,
+    getAllImages,
 };

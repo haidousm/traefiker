@@ -1,0 +1,41 @@
+name: Build & Deploy Prod. Docker Images
+
+on:
+  push:
+    branches:
+      - 'releases/**'
+  workflow_dispatch:
+
+jobs:
+
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: docker login
+      env:
+        DOCKER_USER: ${{secrets.DOCKER_USER}}
+        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - name: Build the Docker Image
+      run: |
+        docker build api --file Dockerfile --tag haidousm/traefiker-api:latest --tag haidousm/traefiker-api:${GITHUB_REF##*/}
+        docker build client --file Dockerfile --tag haidousm/traefiker-web:latest --tag haidousm/traefiker-web:${GITHUB_REF##*/}
+    - name: Push the Docker Image to DockerHub
+      run: |
+        docker push haidousm/traefiker-api:${GITHUB_REF##*/}
+        docker push haidousm/traefiker-api:latest
+        docker push haidousm/traefiker-web:${GITHUB_REF##*/}
+        docker push haidousm/traefiker-web:latest
+
+  # deploy:
+  #   name: Deploy Prod. Docker Image
+  #   runs-on: ubuntu-latest
+  #   needs: [ docker ]
+  #   steps:
+  #   - name: Call Webhook
+  #     uses: joelwmale/webhook-action@master
+  #     env:
+  #       WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL  }}

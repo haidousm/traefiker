@@ -41,6 +41,11 @@ const createContainers = async (images) => {
         const image = images.find(
             (image) => image.resolvedName === container.Image
         );
+
+        if (image === undefined) {
+            return Promise.resolve();
+        }
+
         const serviceName = container.Names[0].replace("/", "");
 
         const labels = Object.keys(container.Labels).map(

@@ -1,0 +1,15 @@
+{
+    "env": {
+        "node": true,
+        "es2021": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "script"
+    },
+    "rules": {
+        "no-control-regex": 0,
+        "no-unused-vars": 0
+    }
+}

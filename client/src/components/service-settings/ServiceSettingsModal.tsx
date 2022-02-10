@@ -5,10 +5,10 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { settingsModalState } from "../../atoms/atoms";
 import { Service } from "../../types/Service";
 import { Redirect } from "../../types/Redirect";
-import UrlRedirectsTable from "./url-redirects/UrlRedirectsTable";
 import { updateService } from "../../utils/api";
 import Environment from "../../types/Environment";
 import EnvTable from "./env-table/EnvTable";
+import RedirsTable from "./redirs-table/RedirsTable";
 
 function ServiceSettingsModal() {
     const [settingsModalOptions, setSettingsModalOptions] =
@@ -17,12 +17,12 @@ function ServiceSettingsModal() {
     const [service, setService] = useState<Service>(
         settingsModalOptions.service
     );
-    const [redirects, setRedirects] = useState<Redirect[]>();
+    const [redirects, setRedirects] = useState<Redirect[]>([]);
     const [environments, setEnvironments] = useState<Environment[]>([]);
 
     useEffect(() => {
         setService(settingsModalOptions.service);
-        setRedirects(settingsModalOptions.service.redirects);
+        setRedirects(settingsModalOptions.service.redirects ?? []);
         setEnvironments(settingsModalOptions.service.environments ?? []);
     }, [settingsModalOptions.service]);
 
@@ -57,37 +57,6 @@ function ServiceSettingsModal() {
         }));
     };
 
-    const addNewRedirect = () => {
-        setRedirects((prevRedirects) => {
-            return [
-                ...prevRedirects!,
-                {
-                    _id: prevRedirects ? `${prevRedirects.length + 1}` : "0",
-                    from: "",
-                    to: "",
-                },
-            ];
-        });
-    };
-
-    const updateRedirect = (redirect: Redirect) => {
-        setRedirects((prevRedirects) => {
-            return prevRedirects!.map((prevRedirect) => {
-                if (prevRedirect._id == redirect._id) {
-                    return redirect;
-                }
-                return prevRedirect;
-            });
-        });
-    };
-
-    const deleteRedirect = (redirect: Redirect) => {
-        const newRedirects = redirects!.filter((prevRedirect) => {
-            return prevRedirect._id !== redirect._id;
-        });
-        setRedirects(newRedirects);
-    };
-
     return (
         <Dialog
             open={settingsModalOptions.isEditingSettings}
@@ -99,11 +68,11 @@ function ServiceSettingsModal() {
 
                 {service !== undefined ? (
                     <div className="relative mx-auto flex w-3/4 flex-col items-center justify-center rounded bg-gray-800 p-4 shadow-lg ">
-                        <UrlRedirectsTable
-                            redirects={redirects!}
-                            handleUpdateRedirect={updateRedirect}
-                            handleAddNewRedirect={addNewRedirect}
-                            handleDeleteRedirect={deleteRedirect}
+                        <RedirsTable
+                            redirects={redirects}
+                            handleUpdateData={(data: Redirect[]) => {
+                                setRedirects(data);
+                            }}
                         />
                         <EnvTable
                             environments={environments}

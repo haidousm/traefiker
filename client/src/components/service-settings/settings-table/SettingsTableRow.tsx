@@ -33,7 +33,7 @@ function SettingsTableRow({
             setColumnA(environment.key);
             setColumnB(environment.value);
         }
-    }, [data]);
+    }, []);
 
     useEffect(() => {
         if ("from" in data) {

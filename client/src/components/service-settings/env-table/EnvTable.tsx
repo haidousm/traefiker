@@ -22,11 +22,11 @@ function EnvTable({ environments, handleUpdateData }: Props) {
     };
 
     useEffect(() => {
-        handleUpdateData(envs);
-    }, [envs]);
+        setEnvs(environments);
+    }, []);
 
     useEffect(() => {
-        setEnvs(envs);
+        handleUpdateData(envs);
     }, [envs]);
 
     const addNewEnvironment = () => {

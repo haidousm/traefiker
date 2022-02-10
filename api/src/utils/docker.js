@@ -78,14 +78,27 @@ const updateContainer = async (service, image) => {
     const environments = service.getEnvironments();
 
     const portBindings = {};
-    oldContainer.Ports.forEach((port) => {
-        const { PrivatePort, PublicPort, Type } = port;
-        portBindings[`${PrivatePort}/${Type}`] = [
-            {
-                HostPort: `${PublicPort}`,
-            },
-        ];
-    });
+    if (oldContainer.Ports.length > 0) {
+        oldContainer.Ports.forEach((port) => {
+            const { PrivatePort, PublicPort, Type } = port;
+            if (PrivatePort === undefined || PublicPort === undefined) {
+                return;
+            }
+            portBindings[`${PrivatePort}/${Type}`] = [
+                {
+                    HostPort: `${PublicPort}`,
+                },
+            ];
+        });
+    }
+
+    const hostConfig = {
+        NetworkMode: service.network,
+    };
+
+    if (portBindings && Object.keys(portBindings).length > 0) {
+        hostConfig.PortBindings = portBindings;
+    }
 
     Object.keys(containerLabels).map((key) => {
         if (!containerLabels[key] || containerLabels[key] === "") {
@@ -98,10 +111,7 @@ const updateContainer = async (service, image) => {
         Image: image.resolvedName,
         name: service.name,
         Labels: containerLabels,
-        HostConfig: {
-            NetworkMode: service.network,
-            PortBindings: portBindings,
-        },
+        HostConfig: hostConfig,
         Env: environments,
     });
     service.containerId = container.id;

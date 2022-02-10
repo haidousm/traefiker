@@ -27,7 +27,7 @@ function SettingsTable({
     handleDeleteData,
 }: Props) {
     return (
-        <table className="min-w-full border-separate">
+        <table className="m-5 min-w-full border-separate">
             <thead>
                 <tr>
                     {columns.map((column) => {
@@ -44,7 +44,7 @@ function SettingsTable({
                         );
                     })}
 
-                    <th scope="col" className="relative px-6">
+                    <th scope="col" className="w-4">
                         <button
                             className="focus:shadow-outline rounded py-2 px-4 font-bold text-green-500 hover:text-green-200 focus:outline-none"
                             onClick={() => {

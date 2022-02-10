@@ -5,8 +5,12 @@ import DashboardTable from "../../components/dashboard/table/DashboardTable";
 import Navbar from "../../components/navbar/Navbar";
 import { resetServerContext } from "react-beautiful-dnd";
 import ServiceSettingsModal from "../../components/service-settings/ServiceSettingsModal";
+import { useRecoilState } from "recoil";
+import { settingsModalState } from "../../atoms/atoms";
 
 const Dashboard: NextPage = () => {
+    const [settingsModalOptions, setSettingsModalOptions] =
+        useRecoilState(settingsModalState);
     return (
         <div>
             <Head>
@@ -49,7 +53,9 @@ const Dashboard: NextPage = () => {
                         </div>
                     </div>
                 </div>
-                <ServiceSettingsModal />
+                {settingsModalOptions.isEditingSettings ? (
+                    <ServiceSettingsModal />
+                ) : null}
             </main>
         </div>
     );

@@ -96,6 +96,15 @@ const updateContainer = async (service, image) => {
     await service.save();
 };
 
+const getContainer = (containerId) => {
+    return docker.getContainer(containerId);
+};
+
+const inspectContainer = async (containerId) => {
+    const container = docker.getContainer(containerId);
+    return await container.inspect();
+};
+
 const getAllContainers = async () => {
     const containers = await docker.listContainers({
         all: true,
@@ -117,4 +126,6 @@ module.exports = {
     updateContainer,
     getAllContainers,
     getAllImages,
+    getContainer,
+    inspectContainer,
 };

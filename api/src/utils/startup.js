@@ -8,7 +8,11 @@ const {
     parseRedirectLabels,
     parseTraefikerLabels,
 } = require("./services");
-const { getAllContainers, getAllImages } = require("./docker");
+const {
+    getAllContainers,
+    getAllImages,
+    inspectContainer,
+} = require("./docker");
 
 const createImages = async () => {
     const images = await getAllImages();
@@ -45,7 +49,6 @@ const createContainers = async (images) => {
             const { repository, imageName, tag } = parseResolvedName(
                 container.Image
             );
-            console.log(repository, imageName, tag);
             if (
                 image.repository === repository &&
                 image.name === imageName &&
@@ -69,12 +72,19 @@ const createContainers = async (images) => {
         const redirects = parseRedirectLabels(labels);
         const traefikerLabels = parseTraefikerLabels(labels);
 
+        const inspectData = await inspectContainer(container.Id);
+        const environments = inspectData.Config.Env.map((env) => {
+            const [key, value] = env.split("=");
+            return { key: key, value: value };
+        });
+
         const service = new Service({
             name: serviceName,
             status: container.State == "running" ? "running" : "stopped",
             image: image._id,
             hosts: hosts,
             redirects: redirects,
+            environments,
             order: i,
             tag: traefikerLabels.tag === "" ? serviceName : traefikerLabels.tag,
             containerId: container.Id,

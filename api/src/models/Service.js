@@ -28,6 +28,11 @@ const ServiceSchema = new mongoose.Schema({
         type: [{ from: String, to: String }],
         required: false,
     },
+    environments: {
+        type: [{ key: String, value: String }],
+        required: false,
+        default: [],
+    },
     order: {
         type: Number,
         required: true,

@@ -41,9 +41,19 @@ const createContainers = async (images) => {
         ) {
             return Promise.resolve();
         }
-        const image = images.find(
-            (image) => image.resolvedName === container.Image
-        );
+        const image = images.find((image) => {
+            const { repository, imageName, tag } = parseResolvedName(
+                container.Image
+            );
+            console.log(repository, imageName, tag);
+            if (
+                image.repository === repository &&
+                image.name === imageName &&
+                image.tag === tag
+            ) {
+                return true;
+            }
+        });
 
         if (image === undefined) {
             return Promise.resolve();

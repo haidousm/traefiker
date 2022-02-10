@@ -54,11 +54,11 @@ const createService = async (serviceRequest, image) => {
 };
 
 const parseResolvedName = (resolvedName) => {
-    const regex = /^(.+)\/(.+):(.+)$|^(.+):(.+)$|^(.+)/;
+    const regex = /^(.+)\/(.+):(.+)$|^(.+):(.+)$|^(.+)\/(.+)|^(.+)$/;
     const match = regex.exec(resolvedName);
 
-    const repository = match[1] ?? "_";
-    const imageName = match[2] ?? match[4] ?? match[6];
+    const repository = match[1] ?? match[6] ?? "_";
+    const imageName = match[2] ?? match[4] ?? match[7];
     const tag = match[3] ?? match[5] ?? "latest";
 
     return {

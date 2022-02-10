@@ -82,6 +82,14 @@ ServiceSchema.methods.getServiceLabels = function () {
     return labels;
 };
 
+ServiceSchema.methods.getEnvironments = function () {
+    const environments = this.environments.map((environment) => {
+        return `${environment.key}=${environment.value}`;
+    });
+
+    return environments;
+};
+
 const transformHostsToLabel = (service) => {
     const label = `traefik.http.routers.${service.name}.rule`;
     const hosts = service.hosts.map((host) => {

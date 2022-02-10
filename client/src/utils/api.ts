@@ -27,6 +27,7 @@ const updateService = async (service: Service) => {
         hosts: service.hosts,
         image: service.image.resolvedName,
         redirects: service.redirects,
+        environments: service.environments,
         tag: service.tag,
     });
 };

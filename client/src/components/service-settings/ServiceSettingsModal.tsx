@@ -45,11 +45,10 @@ function ServiceSettingsModal() {
             };
         });
 
-        console.log(noIdsEnvironments);
-
         await updateService({
             ...service,
             redirects: noIdsRedirects,
+            environments: noIdsEnvironments,
         });
     };
 

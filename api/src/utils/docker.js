@@ -75,12 +75,23 @@ const updateContainer = async (service, image) => {
         containerLabels[element.split("=")[0]] = element.split("=")[1];
     });
 
+    const environments = service.getEnvironments();
+
+    const portBindings = {};
+    oldContainer.Ports.forEach((port) => {
+        const { PrivatePort, PublicPort, Type } = port;
+        portBindings[`${PrivatePort}/${Type}`] = [
+            {
+                HostPort: `${PublicPort}`,
+            },
+        ];
+    });
+
     Object.keys(containerLabels).map((key) => {
         if (!containerLabels[key] || containerLabels[key] === "") {
             delete containerLabels[key];
         }
     });
-
     await deleteContainer(service);
 
     const container = await docker.createContainer({
@@ -89,7 +100,9 @@ const updateContainer = async (service, image) => {
         Labels: containerLabels,
         HostConfig: {
             NetworkMode: service.network,
+            PortBindings: portBindings,
         },
+        Env: environments,
     });
     service.containerId = container.id;
     service.status = "created";

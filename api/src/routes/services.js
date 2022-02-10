@@ -124,13 +124,18 @@ router.put("/:name", async (req, res) => {
         service.redirects = redirects;
     }
 
+    const environments = updateRequest.environments;
+    if (environments) {
+        service.environments = environments;
+    }
+
     const tag = updateRequest.tag;
     if (tag) {
         service.tag = tag;
     }
 
     await service.save();
-    if (hosts || image || redirects || tag) {
+    if (hosts || image || redirects || environments || tag) {
         await updateContainer(service, service.image);
         await startContainer(service);
     }

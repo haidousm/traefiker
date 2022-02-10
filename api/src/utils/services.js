@@ -4,7 +4,6 @@ const { deleteContainer } = require("./docker");
 
 const getOrCreateImage = async (resolvedName) => {
     const { repository, imageName, tag } = parseResolvedName(resolvedName);
-
     if (!imageName || !tag || !repository) {
         return -1;
     }
@@ -54,11 +53,11 @@ const createService = async (serviceRequest, image) => {
 };
 
 const parseResolvedName = (resolvedName) => {
-    const regex = /^(.+)\/(.+):(.+)$|^(.+):(.+)$|^(.+)/;
+    const regex = /^(.+)\/(.+):(.+)$|^(.+):(.+)$|^(.+)\/(.+)|^(.+)$/;
     const match = regex.exec(resolvedName);
 
-    const repository = match[1] ?? "_";
-    const imageName = match[2] ?? match[4] ?? match[6];
+    const repository = match[1] ?? match[6] ?? "_";
+    const imageName = match[2] ?? match[4] ?? match[7] ?? match[8];
     const tag = match[3] ?? match[5] ?? "latest";
 
     return {

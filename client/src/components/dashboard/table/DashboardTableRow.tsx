@@ -1,6 +1,6 @@
 import { Service } from "../../../types/Service";
 import { Draggable } from "react-beautiful-dnd";
-import { MenuIcon, SwitchHorizontalIcon } from "@heroicons/react/solid";
+import { CogIcon, MenuIcon } from "@heroicons/react/solid";
 import seedrandom from "seedrandom";
 
 interface Props {
@@ -158,21 +158,7 @@ function DashboardTableRow({
                             </a>
                         ))}
                     </td>
-                    <td
-                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
-                lg:py-4 lg:text-sm"
-                    >
-                        <button
-                            className="flex content-center items-center text-orange-600 hover:text-orange-900 disabled:cursor-not-allowed disabled:text-gray-600 disabled:hover:text-gray-600"
-                            onClick={() => {
-                                redirectsClicked(service);
-                            }}
-                            disabled={isLoading}
-                        >
-                            <SwitchHorizontalIcon className="mr-2 h-5 w-5" />{" "}
-                            Redirects
-                        </button>
-                    </td>
+
                     <td
                         className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
                 lg:py-4 lg:text-sm"
@@ -209,7 +195,20 @@ function DashboardTableRow({
                             Delete
                         </button>
                     </td>
-
+                    <td
+                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
+                lg:py-4 lg:text-sm"
+                    >
+                        <button
+                            className="flex content-center items-center text-orange-600 hover:text-orange-900 disabled:cursor-not-allowed disabled:text-gray-600 disabled:hover:text-gray-600"
+                            onClick={() => {
+                                redirectsClicked(service);
+                            }}
+                            disabled={isLoading}
+                        >
+                            <CogIcon className="mr-2 h-5 w-5" />
+                        </button>
+                    </td>
                     <td className="hidden p-1 text-right lg:table-cell">
                         <div className="m-2 flex justify-end">
                             <MenuIcon className="h-5 w-5" />

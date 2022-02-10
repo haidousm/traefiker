@@ -75,25 +75,57 @@ const updateContainer = async (service, image) => {
         containerLabels[element.split("=")[0]] = element.split("=")[1];
     });
 
+    const environments = service.getEnvironments();
+
+    const portBindings = {};
+    if (oldContainer.Ports.length > 0) {
+        oldContainer.Ports.forEach((port) => {
+            const { PrivatePort, PublicPort, Type } = port;
+            if (PrivatePort === undefined || PublicPort === undefined) {
+                return;
+            }
+            portBindings[`${PrivatePort}/${Type}`] = [
+                {
+                    HostPort: `${PublicPort}`,
+                },
+            ];
+        });
+    }
+
+    const hostConfig = {
+        NetworkMode: service.network,
+    };
+
+    if (portBindings && Object.keys(portBindings).length > 0) {
+        hostConfig.PortBindings = portBindings;
+    }
+
     Object.keys(containerLabels).map((key) => {
         if (!containerLabels[key] || containerLabels[key] === "") {
             delete containerLabels[key];
         }
     });
-
     await deleteContainer(service);
 
     const container = await docker.createContainer({
         Image: image.resolvedName,
         name: service.name,
         Labels: containerLabels,
-        HostConfig: {
-            NetworkMode: service.network,
-        },
+        HostConfig: hostConfig,
+        Env: environments,
     });
     service.containerId = container.id;
     service.status = "created";
     await service.save();
+};
+
+const getContainer = (containerId) => {
+    return docker.getContainer(containerId);
+};
+
+const inspectContainer = async (containerId) => {
+    const container = docker.getContainer(containerId);
+    return await container.inspect();
 };
 
 const getAllContainers = async () => {
@@ -117,4 +149,6 @@ module.exports = {
     updateContainer,
     getAllContainers,
     getAllImages,
+    getContainer,
+    inspectContainer,
 };

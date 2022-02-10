@@ -28,6 +28,11 @@ const ServiceSchema = new mongoose.Schema({
         type: [{ from: String, to: String }],
         required: false,
     },
+    environments: {
+        type: [{ key: String, value: String }],
+        required: false,
+        default: [],
+    },
     order: {
         type: Number,
         required: true,
@@ -75,6 +80,14 @@ ServiceSchema.methods.getServiceLabels = function () {
     }
 
     return labels;
+};
+
+ServiceSchema.methods.getEnvironments = function () {
+    const environments = this.environments.map((environment) => {
+        return `${environment.key}=${environment.value}`;
+    });
+
+    return environments;
 };
 
 const transformHostsToLabel = (service) => {

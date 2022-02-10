@@ -4,13 +4,13 @@ import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../components/dashboard/table/DashboardTable";
 import Navbar from "../../components/navbar/Navbar";
 import { resetServerContext } from "react-beautiful-dnd";
-import FileEditorModal from "../../components/code-editor/FileEditorModal";
-import { useRecoilValue } from "recoil";
-import { isEditingFileState, loadingFlagsState } from "../../atoms/atoms";
-import SpinnerModal from "../../components/loading/SpinnerModal";
 import ServiceSettingsModal from "../../components/service-settings/ServiceSettingsModal";
+import { useRecoilState } from "recoil";
+import { settingsModalState } from "../../atoms/atoms";
 
 const Dashboard: NextPage = () => {
+    const [settingsModalOptions, setSettingsModalOptions] =
+        useRecoilState(settingsModalState);
     return (
         <div>
             <Head>
@@ -26,25 +26,25 @@ const Dashboard: NextPage = () => {
             </nav>
             <main>
                 <DashboardHeader />
-                <div className="max-w-7xl mx-auto py-6 px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl py-6 px-6 lg:px-8">
                     <div className="flex flex-col">
                         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                             <div
                                 className="
-                        py-2
-                        align-middle
                         inline-block
                         min-w-full
+                        py-2
+                        align-middle
                         sm:px-6
                         lg:px-8
                     "
                             >
                                 <div
                                     className="
-                            shadow
                             overflow-hidden
-                            border-b border-gray-200
                             rounded-lg
+                            border-b border-gray-200
+                            shadow
                         "
                                 >
                                     <DashboardTable />
@@ -53,6 +53,9 @@ const Dashboard: NextPage = () => {
                         </div>
                     </div>
                 </div>
+                {settingsModalOptions.isEditingSettings ? (
+                    <ServiceSettingsModal />
+                ) : null}
             </main>
         </div>
     );

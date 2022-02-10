@@ -1,19 +1,31 @@
-import { PlusCircleIcon, PlusIcon, TrashIcon } from "@heroicons/react/solid";
+import { PlusCircleIcon } from "@heroicons/react/solid";
 import Environment from "../../../types/Environment";
 import { Redirect } from "../../../types/Redirect";
-import EnvironmentsTableRow from "./EnvironmentsTableRow";
+import SettingsTableRow from "./SettingsTableRow";
 
-function EnvironmentsTable(props: {
-    environments: Environment[];
-    handleUpdateEnvironment: (environment: Environment) => void;
-    handleAddNewEnvironment: () => void;
-    handleDeleteEnvironment: (environment: Environment) => void;
-}) {
-    const columns = [
-        { name: "Key", screenReaderOnly: false },
-        { name: "Value", screenReaderOnly: false },
-    ];
+interface Props {
+    data: Redirect[] | Environment[];
+    columns: {
+        name: string;
+    }[];
 
+    placeholderText: {
+        columnA: string;
+        columnB: string;
+        notFound: string;
+    };
+    handleUpdateData: (data: Redirect | Environment) => void;
+    handleAddNewData: () => void;
+    handleDeleteData: (data: Redirect | Environment) => void;
+}
+function SettingsTable({
+    data,
+    columns,
+    placeholderText,
+    handleUpdateData,
+    handleAddNewData,
+    handleDeleteData,
+}: Props) {
     return (
         <table className="min-w-full border-separate">
             <thead>
@@ -33,11 +45,10 @@ function EnvironmentsTable(props: {
                     })}
 
                     <th scope="col" className="relative px-6">
-                        <span className="sr-only">Add New Redirect</span>
                         <button
                             className="focus:shadow-outline rounded py-2 px-4 font-bold text-green-500 hover:text-green-200 focus:outline-none"
                             onClick={() => {
-                                props.handleAddNewEnvironment();
+                                handleAddNewData();
                             }}
                         >
                             <PlusCircleIcon className="h-7 w-7" />
@@ -46,18 +57,14 @@ function EnvironmentsTable(props: {
                 </tr>
             </thead>
             <tbody>
-                {props.environments !== undefined &&
-                props.environments.length !== 0 ? (
-                    props.environments!.map((environment: Environment, i) => (
-                        <EnvironmentsTableRow
+                {data !== undefined && data.length !== 0 ? (
+                    data!.map((data: Redirect | Environment, i) => (
+                        <SettingsTableRow
                             key={i}
-                            environment={environment}
-                            handleUpdateEnvironment={
-                                props.handleUpdateEnvironment
-                            }
-                            handleDeleteEnvironment={
-                                props.handleDeleteEnvironment
-                            }
+                            data={data}
+                            placeholderText={placeholderText}
+                            handleUpdateData={handleUpdateData}
+                            handleDeleteData={handleDeleteData}
                         />
                     ))
                 ) : (
@@ -66,7 +73,7 @@ function EnvironmentsTable(props: {
                             colSpan={2}
                             className="text-md border-white-600 border px-4 py-1 text-center font-medium tracking-wider text-white"
                         >
-                            No Env. Vars found.
+                            {placeholderText.notFound}
                         </td>
                     </tr>
                 )}
@@ -75,4 +82,4 @@ function EnvironmentsTable(props: {
     );
 }
 
-export default EnvironmentsTable;
+export default SettingsTable;

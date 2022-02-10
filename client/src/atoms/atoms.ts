@@ -32,10 +32,10 @@ export const loadingFlagsState = atom({
     },
 });
 
-export const redirectsModalState = atom({
-    key: "isAddingRedirects",
+export const settingsModalState = atom({
+    key: "isEditingSettings",
     default: {
-        isAddingRedirects: false,
+        isEditingSettings: false,
         service: <Service>{},
     },
 });

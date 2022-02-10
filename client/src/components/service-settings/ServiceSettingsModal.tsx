@@ -2,25 +2,25 @@ import { Dialog } from "@headlessui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { redirectsModalState } from "../../atoms/atoms";
+import { settingsModalState } from "../../atoms/atoms";
 import { Service } from "../../types/Service";
 import { Redirect } from "../../types/Redirect";
 import UrlRedirectsTable from "./table/UrlRedirectsTable";
 import { updateService } from "../../utils/api";
 
 function ServiceSettingsModal() {
-    const [redirectsModalOptions, setRedirectsModalOptions] =
-        useRecoilState(redirectsModalState);
+    const [settingsModalOptions, setSettingsModalOptions] =
+        useRecoilState(settingsModalState);
 
     const [service, setService] = useState<Service>(
-        redirectsModalOptions.service
+        settingsModalOptions.service
     );
     const [redirects, setRedirects] = useState<Redirect[] | undefined>();
 
     useEffect(() => {
-        setService(redirectsModalOptions.service);
-        setRedirects(redirectsModalOptions.service.redirects);
-    }, [redirectsModalOptions.service]);
+        setService(settingsModalOptions.service);
+        setRedirects(settingsModalOptions.service.redirects);
+    }, [settingsModalOptions.service]);
 
     const saveClicked = async () => {
         closeModal();
@@ -38,9 +38,9 @@ function ServiceSettingsModal() {
     };
 
     const closeModal = () => {
-        setRedirectsModalOptions((state) => ({
+        setSettingsModalOptions((state) => ({
             ...state,
-            isAddingRedirects: false,
+            isEditingSettings: false,
         }));
     };
 
@@ -77,7 +77,7 @@ function ServiceSettingsModal() {
 
     return (
         <Dialog
-            open={redirectsModalOptions.isAddingRedirects}
+            open={settingsModalOptions.isEditingSettings}
             onClose={() => {}}
             className="fixed inset-0 z-10 overflow-y-auto"
         >

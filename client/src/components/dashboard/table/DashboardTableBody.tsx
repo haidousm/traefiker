@@ -4,7 +4,7 @@ import { useRecoilState } from "recoil";
 import {
     isCreatingServiceState,
     loadingFlagsState,
-    redirectsModalState,
+    settingsModalState,
     servicesState,
 } from "../../../atoms/atoms";
 
@@ -50,7 +50,7 @@ function DashboardTableBody({ columns }: Props) {
         isCreatingServiceState
     );
     const [loadingFlags, setLoadingFlags] = useRecoilState(loadingFlagsState);
-    const [, setRedirectsModalOptions] = useRecoilState(redirectsModalState);
+    const [, setSettingsModalOptions] = useRecoilState(settingsModalState);
 
     const [serviceUnderEditing, setServiceUnderEditing] = useState<
         Service | undefined
@@ -136,8 +136,8 @@ function DashboardTableBody({ columns }: Props) {
     };
 
     const redirectsClicked = (service: Service) => {
-        setRedirectsModalOptions({
-            isAddingRedirects: true,
+        setSettingsModalOptions({
+            isEditingSettings: true,
             service: service,
         });
     };

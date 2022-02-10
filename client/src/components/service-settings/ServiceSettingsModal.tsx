@@ -5,8 +5,10 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { settingsModalState } from "../../atoms/atoms";
 import { Service } from "../../types/Service";
 import { Redirect } from "../../types/Redirect";
-import UrlRedirectsTable from "./table/UrlRedirectsTable";
+import UrlRedirectsTable from "./url-redirects/UrlRedirectsTable";
 import { updateService } from "../../utils/api";
+import EnvironmentsTable from "./env-vars/EnvironmentsTable";
+import Environment from "../../types/Environment";
 
 function ServiceSettingsModal() {
     const [settingsModalOptions, setSettingsModalOptions] =
@@ -16,10 +18,14 @@ function ServiceSettingsModal() {
         settingsModalOptions.service
     );
     const [redirects, setRedirects] = useState<Redirect[] | undefined>();
+    const [environments, setEnvironments] = useState<
+        Environment[] | undefined
+    >();
 
     useEffect(() => {
         setService(settingsModalOptions.service);
         setRedirects(settingsModalOptions.service.redirects);
+        setEnvironments(settingsModalOptions.service.environments);
     }, [settingsModalOptions.service]);
 
     const saveClicked = async () => {
@@ -31,6 +37,16 @@ function ServiceSettingsModal() {
                 to: redirect.to,
             };
         });
+
+        const noIdsEnvironments = environments!.map((environment) => {
+            return {
+                key: environment.key,
+                value: environment.value,
+            };
+        });
+
+        console.log(noIdsEnvironments);
+
         await updateService({
             ...service,
             redirects: noIdsRedirects,
@@ -75,6 +91,39 @@ function ServiceSettingsModal() {
         setRedirects(newRedirects);
     };
 
+    const addNewEnvironment = () => {
+        setEnvironments((prevEnvironments) => {
+            return [
+                ...prevEnvironments!,
+                {
+                    _id: prevEnvironments
+                        ? `${prevEnvironments.length + 1}`
+                        : "0",
+                    key: "",
+                    value: "",
+                },
+            ];
+        });
+    };
+
+    const updateEnvironment = (environment: Environment) => {
+        setEnvironments((prevEnvironments) => {
+            return prevEnvironments!.map((prevEnvironment) => {
+                if (prevEnvironment._id == environment._id) {
+                    return environment;
+                }
+                return prevEnvironment;
+            });
+        });
+    };
+
+    const deleteEnvironment = (environment: Environment) => {
+        const newEnvironments = environments!.filter((prevEnvironment) => {
+            return prevEnvironment._id !== environment._id;
+        });
+        setEnvironments(newEnvironments);
+    };
+
     return (
         <Dialog
             open={settingsModalOptions.isEditingSettings}
@@ -91,6 +140,12 @@ function ServiceSettingsModal() {
                             handleUpdateRedirect={updateRedirect}
                             handleAddNewRedirect={addNewRedirect}
                             handleDeleteRedirect={deleteRedirect}
+                        />
+                        <EnvironmentsTable
+                            environments={environments!}
+                            handleUpdateEnvironment={updateEnvironment}
+                            handleAddNewEnvironment={addNewEnvironment}
+                            handleDeleteEnvironment={deleteEnvironment}
                         />
                         <div className="mt-4 mr-6 flex w-full justify-end">
                             <button

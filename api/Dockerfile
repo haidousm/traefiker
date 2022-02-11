@@ -1,9 +1,9 @@
-FROM node:alpine as build
+FROM node:16-alpine as build
 WORKDIR /src/app
 COPY . .
 RUN yarn install && yarn gen-keys
 
-FROM node:alpine
+FROM node:16-alpine
 LABEL Maintainer="Moussa Haidous <haidous.m@gmail.com>"
 LABEL Description=""
 WORKDIR /src/app

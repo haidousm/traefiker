@@ -11,6 +11,14 @@ const { exit } = require("process");
     });
 
     connectDB();
+
+    const oldUser = await User.findOne({
+        username: process.env.ADMIN_USERNAME,
+    });
+    if (oldUser) {
+        await oldUser.remove();
+    }
+
     const salt = generateSalt();
     const hash = generateHash(process.env.ADMIN_PASSWORD, salt);
     const user = new User({

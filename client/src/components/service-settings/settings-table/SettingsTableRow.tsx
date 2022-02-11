@@ -57,7 +57,6 @@ function SettingsTableRow({
         <tr>
             <td className="text-md border-white-600 w-auto border px-4 py-1 font-medium tracking-wider text-white">
                 <input
-                    id="columnA"
                     type="text"
                     className="w-full border-b-2 border-white bg-transparent outline-none"
                     placeholder={placeholderText.columnA}
@@ -69,7 +68,6 @@ function SettingsTableRow({
             </td>
             <td className="text-md border-white-600  w-auto border px-4 py-1 font-medium tracking-wider text-white">
                 <input
-                    id="columnB"
                     type="text"
                     className="w-full border-b-2 border-white bg-transparent outline-none"
                     placeholder={placeholderText.columnB}

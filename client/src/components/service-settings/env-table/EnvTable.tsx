@@ -23,7 +23,7 @@ function EnvTable({ environments, handleUpdateData }: Props) {
 
     useEffect(() => {
         setEnvs(environments);
-    }, []);
+    }, [environments]);
 
     useEffect(() => {
         handleUpdateData(envs);

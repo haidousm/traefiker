@@ -9,6 +9,7 @@
     "main": "src/server.js",
     "scripts": {
         "gen-keys": "node src/config/genKeys.js",
+        "create-user": "node src/config/createUser.js",
         "start": "node .",
         "dev": "yarn lint && yarn nodemon src/server.ts",
         "lint": "yarn eslint ."

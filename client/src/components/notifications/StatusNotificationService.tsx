@@ -14,7 +14,7 @@ function StatusNotificationService() {
     const socketRef = useRef<Socket>();
     useEffect(() => {
         if (socketRef.current == null) {
-            socketRef.current = io(ROOT_API_URL);
+            socketRef.current = io(ROOT_API_URL, { path: "/api/socket.io" });
         }
         const { current: socket } = socketRef;
 
@@ -41,9 +41,6 @@ function StatusNotificationService() {
                 }
             });
         });
-        return () => {
-            socket.disconnect();
-        };
     }, []);
     return <Fragment></Fragment>;
 }

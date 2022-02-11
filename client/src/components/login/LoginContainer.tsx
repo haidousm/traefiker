@@ -10,6 +10,7 @@ function LoginContainer() {
         if (response.status === 200) {
             const token = response.data.token.token;
             document.cookie = `token=${token}`;
+            window.location.href = "/dashboard";
         }
     };
 
@@ -17,21 +18,23 @@ function LoginContainer() {
         <div className="w-ful flex h-full flex-col items-center  p-5">
             <input
                 type="text"
-                name="username"
-                id="username"
+                name="username-search"
+                id="username-search"
                 placeholder="username"
                 value={username}
                 className="h-10 w-full rounded-sm border-b-2 border-b-white bg-transparent p-2 text-white shadow-lg focus:outline-none"
                 onChange={(e) => setUsername(e.target.value)}
+                autoComplete="off"
             />
             <input
                 type="password"
-                name="password"
-                id="password"
+                name="password-search"
+                id="password-search"
                 placeholder="password"
                 value={password}
                 className="mt-4 h-10 w-full rounded-sm border-b-2 border-b-white bg-transparent p-2 text-white shadow-lg focus:outline-none"
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="off"
             />
             <button
                 type="submit"

@@ -6,14 +6,27 @@ const { publicRuntimeConfig } = getConfig();
 const ROOT_API_URL =
     publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:8010";
 
+const authorizedAxios = () => {
+    const token = document.cookie.replace(
+        /(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/,
+        "$1"
+    );
+    return axios.create({
+        baseURL: ROOT_API_URL,
+        headers: {
+            Authorization: token,
+        },
+    });
+};
+
 const getServices = async () => {
     return await (
-        await axios.get(`${ROOT_API_URL}/services`)
+        await authorizedAxios().get(`/services`, {})
     ).data;
 };
 
 const createService = async (service: Service) => {
-    return await axios.post(`${ROOT_API_URL}/services/create`, {
+    return await authorizedAxios().post(`/services/create`, {
         name: service.name,
         image: service.image.resolvedName,
         hosts: service.hosts,
@@ -23,7 +36,7 @@ const createService = async (service: Service) => {
 };
 
 const updateService = async (service: Service) => {
-    return await axios.put(`${ROOT_API_URL}/services/${service.name}`, {
+    return await authorizedAxios().put(`/services/${service.name}`, {
         hosts: service.hosts,
         image: service.image.resolvedName,
         redirects: service.redirects,
@@ -33,23 +46,33 @@ const updateService = async (service: Service) => {
 };
 
 const deleteService = async (service: Service) => {
-    return await axios.delete(
-        `${ROOT_API_URL}/services/delete/${service.name}`
-    );
+    return await authorizedAxios().delete(`/services/delete/${service.name}`);
 };
 
 const updateServiceOrdering = async (services: Service[]) => {
-    return await axios.put(`${ROOT_API_URL}/services/order`, {
-        services,
-    });
+    const token = document.cookie.replace(
+        /(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/,
+        "$1"
+    );
+    return await authorizedAxios().put(
+        `/services/order`,
+        {
+            services,
+        },
+        {
+            headers: {
+                Authorization: token,
+            },
+        }
+    );
 };
 
 const startService = async (service: Service) => {
-    return await axios.put(`${ROOT_API_URL}/services/start/${service.name}`);
+    return await authorizedAxios().put(`/services/start/${service.name}`);
 };
 
 const stopService = async (service: Service) => {
-    return await axios.put(`${ROOT_API_URL}/services/stop/${service.name}`);
+    return await authorizedAxios().put(`/services/stop/${service.name}`);
 };
 
 const login = async (username: string, password: string) => {

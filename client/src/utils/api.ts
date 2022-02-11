@@ -3,14 +3,16 @@ import { Service } from "../types/Service";
 import getConfig from "next/config";
 const { publicRuntimeConfig } = getConfig();
 
+const ROOT_API_URL =
+    publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:8010";
+
 const authorizedAxios = () => {
     const token = document.cookie.replace(
         /(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/,
         "$1"
     );
     return axios.create({
-        baseURL:
-            publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:8010",
+        baseURL: ROOT_API_URL,
         headers: {
             Authorization: token,
         },
@@ -74,15 +76,10 @@ const stopService = async (service: Service) => {
 };
 
 const login = async (username: string, password: string) => {
-    return await axios.post(
-        `${
-            publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:8010"
-        }/auth/login`,
-        {
-            username,
-            password,
-        }
-    );
+    return await axios.post(`${ROOT_API_URL}/auth/login`, {
+        username,
+        password,
+    });
 };
 
 export {

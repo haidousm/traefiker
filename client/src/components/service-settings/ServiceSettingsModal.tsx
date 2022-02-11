@@ -69,13 +69,17 @@ function ServiceSettingsModal() {
                 {service !== undefined ? (
                     <div className="relative mx-auto flex w-3/4 flex-col items-center justify-center rounded bg-gray-800 p-4 shadow-lg ">
                         <RedirsTable
-                            redirects={redirects}
+                            redirects={
+                                settingsModalOptions.service.redirects ?? []
+                            }
                             handleUpdateData={(data: Redirect[]) => {
                                 setRedirects(data);
                             }}
                         />
                         <EnvTable
-                            environments={environments}
+                            environments={
+                                settingsModalOptions.service.environments ?? []
+                            }
                             handleUpdateData={(data: Environment[]) => {
                                 setEnvironments(data);
                             }}

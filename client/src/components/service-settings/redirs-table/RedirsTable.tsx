@@ -22,7 +22,7 @@ function RedirsTable({ redirects, handleUpdateData }: Props) {
 
     useEffect(() => {
         setRedirs(redirects);
-    }, []);
+    }, [redirects]);
 
     useEffect(() => {
         handleUpdateData(redirs);

@@ -7,6 +7,7 @@ import { resetServerContext } from "react-beautiful-dnd";
 import ServiceSettingsModal from "../../components/service-settings/ServiceSettingsModal";
 import { useRecoilState } from "recoil";
 import { settingsModalState } from "../../atoms/atoms";
+import StatusNotificationService from "../../components/notifications/StatusNotificationService";
 
 const Dashboard: NextPage = () => {
     const [settingsModalOptions, setSettingsModalOptions] =
@@ -57,6 +58,7 @@ const Dashboard: NextPage = () => {
                     <ServiceSettingsModal />
                 ) : null}
             </main>
+            <StatusNotificationService />
         </div>
     );
 };

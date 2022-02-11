@@ -35,4 +35,12 @@ app.use(passport.authenticate("jwt", { session: false }));
 app.use("/services", require("./routes/services"));
 
 const port = process.env.PORT || 8010;
-app.listen(port, () => console.log(`Server started on port ${port}`));
+const server = require("http").Server(app);
+
+const io = require("./config/socket");
+io.attach(server, {
+    cors: {
+        origin: "*",
+    },
+});
+server.listen(port, () => console.log(`Server started on port ${port}`));

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const io = require("../config/socket");
 
 const ServiceSchema = new mongoose.Schema({
     name: {
@@ -145,5 +146,18 @@ const getMiddlewareLabel = (service, middlewares) => {
         service.name
     }.middlewares=${uniqueMiddlewareNames.join(",")}`;
 };
+
+ServiceSchema.pre("save", function (next) {
+    if (this.isModified("status")) {
+        const status = this.status;
+        if (io.sockets) {
+            io.sockets.emit("status", {
+                serviceId: this._id,
+                status,
+            });
+        }
+    }
+    next();
+});
 
 module.exports = mongoose.model("Service", ServiceSchema);

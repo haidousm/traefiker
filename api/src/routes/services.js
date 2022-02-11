@@ -57,8 +57,10 @@ router.put("/order", async (req, res) => {
     services.forEach(async (service) => {
         const { name, order } = service;
         const serviceToUpdate = await Service.findOne({ name });
-        serviceToUpdate.order = order;
-        await serviceToUpdate.save();
+        if (serviceToUpdate) {
+            serviceToUpdate.order = order;
+            await serviceToUpdate.save();
+        }
     });
     res.json(services);
 });

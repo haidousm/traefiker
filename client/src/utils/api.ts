@@ -52,6 +52,13 @@ const stopService = async (service: Service) => {
     return await axios.put(`${ROOT_API_URL}/services/stop/${service.name}`);
 };
 
+const login = async (username: string, password: string) => {
+    return await axios.post(`${ROOT_API_URL}/auth/login`, {
+        username,
+        password,
+    });
+};
+
 export {
     getServices,
     createService,
@@ -60,4 +67,5 @@ export {
     updateServiceOrdering,
     startService,
     stopService,
+    login,
 };

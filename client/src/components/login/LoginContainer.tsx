@@ -9,7 +9,7 @@ function LoginContainer() {
         const response = await login(username, password);
         if (response.status === 200) {
             const token = response.data.token.token;
-            localStorage.setItem("token", token);
+            document.cookie = `token=${token}`;
         }
     };
 

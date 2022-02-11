@@ -36,6 +36,11 @@ app.use("/services", require("./routes/services"));
 
 const port = process.env.PORT || 8010;
 const server = require("http").Server(app);
+
 const io = require("./config/socket");
-io.attach(server);
+io.attach(server, {
+    cors: {
+        origin: "*",
+    },
+});
 server.listen(port, () => console.log(`Server started on port ${port}`));

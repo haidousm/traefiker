@@ -6,7 +6,7 @@ import { io, Socket } from "socket.io-client";
 import getConfig from "next/config";
 
 const { publicRuntimeConfig } = getConfig();
-const ROOT_API_URL =
+const ROOT_API_URL: string =
     publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:8010";
 
 function StatusNotificationService() {
@@ -14,31 +14,45 @@ function StatusNotificationService() {
     const socketRef = useRef<Socket>();
     useEffect(() => {
         if (socketRef.current == null) {
-            socketRef.current = io(ROOT_API_URL, { path: "/api/socket.io" });
+            const pathRegex = /(^https?:\/\/.+\/)(.*)$/;
+            const match = pathRegex.exec(ROOT_API_URL);
+            let url = ROOT_API_URL;
+            let path = "";
+            if (match != null) {
+                url = match[1];
+                path = match[2];
+            }
+            if (path === "") {
+                socketRef.current = io(ROOT_API_URL);
+            } else {
+                socketRef.current = io(url, {
+                    path: `/${path}/socket.io`,
+                });
+            }
         }
         const { current: socket } = socketRef;
 
         socket.on("status", (message) => {
             setServices((prevServices) => {
-                console.log(message);
-                const { serviceId, status } = message;
+                const { serviceName, status } = message;
                 const service = prevServices.find(
-                    (service) => service.id === serviceId
+                    (service) => service.name === serviceName
                 );
+
+                let updatedServices = [...prevServices];
                 if (service) {
                     const updatedService = {
                         ...service,
                         status,
                     };
-                    return [
+                    updatedServices = [
                         ...prevServices.filter(
-                            (service) => service.id !== serviceId
+                            (service) => service.name !== serviceName
                         ),
                         updatedService,
                     ];
-                } else {
-                    return [...prevServices];
                 }
+                return updatedServices.sort((a, b) => a.order - b.order);
             });
         });
     }, []);

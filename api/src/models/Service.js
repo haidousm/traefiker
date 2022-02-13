@@ -152,7 +152,7 @@ ServiceSchema.pre("save", function (next) {
         const status = this.status;
         if (io.sockets) {
             io.sockets.emit("status", {
-                serviceId: this._id,
+                serviceName: this.name,
                 status,
             });
         }

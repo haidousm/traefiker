@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
@@ -61,19 +62,17 @@ function DashboardTableBody({ columns }: Props) {
     useEffect(() => {
         (async () => {
             const services = await getServices();
-            setServices(
-                services.sort((a: Service, b: Service) => a.order - b.order)
-            );
+            await sortAndSetServices(services);
         })();
-    }, [setServices]);
+    }, []);
 
     useEffect(() => {
         setIsEditingService(serviceUnderEditing !== undefined);
     }, [serviceUnderEditing]);
 
-    useEffect(() => {
-        updateServiceOrdering(services);
-    }, [services]);
+    // useEffect(() => {
+    //     updateServiceOrdering(services);
+    // }, [services.map((service) => service.order)]);
 
     const sortAndSetServices = async (services: Service[]) => {
         setServices(
@@ -90,7 +89,7 @@ function DashboardTableBody({ columns }: Props) {
             result.source.index,
             result.destination.index
         );
-        sortAndSetServices(reorderedServices);
+        // sortAndSetServices(reorderedServices);
     };
 
     const saveClicked = async (service: Service) => {
@@ -100,7 +99,7 @@ function DashboardTableBody({ columns }: Props) {
         if (index !== -1) {
             const updatedServices = [...services];
             updatedServices[index] = service;
-            sortAndSetServices(updatedServices);
+            await sortAndSetServices(updatedServices);
             await updateService(service);
         } else {
             setLoadingFlags({
@@ -109,13 +108,13 @@ function DashboardTableBody({ columns }: Props) {
             });
             service.order = services.length;
             await createService(service);
+            const updatedServices = await getServices();
+            await sortAndSetServices(updatedServices);
+            setLoadingFlags({
+                ...loadingFlags,
+                creatingService: false,
+            });
         }
-        const updatedServices = await getServices();
-        sortAndSetServices(updatedServices);
-        setLoadingFlags({
-            ...loadingFlags,
-            creatingService: false,
-        });
     };
     const cancelClicked = () => {
         setServiceUnderEditing(undefined);
@@ -131,8 +130,6 @@ function DashboardTableBody({ columns }: Props) {
             prevServices.filter((s) => s.name !== service.name)
         );
         await deleteService(service);
-        const updatedServices = await getServices();
-        sortAndSetServices(updatedServices);
     };
 
     const redirectsClicked = (service: Service) => {
@@ -143,31 +140,11 @@ function DashboardTableBody({ columns }: Props) {
     };
 
     const startServiceClicked = async (service: Service) => {
-        setServices(
-            services.map((s) => {
-                if (s.name === service.name) {
-                    return { ...s, status: "running" };
-                }
-                return s;
-            })
-        );
         await startService(service);
-        const updatedServices = await getServices();
-        sortAndSetServices(updatedServices);
     };
 
     const stopServiceClicked = async (service: Service) => {
-        setServices(
-            services.map((s) => {
-                if (s.name === service.name) {
-                    return { ...s, status: "stopped" };
-                }
-                return s;
-            })
-        );
         await stopService(service);
-        const updatedServices = await getServices();
-        sortAndSetServices(updatedServices);
     };
 
     return (

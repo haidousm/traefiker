@@ -14,17 +14,18 @@ function StatusNotificationService() {
     const socketRef = useRef<Socket>();
     useEffect(() => {
         if (socketRef.current == null) {
-            socketRef.current = io(ROOT_API_URL, { path: "/api/socket.io" });
+            socketRef.current = io(ROOT_API_URL, { path: "/socket.io" });
         }
         const { current: socket } = socketRef;
 
         socket.on("status", (message) => {
             setServices((prevServices) => {
-                console.log(message);
-                const { serviceId, status } = message;
+                const { serviceName, status } = message;
                 const service = prevServices.find(
-                    (service) => service.id === serviceId
+                    (service) => service.name === serviceName
                 );
+                console.log(prevServices);
+                console.log(message);
                 if (service) {
                     const updatedService = {
                         ...service,
@@ -32,7 +33,7 @@ function StatusNotificationService() {
                     };
                     return [
                         ...prevServices.filter(
-                            (service) => service.id !== serviceId
+                            (service) => service.name !== serviceName
                         ),
                         updatedService,
                     ];

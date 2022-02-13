@@ -87,7 +87,7 @@ function DashboardTableRow({
                 >
                     <td
                         className={
-                            "whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4 " +
+                            "w-1/12 whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4 " +
                             getStatusColor()
                         }
                         style={{
@@ -111,7 +111,7 @@ function DashboardTableRow({
                             {service.tag}
                         </span>
                     </td>
-                    <td className="hidden whitespace-nowrap px-2 py-1 text-center sm:table-cell lg:px-6 lg:py-4">
+                    <td className="hidden w-2/12 whitespace-nowrap px-2 py-1 text-center sm:table-cell lg:px-6 lg:py-4">
                         <span
                             className="
                 inline-flex
@@ -129,7 +129,7 @@ function DashboardTableRow({
                             {service.image.resolvedName}
                         </span>
                     </td>
-                    <td className="whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4">
+                    <td className="w-3/12 whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4">
                         {service.hosts.map((host, index) => (
                             <a
                                 href={`https://${host}`}
@@ -160,15 +160,15 @@ function DashboardTableRow({
                     </td>
 
                     <td
-                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
-                lg:py-4 lg:text-sm"
+                        className="hidden w-1/12 whitespace-nowrap text-right text-xs font-medium  lg:table-cell
+                lg:px-6 lg:py-4 lg:text-sm"
                     >
                         <div className="m-2 flex justify-end">
                             {getActionIcon()}
                         </div>
                     </td>
                     <td
-                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
+                        className="hidden w-1/12 whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
                 lg:py-4 lg:text-sm"
                     >
                         <button
@@ -182,7 +182,7 @@ function DashboardTableRow({
                         </button>
                     </td>
                     <td
-                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
+                        className="hidden w-1/12 whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
                 lg:py-4 lg:text-sm"
                     >
                         <button
@@ -196,7 +196,7 @@ function DashboardTableRow({
                         </button>
                     </td>
                     <td
-                        className="hidden whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
+                        className="hidden w-1/12 whitespace-nowrap text-right text-xs font-medium lg:table-cell  lg:px-6
                 lg:py-4 lg:text-sm"
                     >
                         <button
@@ -209,7 +209,7 @@ function DashboardTableRow({
                             <CogIcon className="mr-2 h-5 w-5" />
                         </button>
                     </td>
-                    <td className="hidden p-1 text-right lg:table-cell">
+                    <td className="hidden w-1/12 p-1 text-right lg:table-cell">
                         <div className="m-2 flex justify-end">
                             <MenuIcon className="h-5 w-5" />
                         </div>

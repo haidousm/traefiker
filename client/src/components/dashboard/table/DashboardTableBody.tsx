@@ -89,7 +89,7 @@ function DashboardTableBody({ columns }: Props) {
             result.source.index,
             result.destination.index
         );
-        // sortAndSetServices(reorderedServices);
+        setServices(reorderedServices);
     };
 
     const saveClicked = async (service: Service) => {

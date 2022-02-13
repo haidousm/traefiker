@@ -70,10 +70,6 @@ function DashboardTableBody({ columns }: Props) {
         setIsEditingService(serviceUnderEditing !== undefined);
     }, [serviceUnderEditing]);
 
-    // useEffect(() => {
-    //     updateServiceOrdering(services);
-    // }, [services.map((service) => service.order)]);
-
     const sortAndSetServices = async (services: Service[]) => {
         setServices(
             services.sort((a: Service, b: Service) => a.order - b.order)
@@ -90,6 +86,7 @@ function DashboardTableBody({ columns }: Props) {
             result.destination.index
         );
         setServices(reorderedServices);
+        updateServiceOrdering(reorderedServices);
     };
 
     const saveClicked = async (service: Service) => {

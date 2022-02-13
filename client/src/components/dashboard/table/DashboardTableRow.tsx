@@ -87,7 +87,7 @@ function DashboardTableRow({
                 >
                     <td
                         className={
-                            "w-1/12 whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4 " +
+                            "w-2/12 whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4 " +
                             getStatusColor()
                         }
                         style={{

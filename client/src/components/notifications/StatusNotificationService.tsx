@@ -24,22 +24,21 @@ function StatusNotificationService() {
                 const service = prevServices.find(
                     (service) => service.name === serviceName
                 );
-                console.log(prevServices);
-                console.log(message);
+
+                let updatedServices = [...prevServices];
                 if (service) {
                     const updatedService = {
                         ...service,
                         status,
                     };
-                    return [
+                    updatedServices = [
                         ...prevServices.filter(
                             (service) => service.name !== serviceName
                         ),
                         updatedService,
                     ];
-                } else {
-                    return [...prevServices];
                 }
+                return updatedServices.sort((a, b) => a.order - b.order);
             });
         });
     }, []);

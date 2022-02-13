@@ -6,7 +6,7 @@ import { io, Socket } from "socket.io-client";
 import getConfig from "next/config";
 
 const { publicRuntimeConfig } = getConfig();
-const ROOT_API_URL =
+const ROOT_API_URL: string =
     publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:8010";
 
 function StatusNotificationService() {
@@ -14,7 +14,21 @@ function StatusNotificationService() {
     const socketRef = useRef<Socket>();
     useEffect(() => {
         if (socketRef.current == null) {
-            socketRef.current = io(ROOT_API_URL, { path: "/socket.io" });
+            const pathRegex = /(^https?:\/\/.+\/)(.*)$/;
+            const match = pathRegex.exec(ROOT_API_URL);
+            let url = ROOT_API_URL;
+            let path = "";
+            if (match != null) {
+                url = match[1];
+                path = match[2];
+            }
+            if (path === "") {
+                socketRef.current = io(ROOT_API_URL);
+            } else {
+                socketRef.current = io(url, {
+                    path: `/${path}/socket.io`,
+                });
+            }
         }
         const { current: socket } = socketRef;
 

@@ -2,9 +2,11 @@ name: Build & Deploy Prod. Docker Images
 
 on:
     push:
-        branches:
-            - "releases/**"
-    workflow_dispatch:
+        tags:
+            - "v*.*.*"
+
+env:
+    TAG_NAME: ${{github.ref_name}}
 
 jobs:
     build-api:
@@ -20,10 +22,10 @@ jobs:
                   docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             - name: Build the Docker Image
               run: |
-                  docker build api --file Dockerfile --tag haidousm/traefiker-api:latest --tag haidousm/traefiker-api:${GITHUB_REF##*/}
+                  docker build api --tag haidousm/traefiker-api:latest --tag haidousm/traefiker-api:$TAG_NAME
             - name: Push the Docker Image to DockerHub
               run: |
-                  docker push haidousm/traefiker-api:${GITHUB_REF##*/}
+                  docker push haidousm/traefiker-api:$TAG_NAME
                   docker push haidousm/traefiker-api:latest
     build-client:
         name: Build Client's Image
@@ -38,8 +40,8 @@ jobs:
                   docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             - name: Build the Docker Image
               run: |
-                  docker build client --file Dockerfile --tag haidousm/traefiker-web:latest --tag haidousm/traefiker-web:${GITHUB_REF##*/}
+                  docker build client --tag haidousm/traefiker-web:latest --tag haidousm/traefiker-web:$TAG_NAME
             - name: Push the Docker Image to DockerHub
               run: |
-                  docker push haidousm/traefiker-web:${GITHUB_REF##*/}
+                  docker push haidousm/traefiker-web:$TAG_NAME
                   docker push haidousm/traefiker-web:latest

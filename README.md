@@ -31,7 +31,7 @@ To do that, run the following command:
 
 To get Traefiker up & running, create a docker-compose.yml file in the root of your project.
 
-```
+```yaml
 version: "3"
 networks:
     web:

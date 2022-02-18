@@ -20,7 +20,7 @@ Additionally, you can use my [Traefik Starter Files](https://github.com/haidousm
 
 Traefiker is broken down into two applications:
 
-    * API
+    * Server
     * Client
 
 Before deploying either, you'll need to configure your username-password for the dashboard.
@@ -37,8 +37,8 @@ networks:
     web:
         external: true
 services:
-    api:
-        image: haidousm/traefiker-api:SNAPSHOT
+    server:
+        image: haidousm/traefiker-server
         labels:
             - traefik.http.routers.api.rule=Host(`admin.localhost`) && PathPrefix("/api")
             - traefik.http.middlewares.api-prefix.stripprefix.prefixes=/api
@@ -52,7 +52,7 @@ services:
         environment:
             - MONGO_URI=mongodb://192.168.0.171:27017/traefiker
     web:
-        image: haidousm/traefiker-web:SNAPSHOT
+        image: haidousm/traefiker-client
         labels:
             - traefik.http.routers.web.rule=Host(`admin.localhost`)
         networks:

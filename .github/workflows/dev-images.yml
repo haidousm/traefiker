@@ -7,8 +7,8 @@ on:
     workflow_dispatch:
 
 jobs:
-    build-api:
-        name: Build API's Image
+    build-server:
+        name: Build Server's Image
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
@@ -20,10 +20,10 @@ jobs:
                   docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             - name: Build the Docker Image
               run: |
-                  docker build api --tag haidousm/traefiker-api:SNAPSHOT
+                  docker build server --tag haidousm/traefiker-server:SNAPSHOT
             - name: Push the Docker Image to DockerHub
               run: |
-                  docker push haidousm/traefiker-api:SNAPSHOT
+                  docker push haidousm/traefiker-server:SNAPSHOT
     build-client:
         name: Build Client's Image
         runs-on: ubuntu-latest

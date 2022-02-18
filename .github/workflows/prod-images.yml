@@ -9,8 +9,8 @@ env:
     TAG_NAME: ${{github.ref_name}}
 
 jobs:
-    build-api:
-        name: Build API's Image
+    build-server:
+        name: Build Server's Image
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
@@ -22,11 +22,11 @@ jobs:
                   docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             - name: Build the Docker Image
               run: |
-                  docker build api --tag haidousm/traefiker-api:latest --tag haidousm/traefiker-api:$TAG_NAME
+                  docker build server --tag haidousm/traefiker-server:latest --tag haidousm/traefiker-server:$TAG_NAME
             - name: Push the Docker Image to DockerHub
               run: |
-                  docker push haidousm/traefiker-api:$TAG_NAME
-                  docker push haidousm/traefiker-api:latest
+                  docker push haidousm/traefiker-server:$TAG_NAME
+                  docker push haidousm/traefiker-server:latest
     build-client:
         name: Build Client's Image
         runs-on: ubuntu-latest

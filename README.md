@@ -4,6 +4,18 @@ Traefiker is a web dashboard for [Traefik](https://traefik.io/) that provides a 
 
 ![Traefiker's Dashboard](.github/assets/dashboard-view.png "Dashboard")
 
+## Prerequisites
+
+-   [Traefik](https://traefik.io/)
+-   [Docker](https://www.docker.com/)
+-   [Docker Compose](https://docs.docker.com/compose/) (optional)
+
+You'll need to have setup Traefik before you can begin using Traefiker.
+
+There's lots of tutorials online or you can use the [Traefik documentation](https://doc.traefik.io/traefik/getting-started/quick-start/) to get started.
+
+Additionally, you can use my [Traefik Starter Files](https://github.com/haidousm/traefik-starter).
+
 ## Usage
 
 Traefiker is broken down into two applications:
@@ -17,47 +29,41 @@ To do that, run the following command:
 
     TBD
 
-To deploy the API, you can either:
+To get Traefiker up & running, create a docker-compose.yml file in the root of your project.
 
--   Build the docker image yourself:
-    ```
-    $ docker build -t traefiker-api api
-    $ docker run -d
-        -e MONGO_URI=mongodb://localhost:27017
-        -e PORT=8010
-        -p 8010:8010
-        traefiker-api
-    ```
--   Or pull the latest image from the Docker Hub:
-    ```
-    $ docker pull haidousm/traefiker-api
-    $ docker run -d
-        -e MONGO_URI=mongodb://localhost:27017
-        -e PORT=8010
-        -p 8010:8010
-        haidousm/traefiker-api
-    ```
+```
+version: "3"
+networks:
+    web:
+        external: true
+services:
+    api:
+        image: haidousm/traefiker-api:SNAPSHOT
+        labels:
+            - traefik.http.routers.api.rule=Host(`admin.localhost`) && PathPrefix("/api")
+            - traefik.http.middlewares.api-prefix.stripprefix.prefixes=/api
+            - traefik.http.routers.api.middlewares=api-prefix
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+            - web
+        ports:
+            - "8010:8010"
+        environment:
+            - MONGO_URI=mongodb://192.168.0.171:27017/traefiker
+    web:
+        image: haidousm/traefiker-web:SNAPSHOT
+        labels:
+            - traefik.http.routers.web.rule=Host(`admin.localhost`)
+        networks:
+            - web
+        environment:
+            - NEXT_PUBLIC_API_URL=http://192.168.0.171:8010
+        ports:
+            - "8020:8020"
+```
 
-To deploy the client, you can either:
-
--   Build the docker image yourself:
-    ```
-    $ docker build -t traefiker-web client
-    $ docker run -d
-        -e NEXT_PUBLIC_API_URL=http://localhost:8010
-        -e PORT=8020
-        -p 8020:8020
-        traefiker-web
-    ```
--   Or pull the latest image from the Docker Hub:
-    ```
-    $ docker pull haidousm/traefiker-web
-    $ docker run -d
-        -e NEXT_PUBLIC_API_URL=http://localhost:8010
-        -e PORT=8020
-        -p 8020:8020
-        haidousm/traefiker-web
-    ```
+Then, run `docker-compose up` to start the services and head over to the dashboard.
 
 ## Contributing
 

@@ -1,0 +1,10 @@
+server:
+    labels:
+        - traefik.http.routers.server.rule=Host(`moussa.sh`) && PathPrefix("/api")
+        - traefik.http.middlewares.api-prefix.stripprefix.prefixes=/api
+        - traefik.http.routers.server.middlewares=api-prefix
+    environment:
+        - MONGO_URI=$PROD_MONGO_URI
+client:
+    labels:
+        - traefik.http.routers.client.rule=Host(`moussa.sh`)

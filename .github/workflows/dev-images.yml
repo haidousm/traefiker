@@ -5,7 +5,10 @@ on:
         branches:
             - "main"
     workflow_dispatch:
-
+env:
+    DOCKER_USER: ${{secrets.DOCKER_USER}}
+    DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+    PROD_MONGO_URI: ${{ secrets.PROD_MONGO_URI }}
 jobs:
     build-server:
         name: Build Server's Image
@@ -13,9 +16,6 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: docker login
-              env:
-                  DOCKER_USER: ${{secrets.DOCKER_USER}}
-                  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
               run: |
                   docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             - name: Build the Docker Image
@@ -30,9 +30,6 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: docker login
-              env:
-                  DOCKER_USER: ${{secrets.DOCKER_USER}}
-                  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
               run: |
                   docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             - name: Build the Docker Image
@@ -49,14 +46,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - name: Populate Environment Variables
+            - name: Run Docker-Compose Remotely
               env:
-                  PROD_MONGO_URI: ${{ secrets.PROD_MONGO_URI }}
                   DOCKER_HOST: ${{ secrets.DOCKER_HOST }}
               run: |
                   envsubst < conf/prod.yml
-            - name: Run Docker-Compose Remotely
-              run: |
-                  echo $DOCKER_HOST
                   docker ps
                   docker-compose -f docker-compose.yml -f conf/prod.yml up -d

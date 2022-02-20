@@ -8,6 +8,7 @@ Traefiker is a web dashboard for [Traefik](https://traefik.io/) that provides a 
 
 -   [Traefik](https://traefik.io/)
 -   [Docker](https://www.docker.com/)
+-   [MongoDB](https://www.mongodb.com/)
 -   [Docker Compose](https://docs.docker.com/compose/) (optional)
 
 You'll need to have setup Traefik before you can begin using Traefiker.
@@ -29,41 +30,9 @@ To do that, run the following command:
 
     TBD
 
-To get Traefiker up & running, create a docker-compose.yml file in the root of your project.
+To get Traefiker up & running, modify the `dev.yml` file under `conf` to point to your MongoDB database.
 
-```yaml
-version: "3"
-networks:
-    web:
-        external: true
-services:
-    server:
-        image: haidousm/traefiker-server
-        labels:
-            - traefik.http.routers.api.rule=Host(`admin.localhost`) && PathPrefix("/api")
-            - traefik.http.middlewares.api-prefix.stripprefix.prefixes=/api
-            - traefik.http.routers.api.middlewares=api-prefix
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-        networks:
-            - web
-        ports:
-            - "8010:8010"
-        environment:
-            - MONGO_URI=mongodb://192.168.0.171:27017/traefiker
-    web:
-        image: haidousm/traefiker-client
-        labels:
-            - traefik.http.routers.web.rule=Host(`admin.localhost`)
-        networks:
-            - web
-        environment:
-            - NEXT_PUBLIC_API_URL=http://192.168.0.171:8010
-        ports:
-            - "8020:8020"
-```
-
-Then, run `docker-compose up` to start the services and head over to the dashboard.
+Then, run `docker-compose -f docker-compose.yml -f ./conf/dev.yml up` to start the services and head over to the dashboard.
 
 ## Contributing
 

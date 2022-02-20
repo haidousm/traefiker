@@ -57,4 +57,6 @@ jobs:
                   envsubst < conf/prod.yml
             - name: Run Docker-Compose Remotely
               run: |
+                  echo $DOCKER_HOST
+                  docker ps
                   docker-compose -f docker-compose.yml -f conf/prod.yml up -d

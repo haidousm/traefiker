@@ -11,11 +11,15 @@ services:
             - web
         ports:
             - 8010:8010
+        labels:
+            - traefik.http.routers.traefiker-server.tls=true
+            - traefik.http.routers.traefiker-server.tls.certresolver=lets-encrypt
     client:
         image: haidousm/traefiker-client:SNAPSHOT
         networks:
             - web
-        environment:
-            - NEXT_PUBLIC_API_URL=http://192.168.0.171:8010
         ports:
             - 8020:8020
+        labels:
+            - traefik.http.routers.traefiker-client.tls=true
+            - traefik.http.routers.traefiker-client.tls.certresolver=lets-encrypt

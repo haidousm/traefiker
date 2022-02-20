@@ -41,3 +41,20 @@ jobs:
             - name: Push the Docker Image to DockerHub
               run: |
                   docker push haidousm/traefiker-web:SNAPSHOT
+    deploy-images:
+        needs:
+            - build-server
+            - build-client
+        name: Deploy Images
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Populate Environment Variables
+              env:
+                  PROD_MONGO_URI: ${{ secrets.PROD_MONGO_URI }}
+                  DOCKER_HOST: ${{ secrets.DOCKER_HOST }}
+              run: |
+                  envsubst < conf/prod.yml
+            - name: Run Docker-Compose Remotely
+              run: |
+                  docker-compose -f docker-compose.yml -f conf/prod.yml up -d

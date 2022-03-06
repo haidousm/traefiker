@@ -45,6 +45,11 @@ jobs:
         name: Deploy Images
         runs-on: ubuntu-latest
         steps:
+            - uses: kielabokkie/ssh-key-and-known-hosts-action@v1.2.0
+              name: Setup SSH
+              with:
+                  ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  ssh-host: ${{ secrets.SSH_HOST }}
             - uses: actions/checkout@v2
             - name: Run Docker-Compose Remotely
               env:

@@ -4,7 +4,7 @@ networks:
         external: true
 services:
     server:
-        image: haidousm/traefiker-server:SNAPSHOT
+        image: haidousm/traefiker-server:latest
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
         networks:
@@ -15,7 +15,7 @@ services:
             - traefik.http.routers.traefiker-server.tls=true
             - traefik.http.routers.traefiker-server.tls.certresolver=lets-encrypt
     client:
-        image: haidousm/traefiker-client:SNAPSHOT
+        image: haidousm/traefiker-client:latest
         networks:
             - web
         ports:

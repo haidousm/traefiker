@@ -26,14 +26,21 @@ Traefiker is broken down into two applications:
 
 Before deploying either, you'll need to configure your username-password for the dashboard.
 
-To do that, run the following command:
+1. Create `./server/src/config/config.env` with the following contents:
 
-    TBD
+    ```
+    ADMIN_USERNAME = YOUR_ADMIN_USERNAME
+    ADMIN_PASSWORD = YOUR_ADMIN_PASSWORD
+    ```
 
-To get Traefiker up & running, modify the `dev.yml` file under `conf` to point to your MongoDB database.
+2. Run `yarn gen-keys && yarn create-user` to generate the keys and create your admin user.
+
+You're now ready to deploy Traefiker!
+
+To get Traefiker up & running locally, modify the `./conf/dev.yml` to point to your MongoDB database.
 
 Then, run `docker-compose -f docker-compose.yml -f ./conf/dev.yml up` to start the services and head over to the dashboard.
 
 ## Contributing
 
-To contribute, please open an issue or pull request on [GitHub](https://github.com/haidousm/traefiker).
+To contribute, please open an issue or pull request on [GitHub](https://github.com/haidousm/traefiker/issues).

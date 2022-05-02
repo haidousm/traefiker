@@ -7,6 +7,9 @@ on:
 
 env:
     TAG_NAME: ${{github.ref_name}}
+    DOCKER_USER: ${{secrets.DOCKER_USER}}
+    DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+    PROD_MONGO_URI: ${{ secrets.PROD_MONGO_URI }}
 
 jobs:
     build-server:
@@ -15,14 +18,11 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: docker login
-              env:
-                  DOCKER_USER: ${{secrets.DOCKER_USER}}
-                  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
               run: |
                   docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             - name: Build the Docker Image
               run: |
-                  docker build server --tag haidousm/traefiker-server:latest --tag haidousm/traefiker-server:$TAG_NAME
+                  docker build server --tag haidousm/traefiker-server:$TAG_NAME --tag haidousm/traefiker-server:latest
             - name: Push the Docker Image to DockerHub
               run: |
                   docker push haidousm/traefiker-server:$TAG_NAME
@@ -33,15 +33,32 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: docker login
-              env:
-                  DOCKER_USER: ${{secrets.DOCKER_USER}}
-                  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
               run: |
                   docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             - name: Build the Docker Image
               run: |
-                  docker build client --tag haidousm/traefiker-web:latest --tag haidousm/traefiker-web:$TAG_NAME
+                  docker build client --tag haidousm/traefiker-client:$TAG_NAME --tag haidousm/traefiker-client:latest
             - name: Push the Docker Image to DockerHub
               run: |
-                  docker push haidousm/traefiker-web:$TAG_NAME
-                  docker push haidousm/traefiker-web:latest
+                  docker push haidousm/traefiker-client:$TAG_NAME
+                  docker push haidousm/traefiker-client:latest
+    deploy-images:
+        needs:
+            - build-server
+            - build-client
+        name: Deploy Images
+        runs-on: ubuntu-latest
+        steps:
+            - uses: kielabokkie/ssh-key-and-known-hosts-action@v1.2.0
+              name: Setup SSH
+              with:
+                  ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  ssh-host: ${{ secrets.SSH_HOST }}
+            - uses: actions/checkout@v2
+            - name: Run Docker-Compose Remotely
+              env:
+                  DOCKER_HOST: ${{ secrets.DOCKER_HOST }}
+              run: |
+                  envsubst < conf/prod.yml
+                  docker ps
+                  docker-compose -f docker-compose.yml -f conf/prod.yml up -d

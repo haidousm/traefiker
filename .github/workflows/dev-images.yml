@@ -1,9 +1,9 @@
 name: Build & Deploy Dev. Docker Images
 
 on:
-    push:
-        branches:
-            - "main"
+    # push:
+    #     branches:
+    #         - "main"
     workflow_dispatch:
 env:
     DOCKER_USER: ${{secrets.DOCKER_USER}}
@@ -34,10 +34,10 @@ jobs:
                   docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
             - name: Build the Docker Image
               run: |
-                  docker build client --tag haidousm/traefiker-web:SNAPSHOT
+                  docker build client --tag haidousm/traefiker-client:SNAPSHOT
             - name: Push the Docker Image to DockerHub
               run: |
-                  docker push haidousm/traefiker-web:SNAPSHOT
+                  docker push haidousm/traefiker-client:SNAPSHOT
     deploy-images:
         needs:
             - build-server
@@ -55,6 +55,6 @@ jobs:
               env:
                   DOCKER_HOST: ${{ secrets.DOCKER_HOST }}
               run: |
-                  envsubst < conf/prod.yml
+                  envsubst < conf/dev.yml
                   docker ps
-                  docker-compose -f docker-compose.yml -f conf/prod.yml up -d
+                  docker-compose -f docker-compose.yml -f conf/dev.yml up -d

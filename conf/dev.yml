@@ -2,6 +2,7 @@ version: "3"
 
 services:
     server:
+        image: haidousm/traefiker-server:SNAPSHOT
         labels:
             - traefik.http.routers.server.rule=Host(`admin.localhost`) && PathPrefix("/api")
             - traefik.http.middlewares.api-prefix.stripprefix.prefixes=/api
@@ -9,5 +10,6 @@ services:
         environment:
             - MONGO_URI=$DEV_MONGO_URI
     client:
+        image: haidousm/traefiker-client:SNAPSHOT
         labels:
             - traefik.http.routers.client.rule=Host(`admin.localhost`)

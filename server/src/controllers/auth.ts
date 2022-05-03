@@ -9,7 +9,9 @@ export const loginUserHandler = async (req: Request, res: Response) => {
     }
     if (validatePassword(req.body.password, user.hash, user.salt)) {
         const token = issueJWT(user);
-        return res.status(200).json({ token });
+        return res
+            .status(200)
+            .json({ token: token.token, expires: token.expires });
     }
     return res.status(400).json({ message: "Invalid credentials" });
 };

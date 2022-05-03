@@ -21,6 +21,8 @@ import { object, string } from "zod";
  *      properties:
  *        token:
  *          type: string
+ *        expires:
+ *          type: string
  */
 
 export const loginUserSchema = object({

@@ -3,7 +3,7 @@ import config from "config";
 
 import logger from "./utils/logger";
 import connectDB from "./utils/db";
-import routes from "./controllers/routes";
+import routes from "./routes/routes";
 
 const app = express();
 const port = config.get<number>("PORT") || 8010;

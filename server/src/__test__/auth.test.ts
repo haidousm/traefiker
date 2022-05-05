@@ -23,6 +23,11 @@ const userDoesNotExistCredentials = {
     password: "123456",
 };
 
+const invalidLoginPayload = {
+    userName: "test-user",
+    password: "123456",
+};
+
 const userPayload = {
     _id: userId,
     username: validLoginCredentials.username,
@@ -61,10 +66,49 @@ describe("auth", () => {
             });
         });
         describe("given the username does not exist", () => {
-            it("it should return a 400", () => {});
+            it("it should return a 400", async () => {
+                jest.spyOn(UserService, "findUser")
+                    // @ts-ignore
+                    .mockReturnValueOnce(null);
+
+                const { statusCode } = await supertest(app)
+                    .post("/auth/login")
+                    .send(userDoesNotExistCredentials);
+
+                expect(statusCode).toBe(400);
+            });
         });
         describe("given the credentials are incorrect", () => {
-            it("it should return a 400", () => {});
+            it("it should return a 400", async () => {
+                jest.spyOn(UserService, "findUser")
+                    // @ts-ignore
+                    .mockReturnValueOnce(userPayload);
+
+                const validatePassword = jest
+                    .spyOn(PasswordUtils, "validatePassword")
+                    .mockReturnValueOnce(false);
+
+                const { statusCode } = await supertest(app)
+                    .post("/auth/login")
+                    .send(invalidLoginCredentials);
+
+                expect(statusCode).toBe(400);
+                expect(validatePassword).toHaveBeenCalledWith(
+                    invalidLoginCredentials.password,
+                    userPayload.hash,
+                    userPayload.salt
+                );
+            });
+        });
+
+        describe("given the login payload is invalid", () => {
+            it("should return a 400", async () => {
+                const { statusCode } = await supertest(app)
+                    .post("/auth/login")
+                    .send(invalidLoginPayload);
+
+                expect(statusCode).toBe(400);
+            });
         });
     });
 });

@@ -12,6 +12,7 @@ const validate =
             });
             next();
         } catch (e) {
+            /* istanbul ignore else */
             if (e instanceof Error) {
                 res.status(400).send(e.message);
             } else {

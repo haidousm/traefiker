@@ -8,8 +8,11 @@
     "private": false,
     "main": "src/app.js",
     "scripts": {
-        "gen-keys": "ts-node src/utils/genKeys.ts",
-        "dev": "eslint src/ && nodemon ./src/app.ts"
+        "gen-keys": "ts-node scripts/genKeys.ts",
+        "create-user": "ts-node scripts/createUser.ts",
+        "dev": "eslint src/ && nodemon ./src/app.ts",
+        "no-lint-dev": "nodemon ./src/app.ts",
+        "test": "jest"
     },
     "dependencies": {
         "@types/jsonwebtoken": "^8.5.8",

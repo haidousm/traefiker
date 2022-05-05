@@ -26,7 +26,9 @@ export const generateHash = (password: string, salt: string) => {
 };
 
 export const issueJWT = (user: UserDocument) => {
-    const PRIV_KEY = fs.readFileSync(`${__dirname}/../utils/keys/private.pem`);
+    const PRIV_KEY = fs.readFileSync(
+        `${__dirname}/../../config/keys/private.pem`
+    );
 
     const expiresIn = "1y";
     const payload = {

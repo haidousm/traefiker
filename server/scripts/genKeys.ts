@@ -13,9 +13,9 @@ const keyPair = crypto.generateKeyPairSync("rsa", {
     },
 });
 
-if (!fs.existsSync(`${__dirname}/keys/`)) {
-    fs.mkdirSync(`${__dirname}/keys/`);
+if (!fs.existsSync(`${__dirname}/../config/keys/`)) {
+    fs.mkdirSync(`${__dirname}/../config/keys/`);
 }
 
-fs.writeFileSync(`${__dirname}/keys/public.pem`, keyPair.publicKey);
-fs.writeFileSync(`${__dirname}/keys/private.pem`, keyPair.privateKey);
+fs.writeFileSync(`${__dirname}/../config/keys/public.pem`, keyPair.publicKey);
+fs.writeFileSync(`${__dirname}/../config/keys/private.pem`, keyPair.privateKey);

@@ -1,4 +1,4 @@
-import { object, string } from "zod";
+import { object, string, z } from "zod";
 
 /**
  * @openapi
@@ -12,10 +12,10 @@ import { object, string } from "zod";
  *      properties:
  *        username:
  *          type: string
- *          default: moussa
+ *          default: username
  *        password:
  *          type: string
- *          default: stringPassword123
+ *          default: password
  *    LoginUserResponse:
  *      type: object
  *      properties:
@@ -35,3 +35,8 @@ export const loginUserSchema = object({
         }),
     }),
 });
+
+export interface CreateUserSchema {
+    username: string;
+    password: string;
+}

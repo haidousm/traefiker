@@ -1,5 +1,5 @@
 import express from "express";
-import { loginUserHandler } from "../controllers/auth";
+import { loginUserHandler } from "../controllers/auth.controller";
 import validateResource from "../middleware/validateResource";
 import { loginUserSchema } from "../schemas/auth";
 

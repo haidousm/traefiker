@@ -4,7 +4,7 @@ import { generateSalt, generateHash } from "../utils/password";
 
 /* istanbul ignore next */
 export const findUser = async (query: FilterQuery<UserDocument>) => {
-    return UserModel.findOne(query).lean();
+    return UserModel.findOne(query);
 };
 
 /* istanbul ignore next */

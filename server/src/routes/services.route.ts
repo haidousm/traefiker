@@ -5,11 +5,13 @@ const router = express.Router();
 
 /**
  * @openapi
- * '/services/':
+ * '/services':
  *  get:
  *     tags:
  *     - Services
  *     summary: Get All Services
+ *     security:
+ *      - bearerAuth: []
  *     responses:
  *      200:
  *        description: Success
@@ -19,6 +21,8 @@ const router = express.Router();
  *              type: array
  *              items:
  *                  $ref: '#/components/schemas/Service'
+ *      401:
+ *          description: Unauthorized
  */
 router.get("/", getAllServicesHandler);
 

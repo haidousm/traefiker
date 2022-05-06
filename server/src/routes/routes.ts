@@ -1,6 +1,6 @@
 import { Express, Request, Response } from "express";
 
-import authRouter from "./auth";
+import authRouter from "./auth.route";
 
 const routes = (app: Express) => {
     app.get("/health", (_req: Request, res: Response) => {

@@ -1,7 +1,7 @@
 import express from "express";
 import { loginUserHandler } from "../controllers/auth.controller";
 import validateResource from "../middleware/validateResource";
-import { loginUserSchema } from "../schemas/auth";
+import { LoginUserRequestSchema } from "../schemas/auth.schema";
 
 const router = express.Router();
 
@@ -29,6 +29,10 @@ const router = express.Router();
  *        description: Bad request
  */
 
-router.post("/login", validateResource(loginUserSchema), loginUserHandler);
+router.post(
+    "/login",
+    validateResource(LoginUserRequestSchema),
+    loginUserHandler
+);
 
 export default router;

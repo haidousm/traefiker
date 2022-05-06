@@ -4,7 +4,7 @@ import { object, string } from "zod";
  * @openapi
  * components:
  *  schemas:
- *    LoginUserSchema:
+ *    LoginUserRequest:
  *      type: object
  *      required:
  *        - username
@@ -25,7 +25,7 @@ import { object, string } from "zod";
  *          type: string
  */
 
-export const loginUserSchema = object({
+export const LoginUserRequestSchema = object({
     body: object({
         username: string({
             required_error: "Username is required",

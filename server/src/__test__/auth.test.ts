@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import supertest from "supertest";
 import createServer from "../utils/server";
 import * as UserService from "../services/user.service";

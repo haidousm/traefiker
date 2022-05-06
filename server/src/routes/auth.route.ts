@@ -17,7 +17,7 @@ const router = express.Router();
  *      content:
  *        application/json:
  *           schema:
- *              $ref: '#/components/schemas/LoginUserSchema'
+ *              $ref: '#/components/schemas/LoginUserRequest'
  *     responses:
  *      200:
  *        description: Success

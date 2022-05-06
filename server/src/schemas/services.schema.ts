@@ -34,6 +34,42 @@ export interface Redirect {
     to: string;
 }
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *   Service:
+ *      type: object
+ *      properties:
+ *          name:
+ *              type: string
+ *          status:
+ *              type: string
+ *          image:
+ *              type: string
+ *          network:
+ *              type: string
+ *          hosts:
+ *              type: array
+ *              items:
+ *                 type: string
+ *          redirects:
+ *              type: array
+ *              items:
+ *                 $ref: '#/components/schemas/Redirect'
+ *          environments:
+ *              type: array
+ *              items:
+ *                  $ref: '#/components/schemas/EnvironmentVariable'
+ *          order:
+ *              type: integer
+ *          createdAt:
+ *              type: string
+ *          containerId:
+ *              type: string
+ *          tag:
+ *             type: string
+ */
 export interface ServiceDocument extends mongoose.Document {
     name: string;
     status: Enumerator<string>;

@@ -16,11 +16,10 @@ const router = express.Router();
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/schemas/ServiceSchema'
- *      400:
- *        description: Bad request
+ *              type: array
+ *              items:
+ *                  $ref: '#/components/schemas/Service'
  */
-
 router.get("/", getAllServicesHandler);
 
 export default router;

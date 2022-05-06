@@ -12,7 +12,7 @@
         "create-user": "ts-node scripts/createUser.ts",
         "dev": "eslint src/ && nodemon ./src/app.ts",
         "no-lint-dev": "nodemon ./src/app.ts",
-        "test": "jest"
+        "test": "jest --watchAll"
     },
     "dependencies": {
         "@types/jsonwebtoken": "^8.5.8",

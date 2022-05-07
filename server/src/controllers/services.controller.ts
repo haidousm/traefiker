@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
+import { createContainer } from "../../libs/docker";
 import {
     CreateServiceRequest,
     ServiceDocument,
 } from "../schemas/services.schema";
 import {
-    createImageByImageIdentifier,
-    findImageByImageIdentifier,
-} from "../services/images.service";
-import { findAllServices } from "../services/services.service";
+    attachContainerToService,
+    createService,
+    findAllServices,
+} from "../services/services.service";
+import { findImageByImageIdentifier } from "../services/images.service";
 
 export const getAllServicesHandler = async (
     _req: Request,
@@ -21,32 +23,12 @@ export const createServiceHandler = async (
     req: Request<CreateServiceRequest>,
     res: Response<ServiceDocument>
 ) => {
-    const createNewServiceRequest: CreateServiceRequest = req.body;
-    const image = await getOrCreateImage(createNewServiceRequest.image);
-};
-
-const getOrCreateImage = async (imageIdentifier: string) => {
-    // const { repository, imageName, tag } =
-    //     parseImageIdentifier(imageIdentifier);
-    let image = await findImageByImageIdentifier(imageIdentifier);
+    const service = await createService(req.body);
+    const image = await findImageByImageIdentifier(service.image.toString());
     if (!image) {
-        image = await createImageByImageIdentifier(imageIdentifier);
+        return res.sendStatus(500);
     }
-    return image;
+    const container = await createContainer(service, image);
+    const updatedService = await attachContainerToService(service, container);
+    res.json(updatedService);
 };
-
-// router.post("/create", async (req, res) => {
-//     const serviceRequest = req.body;
-//     const resolvedName = serviceRequest.image;
-
-//     const image = await getOrCreateImage(resolvedName);
-//     if (image === -1) {
-//         return res.status(400).json({
-//             message: "Invalid image name",
-//         });
-//     }
-
-//     const service = await createService(serviceRequest, image);
-//     await createContainer(service, image);
-//     res.json(service);
-// });

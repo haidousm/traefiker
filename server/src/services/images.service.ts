@@ -1,5 +1,8 @@
 import ImageModel from "../models/Image";
 
+export const findImageById = (imageId: string) => {
+    return ImageModel.findById(imageId);
+};
 export const findImageByImageIdentifier = (identifier: string) => {
     return ImageModel.findOne({ identifier });
 };
@@ -13,6 +16,16 @@ export const createImageByImageIdentifier = (identifier: string) => {
         identifier,
     });
     return image.save();
+};
+
+export const getOrCreateImageByImageIdentifier = async (
+    imageIdentifier: string
+) => {
+    let image = await findImageByImageIdentifier(imageIdentifier);
+    if (!image) {
+        image = await createImageByImageIdentifier(imageIdentifier);
+    }
+    return image;
 };
 
 const parseImageIdentifier = (imageIdentifier: string) => {

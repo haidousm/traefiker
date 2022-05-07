@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { array, object, string } from "zod";
+import { object, string } from "zod";
 
 /**
  * @openapi
@@ -73,7 +73,7 @@ export interface Redirect {
  */
 export interface ServiceDocument extends mongoose.Document {
     name: string;
-    status: Enumerator<string>;
+    status: string;
     image: mongoose.Schema.Types.ObjectId;
     network: string;
     hosts: string[];

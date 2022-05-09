@@ -2,33 +2,63 @@ import { Request, Response } from "express";
 import { createContainer } from "../../libs/docker";
 import {
     CreateServiceRequest,
-    ServiceDocument,
+    ServiceResponse,
 } from "../schemas/services.schema";
 import {
     attachContainerToService,
     createService,
     findAllServices,
 } from "../services/services.service";
-import { findImageByImageIdentifier } from "../services/images.service";
+import { ServiceDocument } from "../models/Service";
+import { ImageDocument } from "../models/Image";
 
 export const getAllServicesHandler = async (
     _req: Request,
-    res: Response<ServiceDocument[]>
+    res: Response<ServiceResponse[]>
 ) => {
-    const services: ServiceDocument[] = await findAllServices();
-    res.status(200).json(services);
+    const services = await findAllServices();
+    res.status(200).json(
+        services.map((serviceDocument) =>
+            createServiceResponseFromServiceDocument(serviceDocument)
+        )
+    );
 };
 
 export const createServiceHandler = async (
     req: Request<CreateServiceRequest>,
-    res: Response<ServiceDocument>
+    res: Response<ServiceResponse>
 ) => {
     const service = await createService(req.body);
-    const image = await findImageByImageIdentifier(service.image.toString());
-    if (!image) {
-        return res.sendStatus(500);
-    }
-    const container = await createContainer(service, image);
+    const container = await createContainer(service);
     const updatedService = await attachContainerToService(service, container);
-    res.json(updatedService);
+    return res.json(createServiceResponseFromServiceDocument(updatedService));
+};
+
+const createImageResponseFromImageDocument = (image: ImageDocument) => {
+    return {
+        name: image.name,
+        tag: image.tag,
+        repository: image.repository,
+        identifier: image.identifier,
+        createdAt: image.createdAt,
+    };
+};
+
+const createServiceResponseFromServiceDocument = (service: ServiceDocument) => {
+    const imageResponse = createImageResponseFromImageDocument(
+        service.image as unknown as ImageDocument
+    );
+    return {
+        name: service.name,
+        status: service.status,
+        image: imageResponse,
+        network: service.network,
+        hosts: service.hosts,
+        redirects: service.redirects,
+        environments: service.environments,
+        order: service.order,
+        createdAt: service.createdAt,
+        containerId: service.containerId,
+        tag: service.tag,
+    };
 };

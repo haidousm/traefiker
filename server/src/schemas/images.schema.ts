@@ -1,5 +1,3 @@
-import mongoose from "mongoose";
-
 /**
  * @openapi
  * components:
@@ -18,7 +16,7 @@ import mongoose from "mongoose";
  *                  createdAt:
  *                      type: date
  */
-export interface ImageDocument extends mongoose.Document {
+export interface ImageResponse {
     name: string;
     tag: string;
     repository: string;

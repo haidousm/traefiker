@@ -12,15 +12,9 @@ const router = express.Router();
  *  get:
  *      tags:
  *          - Services
- *      summary: Create a new service
+ *      summary: Returns all services
  *      security:
  *         - bearerAuth: []
- *      requestBody:
- *          required: true
- *          content:
- *             application/json:
- *               schema:
- *                 $ref: '#/components/schemas/CreateServiceRequest'
  *      responses:
  *          200:
  *              description: Success

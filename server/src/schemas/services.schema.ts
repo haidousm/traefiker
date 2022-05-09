@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
 import { object, string } from "zod";
+import { ImageResponse } from "./images.schema";
 
 /**
  * @openapi
@@ -47,7 +47,7 @@ export interface Redirect {
  *          status:
  *              type: string
  *          image:
- *              type: string
+ *              $ref: '#/components/schemas/Image'
  *          network:
  *              type: string
  *          hosts:
@@ -71,10 +71,10 @@ export interface Redirect {
  *          tag:
  *             type: string
  */
-export interface ServiceDocument extends mongoose.Document {
+export interface ServiceResponse {
     name: string;
     status: string;
-    image: mongoose.Schema.Types.ObjectId;
+    image: ImageResponse;
     network: string;
     hosts: string[];
     redirects: Redirect[];
@@ -83,8 +83,6 @@ export interface ServiceDocument extends mongoose.Document {
     createdAt: Date;
     containerId: string;
     tag: string;
-    getServiceLabels(): string[];
-    getEnvironments(): string[];
 }
 
 /**

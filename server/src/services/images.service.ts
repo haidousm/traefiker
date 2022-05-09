@@ -1,10 +1,10 @@
 import ImageModel from "../models/Image";
 
 export const findImageById = (imageId: string) => {
-    return ImageModel.findById(imageId);
+    return ImageModel.findById(imageId).exec();
 };
 export const findImageByImageIdentifier = (identifier: string) => {
-    return ImageModel.findOne({ identifier });
+    return ImageModel.findOne({ identifier }).exec();
 };
 
 export const createImageByImageIdentifier = (identifier: string) => {

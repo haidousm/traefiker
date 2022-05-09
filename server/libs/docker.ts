@@ -1,13 +1,13 @@
 import Docker from "dockerode";
-import { ServiceDocument } from "../src/schemas/services.schema";
-import { ImageDocument } from "../src/schemas/images.schema";
 import Dockerode from "dockerode";
+import { ImageDocument } from "../src/models/Image";
+import { ServiceDocument } from "../src/models/Service";
 const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
 export const createContainer = async (
-    service: ServiceDocument,
-    image: ImageDocument
+    service: ServiceDocument
 ): Promise<Dockerode.Container> => {
+    const image = service.image as unknown as ImageDocument;
     return new Promise((resolve) => {
         docker.pull(image.identifier, {}, async (_err, stream) => {
             docker.modem.followProgress(stream, async () => {

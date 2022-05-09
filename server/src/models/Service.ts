@@ -1,9 +1,21 @@
 import mongoose from "mongoose";
-import {
-    EnvironmentVariable,
-    Redirect,
-    ServiceDocument,
-} from "../schemas/services.schema";
+import { EnvironmentVariable, Redirect } from "../schemas/services.schema";
+
+export interface ServiceDocument extends mongoose.Document {
+    name: string;
+    status: string;
+    image: mongoose.Schema.Types.ObjectId;
+    network: string;
+    hosts: string[];
+    redirects: Redirect[];
+    environments: EnvironmentVariable[];
+    order: number;
+    createdAt: Date;
+    containerId: string;
+    tag: string;
+    getServiceLabels(): string[];
+    getEnvironments(): string[];
+}
 
 const ServiceSchema = new mongoose.Schema({
     name: {

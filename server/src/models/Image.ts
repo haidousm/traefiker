@@ -1,5 +1,12 @@
 import mongoose from "mongoose";
-import { ImageDocument } from "../schemas/images.schema";
+
+export interface ImageDocument extends mongoose.Document {
+    name: string;
+    tag: string;
+    repository: string;
+    identifier: string;
+    createdAt: Date;
+}
 
 const ImageSchema = new mongoose.Schema({
     name: {

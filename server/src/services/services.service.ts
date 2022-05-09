@@ -1,14 +1,11 @@
 import Dockerode from "dockerode";
-import ServiceModel from "../models/Service";
-import {
-    CreateServiceRequest,
-    ServiceDocument,
-} from "../schemas/services.schema";
+import ServiceModel, { ServiceDocument } from "../models/Service";
+import { CreateServiceRequest } from "../schemas/services.schema";
 import { getOrCreateImageByImageIdentifier } from "./images.service";
 
 // istanbul ignore next
 export const findAllServices = async () => {
-    return ServiceModel.find({}).populate("images").lean();
+    return ServiceModel.find({}).populate("image").exec();
 };
 
 export const createService = async (
@@ -18,15 +15,10 @@ export const createService = async (
         createNewServiceRequest.image
     );
 
-    const latestServiceByOrder = await ServiceModel.findOne(
-        {},
-        { sort: { order: -1 } }
-    );
+    const latestServiceByOrder: ServiceDocument | null =
+        await ServiceModel.findOne({}).sort({ order: -1 }).exec();
 
-    let order = 0;
-    if (latestServiceByOrder) {
-        order = latestServiceByOrder.order + 1;
-    }
+    const order = latestServiceByOrder ? latestServiceByOrder.order + 1 : 0;
 
     const service = new ServiceModel({
         name: `traefiker_${createNewServiceRequest.name}`,
@@ -38,7 +30,7 @@ export const createService = async (
         order: order,
         tag: createNewServiceRequest.name,
     });
-    return service.save();
+    return (await service.populate("image")).save();
 };
 
 export const attachContainerToService = (
@@ -46,6 +38,6 @@ export const attachContainerToService = (
     container: Dockerode.Container
 ) => {
     service.containerId = container.id;
-    service.status = "running";
+    service.status = "created";
     return service.save();
 };

@@ -10,7 +10,7 @@ const routes = (app: Express) => {
     });
 
     app.use("/auth", authRouter);
-    app.use("/services", servicesRouter);
+    app.use("/services", protectRoute, servicesRouter);
 };
 
 export default routes;

@@ -40,7 +40,7 @@ import { Redirect } from "./Redirect";
  *              type: integer
  */
 export interface Service {
-    id: string;
+    id?: string;
     name: string;
     status: ServiceStatus;
     image: Image;

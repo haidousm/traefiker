@@ -1,31 +1,45 @@
-import ImageModel from "../models/Image";
+import ImageModel, { Internal_ImageDocument } from "../models/Image";
+import { Image } from "../types/Image";
 
 export const findImageById = (imageId: string) => {
     return ImageModel.findById(imageId).exec();
 };
-export const findImageByImageIdentifier = (identifier: string) => {
-    return ImageModel.findOne({ identifier }).exec();
+export const findImageByImageIdentifier = async (
+    identifier: string
+): Promise<Image> => {
+    const { repository, name, tag } = parseImageIdentifier(identifier);
+    const internalImage = await ImageModel.findOne({
+        repository,
+        name,
+        tag,
+    }).exec();
+    if (internalImage) {
+        return internalImageToImage(internalImage);
+    }
+    throw new Error(`Image not found: ${identifier}`);
 };
 
-export const createImageByImageIdentifier = (identifier: string) => {
-    const { repository, imageName, tag } = parseImageIdentifier(identifier);
-    const image = new ImageModel({
-        name: imageName,
+export const createImageByImageIdentifier = async (
+    identifier: string
+): Promise<Image> => {
+    const { repository, name, tag } = parseImageIdentifier(identifier);
+    const internalImage = new ImageModel({
+        name,
         tag,
         repository,
-        identifier,
     });
-    return image.save();
+    await internalImage.save();
+    return internalImageToImage(internalImage);
 };
 
 export const getOrCreateImageByImageIdentifier = async (
     imageIdentifier: string
 ) => {
-    let image = await findImageByImageIdentifier(imageIdentifier);
-    if (!image) {
-        image = await createImageByImageIdentifier(imageIdentifier);
+    try {
+        return await findImageByImageIdentifier(imageIdentifier);
+    } catch (e) {
+        return await createImageByImageIdentifier(imageIdentifier);
     }
-    return image;
 };
 
 const parseImageIdentifier = (imageIdentifier: string) => {
@@ -34,14 +48,23 @@ const parseImageIdentifier = (imageIdentifier: string) => {
 
     if (match) {
         const repository = match[1] ?? match[6] ?? "_";
-        const imageName = match[2] ?? match[4] ?? match[7] ?? match[8];
+        const name = match[2] ?? match[4] ?? match[7] ?? match[8];
         const tag = match[3] ?? match[5] ?? "latest";
 
         return {
             repository,
-            imageName,
+            name,
             tag,
         };
     }
     throw new Error(`Invalid image identifier: ${imageIdentifier}`);
+};
+
+const internalImageToImage = (internalImage: Internal_ImageDocument) => {
+    return {
+        id: internalImage._id.toString(),
+        name: internalImage.name,
+        tag: internalImage.tag,
+        repository: internalImage.repository,
+    };
 };

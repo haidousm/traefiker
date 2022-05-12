@@ -1,4 +1,4 @@
-import { object, string } from "zod";
+import { object, string, z } from "zod";
 
 /**
  * @openapi
@@ -31,8 +31,4 @@ export const CreateServiceRequestSchema = object({
     }),
 });
 
-export interface CreateServiceRequest {
-    name: string;
-    image: string;
-    hosts: string[];
-}
+export type CreateServiceRequest = z.infer<typeof CreateServiceRequestSchema>;

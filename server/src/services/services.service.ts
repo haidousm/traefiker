@@ -3,7 +3,6 @@ import ServiceModel, { ServiceDocument } from "../models/Service";
 import { CreateServiceRequest } from "../schemas/services.schema";
 import { getOrCreateImageByImageIdentifier } from "./images.service";
 
-// istanbul ignore next
 export const findAllServices = async () => {
     return ServiceModel.find({}).populate("image").exec();
 };

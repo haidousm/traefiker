@@ -14,6 +14,12 @@ const createServiceRequest: CreateServiceRequest = {
     hosts: ["httpd.haidousm.com"],
 };
 
+const invalidCreateServiceRequest = {
+    name: "httpd",
+    imageName: "httpd",
+    hosts: ["httpd.haidousm.com"],
+};
+
 const createdService = {
     name: "httpd",
     status: "pulling",
@@ -41,13 +47,13 @@ const app = createServer();
 
 describe("services", () => {
     describe("get all services", () => {
-        describe("when user is not logged in", () => {
+        describe("given the user is not logged in", () => {
             it("should return 401", async () => {
                 const response = await supertest(app).get("/services");
                 expect(response.status).toBe(401);
             });
         });
-        describe("when user is logged in", () => {
+        describe("given user is logged in", () => {
             it("should return all services", async () => {
                 jest.spyOn(passport, "authenticate").mockImplementation(() => {
                     return (
@@ -61,16 +67,16 @@ describe("services", () => {
 
                 jest.spyOn(ServicesService, "findAllServices")
                     // @ts-ignore
-                    .mockReturnValueOnce([]);
+                    .mockReturnValueOnce([createdService]);
 
                 const response = await supertest(app).get("/services");
                 expect(response.status).toBe(200);
-                expect(response.body).toEqual([]);
+                expect(response.body).toEqual([createdService]);
             });
         });
     });
     describe("create new service", () => {
-        describe("when user is not logged in", () => {
+        describe("given the user is not logged in", () => {
             it("should return 401", async () => {
                 const response = await supertest(app)
                     .post("/services/create")
@@ -78,39 +84,75 @@ describe("services", () => {
                 expect(response.status).toBe(401);
             });
         });
-        describe("when user is logged in", () => {
-            it("should create service", async () => {
-                passport.authenticate = jest.fn(() => {
-                    return (
-                        req: Request,
-                        res: Response,
-                        next: NextFunction
-                    ) => {
-                        next();
-                    };
-                });
-
-                jest.spyOn(ServicesService, "createService")
-                    // @ts-ignore
-                    .mockReturnValueOnce(createdService);
-
-                jest.spyOn(DockerLib, "createContainer")
-                    //@ts-ignore
-                    .mockReturnValueOnce(createdContainer);
-
-                jest.spyOn(ServicesService, "attachContainerToService")
-                    //@ts-ignore
-                    .mockImplementationOnce(() => {
-                        createdService.containerId = createdContainer.id;
-                        createdService.status = "created";
-                        return createdService;
+        describe("given the user is logged in", () => {
+            describe("given the create service payload is valid", () => {
+                it("should create service", async () => {
+                    passport.authenticate = jest.fn(() => {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            next();
+                        };
                     });
 
-                const response = await supertest(app)
-                    .post("/services/create")
-                    .send(createServiceRequest);
-                expect(response.status).toBe(200);
-                expect(response.body).toEqual(createdService);
+                    jest.spyOn(ServicesService, "createService")
+                        // @ts-ignore
+                        .mockReturnValueOnce(createdService);
+
+                    jest.spyOn(DockerLib, "createContainer")
+                        //@ts-ignore
+                        .mockReturnValueOnce(createdContainer);
+
+                    jest.spyOn(ServicesService, "attachContainerToService")
+                        //@ts-ignore
+                        .mockImplementationOnce(() => {
+                            createdService.containerId = createdContainer.id;
+                            createdService.status = "created";
+                            return createdService;
+                        });
+
+                    const response = await supertest(app)
+                        .post("/services/create")
+                        .send(createServiceRequest);
+                    expect(response.status).toBe(200);
+                    expect(response.body).toEqual(createdService);
+                });
+            });
+            describe("given the create service payload is invalid", () => {
+                it("should return a 400", async () => {
+                    passport.authenticate = jest.fn(() => {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            next();
+                        };
+                    });
+
+                    jest.spyOn(ServicesService, "createService")
+                        // @ts-ignore
+                        .mockReturnValueOnce(createdService);
+
+                    jest.spyOn(DockerLib, "createContainer")
+                        //@ts-ignore
+                        .mockReturnValueOnce(createdContainer);
+
+                    jest.spyOn(ServicesService, "attachContainerToService")
+                        //@ts-ignore
+                        .mockImplementationOnce(() => {
+                            createdService.containerId = createdContainer.id;
+                            createdService.status = "created";
+                            return createdService;
+                        });
+
+                    const response = await supertest(app)
+                        .post("/services/create")
+                        .send(invalidCreateServiceRequest);
+                    expect(response.status).toBe(400);
+                });
             });
         });
     });

@@ -25,7 +25,7 @@ export const getAllServicesHandler = async (
 };
 
 export const createServiceHandler = async (
-    req: Request<CreateServiceRequest>,
+    req: Request,
     res: Response<ServiceResponse>
 ) => {
     const service = await createService(req.body);

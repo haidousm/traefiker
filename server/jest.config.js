@@ -10,4 +10,5 @@ module.exports = {
     resetMocks: true,
     restoreMocks: true,
     collectCoverage: true,
+    coveragePathIgnorePatterns: ["./libs/", "./src/services/", "./src/models/"],
 };

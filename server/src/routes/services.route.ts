@@ -1,4 +1,6 @@
 import express from "express";
+import validateResource from "../middleware/validateResource";
+import { CreateServiceRequestSchema } from "../schemas/services.schema";
 import {
     createServiceHandler,
     getAllServicesHandler,
@@ -52,6 +54,10 @@ router.get("/", getAllServicesHandler);
  *              401:
  *                  description: Unauthorized
  */
-router.post("/create", createServiceHandler);
+router.post(
+    "/create",
+    validateResource(CreateServiceRequestSchema),
+    createServiceHandler
+);
 
 export default router;

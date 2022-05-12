@@ -9,6 +9,17 @@ export const findAllServices = async (): Promise<Service[]> => {
     return internalServices.map(internalServiceToService);
 };
 
+export const findServiceByName = async (
+    name: string
+): Promise<Service | null> => {
+    const internalService: Internal_ServiceDocument | null =
+        await ServiceModel.findOne({ name }).populate("image").exec();
+    if (!internalService) {
+        return null;
+    }
+    return internalServiceToService(internalService);
+};
+
 export const saveService = async (service: Service) => {
     const internalService = await ServiceModel.findById(service.id).exec();
     if (!internalService) {

@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { findAllServices, saveService } from "../services/services.service";
+import {
+    findAllServices,
+    saveService,
+    findServiceByName,
+} from "../services/services.service";
 import { Service } from "../types/Service";
 import { getOrCreateImageByImageIdentifier } from "../services/images.service";
 import { Image } from "../types/Image";
@@ -16,8 +20,12 @@ export const getAllServicesHandler = async (
 };
 
 export const createServiceHandler = async (req: Request, res: Response) => {
-    // TODO: add check for existing service with same name
     try {
+        if (await findServiceByName(req.body.name)) {
+            return res.status(400).json({
+                error: `Service with name ${req.body.name} already exists`,
+            });
+        }
         const image: Image = await getOrCreateImageByImageIdentifier(
             req.body.image
         );

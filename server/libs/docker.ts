@@ -44,34 +44,6 @@ export const createContainer = async (
     });
 };
 
-// export const createContainer = async (
-//     service: ServiceDocument
-// ): Promise<Dockerode.Container> => {
-//     const image = service.image as unknown as ImageDocument;
-//     return new Promise((resolve) => {
-//         docker.pull(image.identifier, {}, async (_err, stream) => {
-//             docker.modem.followProgress(stream, async () => {
-//                 const labels = service.getServiceLabels();
-//                 const labelObj = transformLabelsToObject(service.name, labels);
-
-//                 if (service.containerId) {
-//                     await deleteContainer(service);
-//                 }
-//                 resolve(
-//                     docker.createContainer({
-//                         Image: image.identifier,
-//                         name: service.tag,
-//                         Labels: labelObj,
-//                         HostConfig: {
-//                             NetworkMode: service.network,
-//                         },
-//                     })
-//                 );
-//             });
-//         });
-//     });
-// };
-
 // const deleteContainer = async (service: ServiceDocument) => {
 //     const container = docker.getContainer(service.containerId);
 //     const containerState = (await container.inspect()).State;

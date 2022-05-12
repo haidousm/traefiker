@@ -27,6 +27,7 @@ export const saveService = async (service: Service) => {
             service.image.id
         ).exec();
         if (!internalImage) {
+            // todo: delete service
             throw new Error("Image not found");
         }
         const internalService = new ServiceModel({

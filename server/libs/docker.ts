@@ -21,7 +21,10 @@ export const createContainer = async (
     callback: (service: Service, container: Container) => void
 ): Promise<void> => {
     const stream = await pullImage(image);
-    docker.modem.followProgress(stream, async () => {
+    docker.modem.followProgress(stream, async (error) => {
+        if (error) {
+            throw error;
+        }
         const imageIdentifier =
             image.repository != "_"
                 ? `${image.repository}/${image.name}:${image.tag}`

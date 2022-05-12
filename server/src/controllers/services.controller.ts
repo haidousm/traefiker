@@ -39,7 +39,7 @@ export const createServiceHandler = async (req: Request, res: Response) => {
             network: "web", // use container details for this LATER
             order: 0, // fix later
         });
-        await createContainer(service, image, attachContainerToService);
+        createContainer(service, image, attachContainerToService);
         return res.json(service);
     } catch (e) {
         return res.status(400).json({

@@ -1,42 +1,73 @@
-import Dockerode from "dockerode";
-import ServiceModel, { ServiceDocument } from "../models/Service";
-import { CreateServiceRequest } from "../schemas/services.schema";
-import { getOrCreateImageByImageIdentifier } from "./images.service";
+import ServiceModel, { Internal_ServiceDocument } from "../models/Service";
+import { Image } from "../types/Image";
+import { Service } from "../types/Service";
+import ImageModel, { Internal_ImageDocument } from "../models/Image";
 
-export const findAllServices = async () => {
-    return ServiceModel.find({}).populate("image").exec();
+export const findAllServices = async (): Promise<Service[]> => {
+    const internalServices: Internal_ServiceDocument[] =
+        await ServiceModel.find().populate("image").exec();
+    return internalServices.map(internalServiceToService);
 };
 
-export const createService = async (
-    createNewServiceRequest: CreateServiceRequest
-) => {
-    const image = await getOrCreateImageByImageIdentifier(
-        createNewServiceRequest.image
-    );
-
-    const latestServiceByOrder: ServiceDocument | null =
-        await ServiceModel.findOne({}).sort({ order: -1 }).exec();
-
-    const order = latestServiceByOrder ? latestServiceByOrder.order + 1 : 0;
-
-    const service = new ServiceModel({
-        name: `traefiker_${createNewServiceRequest.name}`,
-        status: "pulling",
-        image: image._id,
-        hosts: createNewServiceRequest.hosts,
-        redirects: [],
-        environments: [],
-        order: order,
-        tag: createNewServiceRequest.name,
-    });
-    return (await service.populate("image")).save();
+export const saveService = async (service: Service) => {
+    const internalService = await ServiceModel.findById(service.id).exec();
+    if (!internalService) {
+        const internalImage = await ImageModel.findById(
+            service.image.id
+        ).exec();
+        if (!internalImage) {
+            throw new Error("Image not found");
+        }
+        const internalService = new ServiceModel({
+            name: service.name,
+            status: service.status,
+            image: internalImage,
+            network: service.network,
+            hosts: service.hosts,
+            redirects: service.redirects,
+            environmentVariables: service.environmentVariables,
+            order: service.order,
+            internalName: service.internalName,
+            containerId: service.containerId,
+        });
+        await internalService.save();
+        return internalServiceToService(internalService);
+    }
+    internalService.name = service.name;
+    internalService.status = service.status;
+    internalService.network = service.network;
+    internalService.hosts = service.hosts;
+    internalService.redirects = service.redirects;
+    internalService.environmentVariables = service.environmentVariables;
+    internalService.order = service.order;
+    internalService.internalName = service.internalName;
+    internalService.containerId = service.containerId;
+    await internalService.save();
+    return internalServiceToService(internalService);
 };
 
-export const attachContainerToService = (
-    service: ServiceDocument,
-    container: Dockerode.Container
-) => {
-    service.containerId = container.id;
-    service.status = "created";
-    return service.save();
+const internalServiceToService = (
+    internalService: Internal_ServiceDocument
+): Service => {
+    const internalImage: Internal_ImageDocument =
+        internalService.image as unknown as Internal_ImageDocument;
+    const image: Image = {
+        id: internalImage._id.toString(),
+        name: internalImage.name,
+        tag: internalImage.tag,
+        repository: internalImage.repository,
+    };
+    return {
+        id: internalService._id.toString(),
+        name: internalService.name,
+        status: internalService.status,
+        image,
+        network: internalService.network,
+        hosts: internalService.hosts,
+        redirects: internalService.redirects,
+        environmentVariables: internalService.environmentVariables,
+        order: internalService.order,
+        internalName: internalService.internalName,
+        containerId: internalService.containerId,
+    };
 };

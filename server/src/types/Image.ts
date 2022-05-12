@@ -5,21 +5,18 @@
  *          Image:
  *              type: object
  *              properties:
+ *                  id:
+ *                     type: string
  *                  name:
  *                      type: string
  *                  tag:
  *                      type: string
  *                  repository:
  *                      type: string
- *                  identifier:
- *                      type: string
- *                  createdAt:
- *                      type: date
  */
-export interface ImageResponse {
+export interface Image {
+    id: string;
     name: string;
     tag: string;
     repository: string;
-    identifier: string;
-    createdAt: Date;
 }

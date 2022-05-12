@@ -1,23 +1,23 @@
 import mongoose from "mongoose";
-import { EnvironmentVariable, Redirect } from "../schemas/services.schema";
-
-export interface ServiceDocument extends mongoose.Document {
+import { ServiceStatus } from "../types/enums/ServiceStatus";
+import { EnvironmentVariable } from "../types/EnvironmentVariable";
+import { Redirect } from "../types/Redirect";
+export interface Internal_ServiceDocument {
+    _id: mongoose.Schema.Types.ObjectId;
     name: string;
-    status: string;
+    status: ServiceStatus;
     image: mongoose.Schema.Types.ObjectId;
     network: string;
     hosts: string[];
+    environmentVariables: EnvironmentVariable[];
     redirects: Redirect[];
-    environments: EnvironmentVariable[];
+    containerId: string;
+    internalName: string;
     order: number;
     createdAt: Date;
-    containerId: string;
-    tag: string;
-    getServiceLabels(): string[];
-    getEnvironments(): string[];
 }
 
-const ServiceSchema = new mongoose.Schema({
+const serviceSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -25,7 +25,8 @@ const ServiceSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["pulling", "created", "running", "stopped"],
+        default: ServiceStatus.PULLING,
+        required: true,
     },
     image: {
         type: mongoose.Schema.Types.ObjectId,
@@ -34,21 +35,31 @@ const ServiceSchema = new mongoose.Schema({
     },
     network: {
         type: String,
-        required: false,
         default: "web",
+        required: true,
     },
     hosts: {
         type: [String],
         required: true,
     },
+    environmentVariables: {
+        type: [{ key: String, value: String }],
+        default: [],
+        required: true,
+    },
     redirects: {
         type: [{ from: String, to: String }],
+        default: [],
+        required: true,
+    },
+    containerId: {
+        type: String,
         required: false,
     },
-    environments: {
-        type: [{ key: String, value: String }],
-        required: false,
-        default: [],
+    internalName: {
+        type: String,
+        unique: true,
+        required: true,
     },
     order: {
         type: Number,
@@ -58,119 +69,107 @@ const ServiceSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    containerId: {
-        type: String,
-        required: false,
-    },
-    tag: {
-        type: String,
-        required: false,
-    },
 });
 
-ServiceSchema.set("toJSON", {
-    virtuals: true,
-});
+// ServiceSchema.methods.getServiceLabels = function (this: ServiceDocument) {
+//     const hostLabel = transformHostsToLabel(this);
+//     const pathPrefixMiddlewareLabels = getPathPrefixMiddlewareLabels(this);
+//     const redirectMiddlewareLabels = getRedirectMiddlewareLabels(this);
 
-ServiceSchema.methods.getServiceLabels = function (this: ServiceDocument) {
-    const hostLabel = transformHostsToLabel(this);
-    const pathPrefixMiddlewareLabels = getPathPrefixMiddlewareLabels(this);
-    const redirectMiddlewareLabels = getRedirectMiddlewareLabels(this);
+//     const middlewareLabel = getMiddlewareLabel(this, [
+//         ...pathPrefixMiddlewareLabels,
+//         ...redirectMiddlewareLabels,
+//     ]);
 
-    const middlewareLabel = getMiddlewareLabel(this, [
-        ...pathPrefixMiddlewareLabels,
-        ...redirectMiddlewareLabels,
-    ]);
+//     const labels = [
+//         ...pathPrefixMiddlewareLabels,
+//         ...redirectMiddlewareLabels,
+//         `traefiker.tag=${this.tag}`,
+//     ];
 
-    const labels = [
-        ...pathPrefixMiddlewareLabels,
-        ...redirectMiddlewareLabels,
-        `traefiker.tag=${this.tag}`,
-    ];
+//     if (hostLabel.split("=")[1] && hostLabel.split("=")[1] !== "") {
+//         labels.push(hostLabel);
+//     }
 
-    if (hostLabel.split("=")[1] && hostLabel.split("=")[1] !== "") {
-        labels.push(hostLabel);
-    }
+//     if (hostLabel.split("=")[1] && middlewareLabel.split("=")[1] !== "") {
+//         labels.push(middlewareLabel);
+//     }
 
-    if (hostLabel.split("=")[1] && middlewareLabel.split("=")[1] !== "") {
-        labels.push(middlewareLabel);
-    }
+//     return labels;
+// };
 
-    return labels;
-};
+// ServiceSchema.methods.getEnvironments = function () {
+//     const environments = this.environments.map(
+//         (environment: EnvironmentVariable) => {
+//             return `${environment.key}=${environment.value}`;
+//         }
+//     );
 
-ServiceSchema.methods.getEnvironments = function () {
-    const environments = this.environments.map(
-        (environment: EnvironmentVariable) => {
-            return `${environment.key}=${environment.value}`;
-        }
-    );
+//     return environments;
+// };
 
-    return environments;
-};
+// const transformHostsToLabel = (service: ServiceDocument) => {
+//     const label = `traefik.http.routers.${service.name}.rule`;
+//     const hosts = service.hosts.map((host) => {
+//         const [hostname, path] = host.split("/");
+//         const formattedHost = `Host(\`${hostname}\`)`;
+//         if (path) {
+//             return `${formattedHost} && PathPrefix(\`/${path}\`)`;
+//         }
+//         return formattedHost;
+//     });
+//     return `${label}=${hosts.join(" || ")}`;
+// };
 
-const transformHostsToLabel = (service: ServiceDocument) => {
-    const label = `traefik.http.routers.${service.name}.rule`;
-    const hosts = service.hosts.map((host) => {
-        const [hostname, path] = host.split("/");
-        const formattedHost = `Host(\`${hostname}\`)`;
-        if (path) {
-            return `${formattedHost} && PathPrefix(\`/${path}\`)`;
-        }
-        return formattedHost;
-    });
-    return `${label}=${hosts.join(" || ")}`;
-};
+// const getPathPrefixMiddlewareLabels = (service: ServiceDocument) => {
+//     const hostsWithPaths = service.hosts.filter((host) => host.includes("/"));
 
-const getPathPrefixMiddlewareLabels = (service: ServiceDocument) => {
-    const hostsWithPaths = service.hosts.filter((host) => host.includes("/"));
+//     const paths = hostsWithPaths.map((host) => {
+//         const [, path] = host.split("/");
+//         return path;
+//     });
 
-    const paths = hostsWithPaths.map((host) => {
-        const [, path] = host.split("/");
-        return path;
-    });
+//     return paths.map((path) => {
+//         return `traefik.http.middlewares.${path}-prefix.stripprefix.prefixes=/${path}`;
+//     });
+// };
 
-    return paths.map((path) => {
-        return `traefik.http.middlewares.${path}-prefix.stripprefix.prefixes=/${path}`;
-    });
-};
+// const getRedirectMiddlewareLabels = (service: ServiceDocument) => {
+//     const redirects = service.redirects;
+//     if (!redirects) {
+//         return [];
+//     }
+//     const labels: string[] = [];
+//     redirects.forEach((redirect: Redirect, i) => {
+//         const from = redirect.from;
+//         const to = redirect.to;
+//         labels.push(
+//             `traefik.http.middlewares.${i}-redirect-${service.name}.redirectregex.regex=${from}`,
+//             `traefik.http.middlewares.${i}-redirect-${service.name}.redirectregex.replacement=${to}`
+//         );
+//     });
+//     return labels;
+// };
 
-const getRedirectMiddlewareLabels = (service: ServiceDocument) => {
-    const redirects = service.redirects;
-    if (!redirects) {
-        return [];
-    }
-    const labels: string[] = [];
-    redirects.forEach((redirect: Redirect, i) => {
-        const from = redirect.from;
-        const to = redirect.to;
-        labels.push(
-            `traefik.http.middlewares.${i}-redirect-${service.name}.redirectregex.regex=${from}`,
-            `traefik.http.middlewares.${i}-redirect-${service.name}.redirectregex.replacement=${to}`
-        );
-    });
-    return labels;
-};
+// const getMiddlewareLabel = (
+//     service: ServiceDocument,
+//     middlewares: string[]
+// ) => {
+//     const regex = /traefik\.http.middlewares\.(.+?)\..*/;
+//     const middlewareNames = middlewares.map((middleware) => {
+//         const matches = regex.exec(middleware);
+//         if (matches) {
+//             return matches[1];
+//         } else {
+//             throw new Error("Invalid middleware label");
+//         }
+//     });
 
-const getMiddlewareLabel = (
-    service: ServiceDocument,
-    middlewares: string[]
-) => {
-    const regex = /traefik\.http.middlewares\.(.+?)\..*/;
-    const middlewareNames = middlewares.map((middleware) => {
-        const matches = regex.exec(middleware);
-        if (matches) {
-            return matches[1];
-        } else {
-            throw new Error("Invalid middleware label");
-        }
-    });
-
-    const uniqueMiddlewareNames = [...new Set(middlewareNames)];
-    return `traefik.http.routers.${
-        service.name
-    }.middlewares=${uniqueMiddlewareNames.join(",")}`;
-};
+//     const uniqueMiddlewareNames = [...new Set(middlewareNames)];
+//     return `traefik.http.routers.${
+//         service.name
+//     }.middlewares=${uniqueMiddlewareNames.join(",")}`;
+// };
 
 // ServiceSchema.pre("save", function (next) {
 //     if (this.isModified("status")) {
@@ -185,6 +184,9 @@ const getMiddlewareLabel = (
 //     next();
 // });
 
-const ServiceModel = mongoose.model<ServiceDocument>("Service", ServiceSchema);
+const ServiceModel = mongoose.model<Internal_ServiceDocument>(
+    "Service",
+    serviceSchema
+);
 
 export default ServiceModel;

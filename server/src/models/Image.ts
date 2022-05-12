@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 
-export interface ImageDocument extends mongoose.Document {
+export interface Internal_ImageDocument {
+    _id: mongoose.Schema.Types.ObjectId;
     name: string;
     tag: string;
     repository: string;
-    identifier: string;
     createdAt: Date;
 }
 
-const ImageSchema = new mongoose.Schema({
+const ImageSchema = new mongoose.Schema<Internal_ImageDocument>({
     name: {
         type: String,
         required: true,
@@ -21,19 +21,11 @@ const ImageSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    identifier: {
-        type: String,
-        required: true,
-    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
 
-ImageSchema.set("toJSON", {
-    virtuals: true,
-});
-
-const ImageModel = mongoose.model<ImageDocument>("Image", ImageSchema);
+const ImageModel = mongoose.model<Internal_ImageDocument>("Image", ImageSchema);
 export default ImageModel;

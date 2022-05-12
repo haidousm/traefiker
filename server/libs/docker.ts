@@ -1,47 +1,46 @@
 import Docker, { Container } from "dockerode";
 import { Image } from "../src/types/Image";
+import { Service } from "../src/types/Service";
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
-export const pullImage = async (image: Image): Promise<void> => {
+export const pullImage = async (
+    image: Image
+): Promise<NodeJS.ReadableStream> => {
     const imageIdentifier =
         image.repository != "_"
             ? `${image.repository}/${image.name}:${image.tag}`
             : `${image.name}:${image.tag}`;
-    return new Promise((resolve, reject) => {
-        docker.pull(imageIdentifier, {}, async (err, stream) => {
-            if (err) {
-                return reject(err);
-            }
-            docker.modem.followProgress(stream, async () => {
-                return resolve();
-            });
-        });
-    });
+
+    return docker.pull(imageIdentifier);
 };
 
 export const createContainer = async (
-    name: string,
-    hosts: string[],
-    image: Image
-): Promise<Container> => {
-    const imageIdentifier =
-        image.repository != "_"
-            ? `${image.repository}/${image.name}:${image.tag}`
-            : `${image.name}:${image.tag}`;
-    const hostLabels = transformHostsToLabel(name, hosts);
+    service: Service,
+    image: Image,
+    callback: (service: Service, container: Container) => void
+): Promise<void> => {
+    const stream = await pullImage(image);
+    docker.modem.followProgress(stream, async () => {
+        const imageIdentifier =
+            image.repository != "_"
+                ? `${image.repository}/${image.name}:${image.tag}`
+                : `${image.name}:${image.tag}`;
+        const hostLabels = transformHostsToLabel(service.name, service.hosts);
 
-    const labels = {
-        ...hostLabels,
-    };
+        const labels = {
+            ...hostLabels,
+        };
 
-    return docker.createContainer({
-        Image: imageIdentifier,
-        name: `traefiker_${name}`,
-        Labels: labels,
-        HostConfig: {
-            NetworkMode: "traefiker",
-        },
+        const container = await docker.createContainer({
+            Image: imageIdentifier,
+            name: `traefiker_${service.name}`,
+            Labels: labels,
+            HostConfig: {
+                NetworkMode: "traefiker",
+            },
+        });
+        callback(service, container);
     });
 };
 

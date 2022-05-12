@@ -11,8 +11,8 @@ export interface Internal_ServiceDocument {
     hosts: string[];
     environmentVariables: EnvironmentVariable[];
     redirects: Redirect[];
-    containerId: string;
-    internalName: string;
+    containerId?: string;
+    internalName?: string;
     order: number;
     createdAt: Date;
 }
@@ -58,8 +58,7 @@ const serviceSchema = new mongoose.Schema({
     },
     internalName: {
         type: String,
-        unique: true,
-        required: true,
+        required: false,
     },
     order: {
         type: Number,

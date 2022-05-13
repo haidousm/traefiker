@@ -5,6 +5,7 @@ import {
     createServiceHandler,
     getAllServicesHandler,
     startServiceHandler,
+    stopServiceHandler,
 } from "../controllers/services.controller";
 
 const router = express.Router();
@@ -88,7 +89,35 @@ router.post(
  *                  description: Not Found
  *
  */
-
 router.put("/:name/start", startServiceHandler);
+
+/**
+ * @openapi
+ * '/services/{name}/stop':
+ *      put:
+ *          tags:
+ *              - Services
+ *          summary: Stop a service
+ *          security:
+ *             - bearerAuth: []
+ *          parameters:
+ *             - name: name
+ *               in: path
+ *               required: true
+ *               description: Service name
+ *          responses:
+ *              200:
+ *                  description: Success
+ *                  content:
+ *                    application/json:
+ *                       schema:
+ *                          $ref: '#/components/schemas/Service'
+ *              401:
+ *                  description: Unauthorized
+ *              404:
+ *                  description: Not Found
+ *
+ */
+router.put("/:name/stop", stopServiceHandler);
 
 export default router;

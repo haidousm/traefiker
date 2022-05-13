@@ -7,7 +7,11 @@ import {
 import { Service } from "../types/Service";
 import { getOrCreateImageByImageIdentifier } from "../services/images.service";
 import { Image } from "../types/Image";
-import { createContainer, startContainer } from "../../libs/docker";
+import {
+    createContainer,
+    startContainer,
+    stopContainer,
+} from "../../libs/docker";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import Dockerode from "dockerode";
 import { findLastUsedOrder } from "../services/services.service";
@@ -81,6 +85,43 @@ export const startServiceHandler = async (req: Request, res: Response) => {
         }
         await startContainer(service);
         service.status = ServiceStatus.RUNNING;
+        const updatedService = await saveService(service);
+        return res.json(updatedService);
+    } catch (e) {
+        return res.status(400).json({
+            error: e,
+        });
+    }
+};
+
+export const stopServiceHandler = async (req: Request, res: Response) => {
+    try {
+        const service: Service | null = await findServiceByName(
+            req.params.name
+        );
+        if (!service) {
+            return res.status(404).json({
+                error: `Service with name ${req.params.name} not found`,
+            });
+        }
+        if (service.status == ServiceStatus.PULLING) {
+            return res.status(400).json({
+                error: `Service with name ${req.params.name} is still pulling`,
+            });
+        }
+
+        if (service.status == ServiceStatus.STOPPED) {
+            return res.status(400).json({
+                error: `Service with name ${req.params.name} is already stopped`,
+            });
+        }
+        if (service.status == ServiceStatus.ERROR) {
+            return res.status(400).json({
+                error: `Service with name ${req.params.name} is in error state`,
+            });
+        }
+        await stopContainer(service);
+        service.status = ServiceStatus.STOPPED;
         const updatedService = await saveService(service);
         return res.json(updatedService);
     } catch (e) {

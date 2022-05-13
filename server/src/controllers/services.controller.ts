@@ -70,7 +70,9 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             });
         }
 
-        const service: Service | null = await findServiceByName(req.body.name);
+        const service: Service | null = await findServiceByName(
+            req.params.name
+        );
         if (!service) {
             return res.status(404).json({
                 error: `Service with name ${req.body.name} not found`,
@@ -86,8 +88,7 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
         service.environmentVariables =
             environmentVariables ?? service.environmentVariables;
         service.redirects = redirects ?? service.redirects;
-
-        const image = await getOrCreateImageByImageIdentifier(req.body.image);
+        const image = service.image;
         await deleteContainer(service);
         await saveService(service);
         createContainer(
@@ -157,7 +158,10 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
             });
         }
 
-        if (service.status == ServiceStatus.STOPPED) {
+        if (
+            service.status == ServiceStatus.STOPPED ||
+            service.status == ServiceStatus.CREATED
+        ) {
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is already stopped`,
             });

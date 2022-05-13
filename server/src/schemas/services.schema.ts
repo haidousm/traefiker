@@ -36,25 +36,25 @@ export type CreateServiceRequest = z.infer<typeof CreateServiceRequestSchema>;
 /**
  * @openapi
  * components:
- *  schemas:
- *   UpdateServiceRequest:
- *      type: object
- *      properties:
- *          hosts:
- *              type: array
- *              items:
- *                 type: string
- *              required: false
- *         environmentVariables:
- *              type: array
- *              items:
- *               $ref: '#/components/schemas/EnvironmentVariable'
- *              required: false
- *         redirects:
- *              type: array
- *              items:
- *                  $ref: '#/components/schemas/Redirect'
- *              required: false
+ *      schemas:
+ *          UpdateServiceRequest:
+ *              type: object
+ *              properties:
+ *                  hosts:
+ *                      type: array
+ *                      items:
+ *                          type: string
+ *                      required: false
+ *                  environmentVariables:
+ *                      type: array
+ *                      items:
+ *                          $ref: '#/components/schemas/EnvironmentVariable'
+ *                      required: false
+ *                  redirects:
+ *                      type: array
+ *                      items:
+ *                          $ref: '#/components/schemas/Redirect'
+ *                      required: false
  */
 
 export const UpdateServiceRequestSchema = object({

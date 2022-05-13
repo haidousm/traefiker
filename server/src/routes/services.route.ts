@@ -76,6 +76,11 @@ router.post(
  *          summary: Update service's hosts, environment variables, redirects
  *          security:
  *              - bearerAuth: []
+ *          parameters:
+ *             - name: name
+ *               in: path
+ *               required: true
+ *               description: Service name
  *          requestBody:
  *              required: true
  *              content:

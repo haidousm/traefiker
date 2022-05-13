@@ -590,7 +590,7 @@ describe("services", () => {
                     expect(response.status).toBe(404);
                 });
             });
-            describe("given the service exists and it has CREATED status", () => {
+            describe("given the service exists and it has RUNNING status", () => {
                 it("it should return the service with STOPPED status", async () => {
                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
                         () => {
@@ -609,7 +609,7 @@ describe("services", () => {
                         "findServiceByName"
                     ).mockImplementationOnce(async () => {
                         const foundService = createdService;
-                        foundService.status = ServiceStatus.CREATED;
+                        foundService.status = ServiceStatus.RUNNING;
                         return foundService;
                     });
 
@@ -652,7 +652,7 @@ describe("services", () => {
                             "findServiceByName"
                         ).mockImplementationOnce(async () => {
                             const foundService = createdService;
-                            foundService.status = ServiceStatus.CREATED;
+                            foundService.status = ServiceStatus.RUNNING;
                             return foundService;
                         });
 

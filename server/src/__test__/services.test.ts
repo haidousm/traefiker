@@ -34,16 +34,21 @@ const createdService: Service = {
     name: "httpd",
     status: ServiceStatus.PULLING,
     image: createdImage,
-    network: "web",
     hosts: ["httpd.haidousm.com"],
     redirects: [],
     environmentVariables: [],
-    order: 0,
-    containerId: "",
+    order: 1,
 };
 
 const createdContainer = {
     id: "12345",
+    inspect: async () => {
+        return {
+            HostConfig: {
+                NetworkMode: "traefiker",
+            },
+        };
+    },
 };
 
 const app = createServer();
@@ -111,6 +116,10 @@ describe("services", () => {
                         // @ts-ignore
                         .mockReturnValueOnce(createdImage);
 
+                    jest.spyOn(ServicesService, "findLastUsedOrder")
+                        //@ts-ignore
+                        .mockReturnValueOnce(0);
+
                     jest.spyOn(ServicesService, "saveService")
                         // @ts-ignore
                         .mockImplementationOnce((service: Service) => service);
@@ -127,13 +136,8 @@ describe("services", () => {
                         .post("/services/create")
                         .send(createServiceRequest);
 
-                    const expectedService = {
-                        ...createdService,
-                        containerId: createdContainer.id,
-                        status: ServiceStatus.CREATED,
-                    };
                     expect(response.status).toBe(200);
-                    expect(response.body).toEqual(expectedService);
+                    expect(response.body).toEqual(createdService);
                 });
             });
 
@@ -182,6 +186,10 @@ describe("services", () => {
                         // @ts-ignore
                         .mockReturnValueOnce(createdImage);
 
+                    jest.spyOn(ServicesService, "findLastUsedOrder")
+                        //@ts-ignore
+                        .mockReturnValueOnce(0);
+
                     jest.spyOn(ServicesService, "saveService")
                         // @ts-ignore
                         .mockImplementationOnce((service: Service) => service);
@@ -221,6 +229,9 @@ describe("services", () => {
                         // @ts-ignore
                         .mockReturnValueOnce(createdImage);
 
+                    jest.spyOn(ServicesService, "findLastUsedOrder")
+                        //@ts-ignore
+                        .mockReturnValueOnce(0);
                     jest.spyOn(ServicesService, "saveService")
                         // @ts-ignore
                         .mockImplementationOnce((service: Service) => service);

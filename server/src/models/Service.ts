@@ -7,7 +7,7 @@ export interface Internal_ServiceDocument {
     name: string;
     status: ServiceStatus;
     image: mongoose.Schema.Types.ObjectId;
-    network: string;
+    network?: string;
     hosts: string[];
     environmentVariables: EnvironmentVariable[];
     redirects: Redirect[];
@@ -35,8 +35,7 @@ const serviceSchema = new mongoose.Schema({
     },
     network: {
         type: String,
-        default: "web",
-        required: true,
+        required: false,
     },
     hosts: {
         type: [String],

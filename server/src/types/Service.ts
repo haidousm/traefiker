@@ -47,7 +47,7 @@ export interface Service {
     hosts: string[];
     environmentVariables: EnvironmentVariable[];
     redirects: Redirect[];
-    network: string;
+    network?: string;
     containerId?: string;
     internalName?: string;
     order: number;

@@ -20,6 +20,16 @@ export const findServiceByName = async (
     return internalServiceToService(internalService);
 };
 
+export const findLastUsedOrder = async (): Promise<number> => {
+    const internalService = await ServiceModel.findOne({})
+        .sort({ order: -1 })
+        .exec();
+    if (!internalService) {
+        return 0;
+    }
+    return internalService.order;
+};
+
 export const saveService = async (service: Service) => {
     const internalService = await ServiceModel.findById(service.id).exec();
     if (!internalService) {
@@ -27,7 +37,6 @@ export const saveService = async (service: Service) => {
             service.image.id
         ).exec();
         if (!internalImage) {
-            // todo: delete service
             throw new Error("Image not found");
         }
         const internalService = new ServiceModel({

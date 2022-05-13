@@ -10,6 +10,7 @@ import { Image } from "../types/Image";
 import { createContainer } from "../../libs/docker";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import Dockerode from "dockerode";
+import { findLastUsedOrder } from "../services/services.service";
 
 export const getAllServicesHandler = async (
     _req: Request,
@@ -36,8 +37,7 @@ export const createServiceHandler = async (req: Request, res: Response) => {
             hosts: req.body.hosts,
             environmentVariables: [],
             redirects: [],
-            network: "web", //TODO: use container details for this LATER
-            order: 0, //TODO: fix later
+            order: (await findLastUsedOrder()) + 1, // TODO: operation is not atomic ?? might(is) a problem if multiple requests are made at the same time
         });
         createContainer(
             service,
@@ -57,6 +57,8 @@ const attachContainerToService = async (
     service: Service,
     container: Dockerode.Container
 ) => {
+    const containerInfo = await container.inspect();
+    service.network = containerInfo.HostConfig.NetworkMode;
     service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
     await saveService(service);

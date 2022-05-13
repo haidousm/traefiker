@@ -17,6 +17,7 @@ import {
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import Dockerode from "dockerode";
 import { findLastUsedOrder } from "../services/services.service";
+import logger from "../utils/logger";
 
 export const getAllServicesHandler = async (
     _req: Request,
@@ -29,6 +30,7 @@ export const getAllServicesHandler = async (
 export const createServiceHandler = async (req: Request, res: Response) => {
     try {
         if (await findServiceByName(req.body.name)) {
+            logger.error(`Service with name ${req.body.name} already exists`);
             return res.status(400).json({
                 error: `Service with name ${req.body.name} already exists`,
             });
@@ -51,8 +53,10 @@ export const createServiceHandler = async (req: Request, res: Response) => {
             attachContainerToService,
             cleanUpOnError
         );
+        logger.info(`Service ${service.name} created`);
         return res.json(service);
     } catch (e) {
+        logger.error(e);
         return res.status(500).json({
             error: e,
         });
@@ -65,6 +69,7 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
         const environmentVariables = req.body.environmentVariables;
         const redirects = req.body.redirects;
         if (!hosts && !environmentVariables && !redirects) {
+            logger.error(`No changes to service ${req.body.name} requested`);
             return res.status(400).json({
                 error: "Empty update request",
             });
@@ -74,11 +79,13 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             req.params.name
         );
         if (!service) {
+            logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
                 error: `Service with name ${req.body.name} not found`,
             });
         }
         if (service.status == ServiceStatus.PULLING) {
+            logger.error(`Service ${req.params.name} is being pulled`);
             return res.status(400).json({
                 error: `Service with name ${req.body.name} is still pulling`,
             });
@@ -97,6 +104,7 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             attachContainerToService,
             cleanUpOnError
         );
+        logger.info(`Service ${service.name} updated`);
         return res.json(service);
     } catch (e) {
         return res.status(500).json({
@@ -111,22 +119,26 @@ export const startServiceHandler = async (req: Request, res: Response) => {
             req.params.name
         );
         if (!service) {
+            logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
                 error: `Service with name ${req.params.name} not found`,
             });
         }
         if (service.status == ServiceStatus.PULLING) {
+            logger.error(`Service ${req.params.name} is being pulled`);
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is still pulling`,
             });
         }
 
         if (service.status == ServiceStatus.RUNNING) {
+            logger.error(`Service ${req.params.name} is already running`);
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is already running`,
             });
         }
         if (service.status == ServiceStatus.ERROR) {
+            logger.error(`Service ${req.params.name} is in error state`);
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is in error state`,
             });
@@ -134,6 +146,7 @@ export const startServiceHandler = async (req: Request, res: Response) => {
         await startContainer(service);
         service.status = ServiceStatus.RUNNING;
         const updatedService = await saveService(service);
+        logger.info(`Service ${updatedService.name} started`);
         return res.json(updatedService);
     } catch (e) {
         return res.status(500).json({
@@ -148,11 +161,13 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
             req.params.name
         );
         if (!service) {
+            logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
                 error: `Service with name ${req.params.name} not found`,
             });
         }
         if (service.status == ServiceStatus.PULLING) {
+            logger.error(`Service ${req.params.name} is being pulled`);
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is still pulling`,
             });
@@ -162,11 +177,13 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
             service.status == ServiceStatus.STOPPED ||
             service.status == ServiceStatus.CREATED
         ) {
+            logger.error(`Service ${req.params.name} is already stopped`);
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is already stopped`,
             });
         }
         if (service.status == ServiceStatus.ERROR) {
+            logger.error(`Service ${req.params.name} is in error state`);
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is in error state`,
             });
@@ -174,6 +191,7 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
         await stopContainer(service);
         service.status = ServiceStatus.STOPPED;
         const updatedService = await saveService(service);
+        logger.info(`Service ${updatedService.name} stopped`);
         return res.json(updatedService);
     } catch (e) {
         return res.status(500).json({
@@ -188,11 +206,13 @@ export const deleteServiceHandler = async (req: Request, res: Response) => {
             req.params.name
         );
         if (!service) {
+            logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
                 error: `Service with name ${req.params.name} not found`,
             });
         }
         if (service.status == ServiceStatus.PULLING) {
+            logger.error(`Service ${req.params.name} is being pulled`);
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is still pulling`,
             });
@@ -200,8 +220,10 @@ export const deleteServiceHandler = async (req: Request, res: Response) => {
 
         await deleteContainer(service);
         await deleteServiceByName(service.name);
+        logger.info(`Service ${service.name} deleted`);
         return res.sendStatus(200);
     } catch (e) {
+        logger.error(e);
         return res.status(500).json({
             error: e,
         });
@@ -217,9 +239,14 @@ const attachContainerToService = async (
     service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
     await saveService(service);
+    logger.info(
+        `Container ${container.id} attached to service ${service.name}`
+    );
 };
 
-const cleanUpOnError = async (service: Service) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const cleanUpOnError = async (service: Service, error: any) => {
     service.status = ServiceStatus.ERROR;
     await saveService(service);
+    logger.error(`Service ${service.name} in error state because of ${error}`);
 };

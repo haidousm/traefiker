@@ -20,13 +20,13 @@ export const createContainer = async (
     service: Service,
     image: Image,
     onSuccess: (service: Service, container: Container) => void,
-    onError: (service: Service) => void
+    onError: (service: Service, error: unknown) => void
 ): Promise<void> => {
     try {
         const stream = await pullImage(image);
         docker.modem.followProgress(stream, async (error) => {
             if (error) {
-                return onError(service);
+                return onError(service, error);
             }
             const imageIdentifier =
                 image.repository != "_"
@@ -52,7 +52,7 @@ export const createContainer = async (
             return onSuccess(service, container);
         });
     } catch (e) {
-        return onError(service);
+        return onError(service, e);
     }
 };
 

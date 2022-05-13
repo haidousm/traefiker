@@ -3,12 +3,14 @@ import {
     findAllServices,
     saveService,
     findServiceByName,
+    deleteServiceByName,
 } from "../services/services.service";
 import { Service } from "../types/Service";
 import { getOrCreateImageByImageIdentifier } from "../services/images.service";
 import { Image } from "../types/Image";
 import {
     createContainer,
+    deleteContainer,
     startContainer,
     stopContainer,
 } from "../../libs/docker";
@@ -124,6 +126,32 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
         service.status = ServiceStatus.STOPPED;
         const updatedService = await saveService(service);
         return res.json(updatedService);
+    } catch (e) {
+        return res.status(400).json({
+            error: e,
+        });
+    }
+};
+
+export const deleteServiceHandler = async (req: Request, res: Response) => {
+    try {
+        const service: Service | null = await findServiceByName(
+            req.params.name
+        );
+        if (!service) {
+            return res.status(404).json({
+                error: `Service with name ${req.params.name} not found`,
+            });
+        }
+        if (service.status == ServiceStatus.PULLING) {
+            return res.status(400).json({
+                error: `Service with name ${req.params.name} is still pulling`,
+            });
+        }
+
+        await deleteContainer(service);
+        await deleteServiceByName(service.name);
+        return res.sendStatus(200);
     } catch (e) {
         return res.status(400).json({
             error: e,

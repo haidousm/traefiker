@@ -3,6 +3,7 @@ import validateResource from "../middleware/validateResource";
 import { CreateServiceRequestSchema } from "../schemas/services.schema";
 import {
     createServiceHandler,
+    deleteServiceHandler,
     getAllServicesHandler,
     startServiceHandler,
     stopServiceHandler,
@@ -119,5 +120,30 @@ router.put("/:name/start", startServiceHandler);
  *
  */
 router.put("/:name/stop", stopServiceHandler);
+
+/**
+ * @openapi
+ * '/services/{name}/delete':
+ *      delete:
+ *          tags:
+ *              - Services
+ *          summary: Delete a service
+ *          security:
+ *             - bearerAuth: []
+ *          parameters:
+ *             - name: name
+ *               in: path
+ *               required: true
+ *               description: Service name
+ *          responses:
+ *              200:
+ *                  description: Success
+ *              401:
+ *                  description: Unauthorized
+ *              404:
+ *                  description: Not Found
+ *
+ */
+router.delete("/:name/delete", deleteServiceHandler);
 
 export default router;

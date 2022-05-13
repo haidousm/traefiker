@@ -67,6 +67,14 @@ export const saveService = async (service: Service) => {
     return internalServiceToService(internalService);
 };
 
+export const deleteServiceByName = async (name: string) => {
+    const internalService = await ServiceModel.findOne({ name }).exec();
+    if (!internalService) {
+        throw new Error("Service not found");
+    }
+    await internalService.remove();
+};
+
 const internalServiceToService = (
     internalService: Internal_ServiceDocument
 ): Service => {

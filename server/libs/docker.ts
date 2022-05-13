@@ -1,4 +1,5 @@
 import Docker, { Container } from "dockerode";
+import { ServiceStatus } from "../src/types/enums/ServiceStatus";
 import { Image } from "../src/types/Image";
 import { Service } from "../src/types/Service";
 
@@ -71,14 +72,16 @@ export const stopContainer = async (service: Service) => {
     return container.stop();
 };
 
-// const deleteContainer = async (service: ServiceDocument) => {
-//     const container = docker.getContainer(service.containerId);
-//     const containerState = (await container.inspect()).State;
-//     if (containerState.Running) {
-//         await container.stop();
-//     }
-//     return container.remove();
-// };
+export const deleteContainer = async (service: Service) => {
+    if (!service.containerId) {
+        throw new Error("Container id is not set");
+    }
+    if (service.status == ServiceStatus.RUNNING) {
+        await stopContainer(service);
+    }
+    const container = docker.getContainer(service.containerId);
+    return container.remove();
+};
 
 const transformHostsToLabel = (name: string, hosts: string[]) => {
     const labelKey = `traefik.http.routers.${name}.rule`;

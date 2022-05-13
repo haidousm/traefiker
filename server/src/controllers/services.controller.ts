@@ -53,7 +53,52 @@ export const createServiceHandler = async (req: Request, res: Response) => {
         );
         return res.json(service);
     } catch (e) {
-        return res.status(400).json({
+        return res.status(500).json({
+            error: e,
+        });
+    }
+};
+
+export const updateServiceHandler = async (req: Request, res: Response) => {
+    try {
+        const hosts = req.body.hosts;
+        const environmentVariables = req.body.environmentVariables;
+        const redirects = req.body.redirects;
+        if (!hosts && !environmentVariables && !redirects) {
+            return res.status(400).json({
+                error: "Empty update request",
+            });
+        }
+
+        const service: Service | null = await findServiceByName(req.body.name);
+        if (!service) {
+            return res.status(404).json({
+                error: `Service with name ${req.body.name} not found`,
+            });
+        }
+        if (service.status == ServiceStatus.PULLING) {
+            return res.status(400).json({
+                error: `Service with name ${req.body.name} is still pulling`,
+            });
+        }
+
+        service.hosts = hosts ?? service.hosts;
+        service.environmentVariables =
+            environmentVariables ?? service.environmentVariables;
+        service.redirects = redirects ?? service.redirects;
+
+        const image = await getOrCreateImageByImageIdentifier(req.body.image);
+        await deleteContainer(service);
+        await saveService(service);
+        createContainer(
+            service,
+            image,
+            attachContainerToService,
+            cleanUpOnError
+        );
+        return res.json(service);
+    } catch (e) {
+        return res.status(500).json({
             error: e,
         });
     }
@@ -90,7 +135,7 @@ export const startServiceHandler = async (req: Request, res: Response) => {
         const updatedService = await saveService(service);
         return res.json(updatedService);
     } catch (e) {
-        return res.status(400).json({
+        return res.status(500).json({
             error: e,
         });
     }
@@ -127,7 +172,7 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
         const updatedService = await saveService(service);
         return res.json(updatedService);
     } catch (e) {
-        return res.status(400).json({
+        return res.status(500).json({
             error: e,
         });
     }
@@ -153,7 +198,7 @@ export const deleteServiceHandler = async (req: Request, res: Response) => {
         await deleteServiceByName(service.name);
         return res.sendStatus(200);
     } catch (e) {
-        return res.status(400).json({
+        return res.status(500).json({
             error: e,
         });
     }

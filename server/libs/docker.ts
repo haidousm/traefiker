@@ -80,6 +80,7 @@ export const deleteContainer = async (service: Service) => {
         await stopContainer(service);
     }
     const container = docker.getContainer(service.containerId);
+    service.containerId = undefined;
     return container.remove();
 };
 

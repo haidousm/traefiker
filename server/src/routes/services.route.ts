@@ -1,12 +1,16 @@
 import express from "express";
 import validateResource from "../middleware/validateResource";
-import { CreateServiceRequestSchema } from "../schemas/services.schema";
+import {
+    CreateServiceRequestSchema,
+    UpdateServiceRequestSchema,
+} from "../schemas/services.schema";
 import {
     createServiceHandler,
     deleteServiceHandler,
     getAllServicesHandler,
     startServiceHandler,
     stopServiceHandler,
+    updateServiceHandler,
 } from "../controllers/services.controller";
 
 const router = express.Router();
@@ -61,6 +65,37 @@ router.post(
     "/create",
     validateResource(CreateServiceRequestSchema),
     createServiceHandler
+);
+
+/**
+ * @openapi
+ * '/services/{name}/update':
+ *      put:
+ *          tags:
+ *              - Services
+ *          summary: Update service's hosts, environment variables, redirects
+ *          security:
+ *              - bearerAuth: []
+ *          requestBody:
+ *              required: true
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/UpdateServiceRequest'
+ *          responses:
+ *              200:
+ *                  description: Success
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              $ref: '#/components/schemas/Service'
+ *              401:
+ *                  description: Unauthorized
+ */
+router.put(
+    "/:name/update",
+    validateResource(UpdateServiceRequestSchema),
+    updateServiceHandler
 );
 
 /**

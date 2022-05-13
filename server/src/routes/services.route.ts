@@ -4,6 +4,7 @@ import { CreateServiceRequestSchema } from "../schemas/services.schema";
 import {
     createServiceHandler,
     getAllServicesHandler,
+    startServiceHandler,
 } from "../controllers/services.controller";
 
 const router = express.Router();
@@ -59,5 +60,35 @@ router.post(
     validateResource(CreateServiceRequestSchema),
     createServiceHandler
 );
+
+/**
+ * @openapi
+ * '/services/{name}/start':
+ *      put:
+ *          tags:
+ *              - Services
+ *          summary: Start a service
+ *          security:
+ *             - bearerAuth: []
+ *          parameters:
+ *             - name: name
+ *               in: path
+ *               required: true
+ *               description: Service name
+ *          responses:
+ *              200:
+ *                  description: Success
+ *                  content:
+ *                    application/json:
+ *                       schema:
+ *                          $ref: '#/components/schemas/Service'
+ *              401:
+ *                  description: Unauthorized
+ *              404:
+ *                  description: Not Found
+ *
+ */
+
+router.put("/:name/start", startServiceHandler);
 
 export default router;

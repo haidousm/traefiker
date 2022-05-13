@@ -7,7 +7,7 @@ import {
 import { Service } from "../types/Service";
 import { getOrCreateImageByImageIdentifier } from "../services/images.service";
 import { Image } from "../types/Image";
-import { createContainer } from "../../libs/docker";
+import { createContainer, startContainer } from "../../libs/docker";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import Dockerode from "dockerode";
 import { findLastUsedOrder } from "../services/services.service";
@@ -46,6 +46,43 @@ export const createServiceHandler = async (req: Request, res: Response) => {
             cleanUpOnError
         );
         return res.json(service);
+    } catch (e) {
+        return res.status(400).json({
+            error: e,
+        });
+    }
+};
+
+export const startServiceHandler = async (req: Request, res: Response) => {
+    try {
+        const service: Service | null = await findServiceByName(
+            req.params.name
+        );
+        if (!service) {
+            return res.status(404).json({
+                error: `Service with name ${req.params.name} not found`,
+            });
+        }
+        if (service.status == ServiceStatus.PULLING) {
+            return res.status(400).json({
+                error: `Service with name ${req.params.name} is still pulling`,
+            });
+        }
+
+        if (service.status == ServiceStatus.RUNNING) {
+            return res.status(400).json({
+                error: `Service with name ${req.params.name} is already running`,
+            });
+        }
+        if (service.status == ServiceStatus.ERROR) {
+            return res.status(400).json({
+                error: `Service with name ${req.params.name} is in error state`,
+            });
+        }
+        await startContainer(service);
+        service.status = ServiceStatus.RUNNING;
+        const updatedService = await saveService(service);
+        return res.json(updatedService);
     } catch (e) {
         return res.status(400).json({
             error: e,

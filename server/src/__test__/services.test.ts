@@ -159,7 +159,7 @@ describe("services", () => {
                     expect(response.status).toBe(400);
                 });
             });
-            describe("given the image does not exist", () => {
+            describe("given create container throws an error", () => {
                 it("should return a 400", async () => {
                     passport.authenticate = jest.fn(() => {
                         return (
@@ -189,13 +189,53 @@ describe("services", () => {
                     jest.spyOn(DockerLib, "createContainer")
                         //@ts-ignore
                         .mockImplementationOnce(() => {
-                            throw new Error("Image does not exist");
+                            throw new Error();
                         });
 
                     const response = await supertest(app)
                         .post("/services/create")
                         .send(createServiceRequest);
                     expect(response.status).toBe(400);
+                });
+            });
+            describe("given the image does not exist", () => {
+                it("should return a 400", async () => {
+                    passport.authenticate = jest.fn(() => {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            next();
+                        };
+                    });
+
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        //@ts-ignore
+                        .mockReturnValueOnce(null);
+
+                    jest.spyOn(
+                        ImagesService,
+                        "getOrCreateImageByImageIdentifier"
+                    )
+                        // @ts-ignore
+                        .mockReturnValueOnce(createdImage);
+
+                    jest.spyOn(ServicesService, "saveService")
+                        // @ts-ignore
+                        .mockImplementationOnce((service: Service) => service);
+
+                    jest.spyOn(DockerLib, "pullImage")
+                        //@ts-ignore
+                        .mockImplementationOnce(() => {
+                            throw new Error("Image does not exist");
+                        });
+
+                    const response = await supertest(app)
+                        .post("/services/create")
+                        .send(createServiceRequest);
+                    expect(response.status).toBe(200);
+                    expect(response.body.status).toBe(ServiceStatus.ERROR);
                 });
             });
             describe("given the create service payload is invalid", () => {

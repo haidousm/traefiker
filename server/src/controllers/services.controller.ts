@@ -36,10 +36,15 @@ export const createServiceHandler = async (req: Request, res: Response) => {
             hosts: req.body.hosts,
             environmentVariables: [],
             redirects: [],
-            network: "web", // use container details for this LATER
-            order: 0, // fix later
+            network: "web", //TODO: use container details for this LATER
+            order: 0, //TODO: fix later
         });
-        createContainer(service, image, attachContainerToService);
+        createContainer(
+            service,
+            image,
+            attachContainerToService,
+            cleanUpOnError
+        );
         return res.json(service);
     } catch (e) {
         return res.status(400).json({
@@ -54,5 +59,10 @@ const attachContainerToService = async (
 ) => {
     service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
+    await saveService(service);
+};
+
+const cleanUpOnError = async (service: Service) => {
+    service.status = ServiceStatus.ERROR;
     await saveService(service);
 };

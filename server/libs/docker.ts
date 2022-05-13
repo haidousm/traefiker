@@ -18,33 +18,41 @@ export const pullImage = async (
 export const createContainer = async (
     service: Service,
     image: Image,
-    callback: (service: Service, container: Container) => void
+    onSuccess: (service: Service, container: Container) => void,
+    onError: (service: Service) => void
 ): Promise<void> => {
-    const stream = await pullImage(image);
-    docker.modem.followProgress(stream, async (error) => {
-        if (error) {
-            throw error;
-        }
-        const imageIdentifier =
-            image.repository != "_"
-                ? `${image.repository}/${image.name}:${image.tag}`
-                : `${image.name}:${image.tag}`;
-        const hostLabels = transformHostsToLabel(service.name, service.hosts);
+    try {
+        const stream = await pullImage(image);
+        docker.modem.followProgress(stream, async (error) => {
+            if (error) {
+                return onError(service);
+            }
+            const imageIdentifier =
+                image.repository != "_"
+                    ? `${image.repository}/${image.name}:${image.tag}`
+                    : `${image.name}:${image.tag}`;
+            const hostLabels = transformHostsToLabel(
+                service.name,
+                service.hosts
+            );
 
-        const labels = {
-            ...hostLabels,
-        };
+            const labels = {
+                ...hostLabels,
+            };
 
-        const container = await docker.createContainer({
-            Image: imageIdentifier,
-            name: `traefiker_${service.name}`,
-            Labels: labels,
-            HostConfig: {
-                NetworkMode: "traefiker",
-            },
+            const container = await docker.createContainer({
+                Image: imageIdentifier,
+                name: `traefiker_${service.name}`,
+                Labels: labels,
+                HostConfig: {
+                    NetworkMode: "traefiker",
+                },
+            });
+            return onSuccess(service, container);
         });
-        callback(service, container);
-    });
+    } catch (e) {
+        return onError(service);
+    }
 };
 
 // const deleteContainer = async (service: ServiceDocument) => {

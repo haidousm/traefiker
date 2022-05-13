@@ -9,10 +9,12 @@
  *          - CREATED
  *          - RUNNING
  *          - STOPPED
+ *          - ERROR
  */
 export enum ServiceStatus {
     "PULLING",
     "CREATED",
     "RUNNING",
     "STOPPED",
+    "ERROR",
 }

@@ -26,14 +26,7 @@ Traefiker is broken down into two applications:
 
 Before deploying either, you'll need to configure your username-password for the dashboard.
 
-1. Create `./server/src/config/config.env` with the following contents:
-
-    ```
-    ADMIN_USERNAME = YOUR_ADMIN_USERNAME
-    ADMIN_PASSWORD = YOUR_ADMIN_PASSWORD
-    ```
-
-2. Run `yarn gen-keys && yarn create-user` to generate the keys and create your admin user.
+-   Run `cd server/ && yarn gen-keys && yarn create-user <username> <password>` to generate the keys and create your admin user.
 
 You're now ready to deploy Traefiker!
 

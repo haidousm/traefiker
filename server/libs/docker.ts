@@ -49,7 +49,7 @@ export const createContainer = async (
                     name: `traefiker_${service.name}`,
                     Labels: labels,
                     HostConfig: {
-                        NetworkMode: "traefiker",
+                        NetworkMode: "web",
                     },
                     Env: environmentVariables,
                 });

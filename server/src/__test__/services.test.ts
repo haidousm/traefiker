@@ -90,7 +90,10 @@ const createdContainer = {
     inspect: async () => {
         return {
             HostConfig: {
-                NetworkMode: "traefiker",
+                NetworkMode: "web",
+            },
+            Config: {
+                Env: ["PORT=80"],
             },
         };
     },
@@ -101,7 +104,10 @@ const postUpdateContainer = {
     inspect: async () => {
         return {
             HostConfig: {
-                NetworkMode: "traefiker",
+                NetworkMode: "web",
+            },
+            Config: {
+                Env: ["PORT=80"],
             },
         };
     },

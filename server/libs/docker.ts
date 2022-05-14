@@ -1,4 +1,8 @@
-import Docker, { Container, ContainerInfo } from "dockerode";
+import Docker, {
+    Container,
+    ContainerInfo,
+    ContainerInspectInfo,
+} from "dockerode";
 import { ServiceStatus } from "../src/types/enums/ServiceStatus";
 import { Image } from "../src/types/Image";
 import { Redirect } from "../src/types/Redirect";
@@ -86,6 +90,12 @@ export const deleteContainer = async (service: Service) => {
 
 export const getAllContainers = async (): Promise<ContainerInfo[]> => {
     return docker.listContainers({ all: true });
+};
+
+export const inspectContainerById = async (
+    containerId: string
+): Promise<ContainerInspectInfo> => {
+    return docker.getContainer(containerId).inspect();
 };
 
 const getSSLLabels = (name: string) => {

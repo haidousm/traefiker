@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import { EnvironmentVariable } from "../types/EnvironmentVariable";
 import { Redirect } from "../types/Redirect";
+import { io } from "../utils/socket";
 export interface Internal_ServiceDocument {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
@@ -169,18 +170,25 @@ const serviceSchema = new mongoose.Schema({
 //     }.middlewares=${uniqueMiddlewareNames.join(",")}`;
 // };
 
-// ServiceSchema.pre("save", function (next) {
-//     if (this.isModified("status")) {
-//         const status = this.status;
-//         if (io.sockets) {
-//             io.sockets.emit("status", {
-//                 serviceName: this.name,
-//                 status,
-//             });
-//         }
-//     }
-//     next();
-// });
+serviceSchema.post(
+    "save",
+
+    function (
+        this: HydratedDocument<Internal_ServiceDocument>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        _res: any,
+        next
+    ) {
+        const status = this.status;
+        if (io.sockets) {
+            io.sockets.emit("status", {
+                name: this.name,
+                status: ServiceStatus[status],
+            });
+        }
+        next();
+    }
+);
 
 const ServiceModel = mongoose.model<Internal_ServiceDocument>(
     "Service",

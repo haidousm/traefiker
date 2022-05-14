@@ -3,7 +3,10 @@ import config from "config";
 import logger from "../utils/logger";
 
 const connectDB = async () => {
-    const mongoUri = config.get<string>("MONGO_URI");
+    const mongoUri =
+        config.get<string>("MONGO_URI") ||
+        process.env.MONGO_URI ||
+        "mongodb://0.0.0.0:27017/traefiker";
     try {
         const mongo = await mongoose.connect(mongoUri, {
             autoCreate: true,

@@ -15,7 +15,10 @@ io.attach(httpServer, {
         origin: "*",
     },
 });
-const port = config.get<number>("PORT") || 8010;
+const port =
+    config.get<number>("PORT") ||
+    (process.env.PORT as unknown as number) ||
+    8010;
 httpServer.listen(port, async () => {
     logger.info(`Express server started on port ${port}`);
     await connectDB();

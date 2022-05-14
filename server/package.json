@@ -6,13 +6,16 @@
     "author": "Moussa Haidous",
     "license": "MIT",
     "private": false,
-    "main": "src/app.js",
+    "main": "build/src/app.js",
     "scripts": {
         "gen-keys": "ts-node scripts/genKeys.ts",
         "create-user": "ts-node scripts/createUser.ts",
         "dev": "eslint src/ && nodemon ./src/app.ts",
         "no-lint-dev": "nodemon ./src/app.ts",
-        "test": "jest --watchAll"
+        "test": "jest --watchAll",
+        "prod-gen-keys": "node build/scripts/genKeys.js",
+        "prod-build": "tsc",
+        "prod-start": "node ."
     },
     "dependencies": {
         "@types/jsonwebtoken": "^8.5.8",

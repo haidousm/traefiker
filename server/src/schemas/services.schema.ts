@@ -1,4 +1,4 @@
-import { object, string, z } from "zod";
+import { number, object, string, z } from "zod";
 
 /**
  * @openapi
@@ -91,3 +91,35 @@ export const UpdateServiceRequestSchema = object({
 });
 
 export type UpdateServiceRequest = z.infer<typeof UpdateServiceRequestSchema>;
+
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *   UpdateServicesOrderRequest:
+ *      type: array
+ *      items:
+ *          type: object
+ *          properties:
+ *             name:
+ *                 type: string
+ *             order:
+ *                 type: number
+ */
+
+export const UpdateServicesOrderRequestSchema = object({
+    body: object({
+        services: object({
+            name: string({
+                required_error: "Name is required",
+            }),
+            order: number({
+                required_error: "Order is required",
+            }),
+        }).array(),
+    }),
+});
+
+export type UpdateServicesOrderRequest = z.infer<
+    typeof UpdateServicesOrderRequestSchema
+>;

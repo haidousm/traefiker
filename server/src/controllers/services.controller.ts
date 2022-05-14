@@ -56,7 +56,9 @@ export const createServiceHandler = async (req: Request, res: Response) => {
         logger.info(`Service ${service.name} created`);
         return res.json(service);
     } catch (e) {
-        logger.error(e);
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
         return res.status(500).json({
             error: e,
         });
@@ -223,7 +225,46 @@ export const deleteServiceHandler = async (req: Request, res: Response) => {
         logger.info(`Service ${service.name} deleted`);
         return res.sendStatus(200);
     } catch (e) {
-        logger.error(e);
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
+        return res.status(500).json({
+            error: e,
+        });
+    }
+};
+
+export const updateServicesOrderHandler = async (
+    req: Request,
+    res: Response
+) => {
+    try {
+        const services: Service[] = [];
+        for (const service of req.body.services) {
+            const foundService: Service | null = await findServiceByName(
+                service.name
+            );
+            if (!foundService) {
+                logger.error(`Service ${service.name} not found`);
+                return res.status(404).json({
+                    error: `Service with name ${service.name} not found`,
+                });
+            }
+            foundService.order = service.order;
+            services.push(foundService);
+        }
+        // updating the order should be atomic, so we need to save all the services after updating the order
+        const updatedServices = await Promise.all(
+            services.map(async (service: Service) => {
+                return await saveService(service);
+            })
+        );
+        logger.info(`Services order updated`);
+        return res.json(updatedServices);
+    } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
         return res.status(500).json({
             error: e,
         });

@@ -3,6 +3,7 @@ import validateResource from "../middleware/validateResource";
 import {
     CreateServiceRequestSchema,
     UpdateServiceRequestSchema,
+    UpdateServicesOrderRequestSchema,
 } from "../schemas/services.schema";
 import {
     createServiceHandler,
@@ -11,6 +12,7 @@ import {
     startServiceHandler,
     stopServiceHandler,
     updateServiceHandler,
+    updateServicesOrderHandler,
 } from "../controllers/services.controller";
 
 const router = express.Router();
@@ -185,5 +187,33 @@ router.put("/:name/stop", stopServiceHandler);
  *
  */
 router.delete("/:name/delete", deleteServiceHandler);
+
+/**
+ * @openapi
+ * '/services/order':
+ *      put:
+ *          tags:
+ *              - Services
+ *          summary: Updates the ordering of all services
+ *          security:
+ *             - bearerAuth: []
+ *          requestBody:
+ *              required: true
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/UpdateServicesOrderRequest'
+ *          responses:
+ *              200:
+ *                  description: Success
+ *              401:
+ *                  description: Unauthorized
+ *
+ */
+router.put(
+    "/order",
+    validateResource(UpdateServicesOrderRequestSchema),
+    updateServicesOrderHandler
+);
 
 export default router;

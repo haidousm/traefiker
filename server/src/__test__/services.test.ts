@@ -466,7 +466,7 @@ describe("services", () => {
             });
             describe("given the service exists and it has RUNNING status", () => {
                 it("it should return 400", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementation(
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
                         () => {
                             return (
                                 req: Request,
@@ -495,7 +495,7 @@ describe("services", () => {
             });
             describe("given the service exists and it has ERROR status", () => {
                 it("it should return 400", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementation(
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
                         () => {
                             return (
                                 req: Request,
@@ -524,7 +524,7 @@ describe("services", () => {
             });
             describe("given the service exists and it has PULLING status", () => {
                 it("it should return 400", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementation(
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
                         () => {
                             return (
                                 req: Request,
@@ -547,417 +547,6 @@ describe("services", () => {
 
                     const response = await supertest(app).put(
                         "/services/httpd/start"
-                    );
-                    expect(response.status).toBe(400);
-                });
-            });
-        });
-    });
-    describe("stop service", () => {
-        describe("given the user is not logged in", () => {
-            it("should return 401", async () => {
-                const response = await supertest(app).put(
-                    "/services/httpd/stop"
-                );
-                expect(response.status).toBe(401);
-            });
-        });
-        describe("given the user is logged in", () => {
-            describe("given the service does not exist", () => {
-                it("it should return 404", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                        () => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        }
-                    );
-
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        return null;
-                    });
-
-                    const response = await supertest(app).put(
-                        "/services/httpd/stop"
-                    );
-                    expect(response.status).toBe(404);
-                });
-            });
-            describe("given the service exists and it has RUNNING status", () => {
-                it("it should return the service with STOPPED status", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                        () => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        }
-                    );
-
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.RUNNING;
-                        return foundService;
-                    });
-
-                    jest.spyOn(
-                        DockerLib,
-                        "stopContainer"
-                    ).mockImplementationOnce(async () => {
-                        return Promise.resolve();
-                    });
-
-                    jest.spyOn(
-                        ServicesService,
-                        "saveService"
-                    ).mockImplementationOnce(
-                        async (service: Service) => service
-                    );
-
-                    const response = await supertest(app).put(
-                        "/services/httpd/stop"
-                    );
-                    expect(response.status).toBe(200);
-                    expect(response.body.status).toBe(ServiceStatus.STOPPED);
-                });
-                describe("given the container cannot be found", () => {
-                    it("it should return a 400", async () => {
-                        jest.spyOn(
-                            passport,
-                            "authenticate"
-                        ).mockImplementationOnce(() => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        });
-                        jest.spyOn(
-                            ServicesService,
-                            "findServiceByName"
-                        ).mockImplementationOnce(async () => {
-                            const foundService = createdService;
-                            foundService.status = ServiceStatus.RUNNING;
-                            return foundService;
-                        });
-
-                        jest.spyOn(
-                            DockerLib,
-                            "stopContainer"
-                        ).mockImplementationOnce(async () => {
-                            throw new Error("Container not found");
-                        });
-
-                        jest.spyOn(
-                            ServicesService,
-                            "saveService"
-                        ).mockImplementationOnce(
-                            async (service: Service) => service
-                        );
-
-                        const response = await supertest(app).put(
-                            "/services/httpd/stop"
-                        );
-                        expect(response.status).toBe(500);
-                    });
-                });
-            });
-            describe("given the service exists and it has STOPPED status", () => {
-                it("it should return 400", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementation(
-                        () => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        }
-                    );
-
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.STOPPED;
-                        return foundService;
-                    });
-
-                    const response = await supertest(app).put(
-                        "/services/httpd/stop"
-                    );
-                    expect(response.status).toBe(400);
-                });
-            });
-            describe("given the service exists and it has ERROR status", () => {
-                it("it should return 400", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementation(
-                        () => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        }
-                    );
-
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.ERROR;
-                        return foundService;
-                    });
-
-                    const response = await supertest(app).put(
-                        "/services/httpd/stop"
-                    );
-                    expect(response.status).toBe(400);
-                });
-            });
-            describe("given the service exists and it has PULLING status", () => {
-                it("it should return 400", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementation(
-                        () => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        }
-                    );
-
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.PULLING;
-                        return foundService;
-                    });
-
-                    const response = await supertest(app).put(
-                        "/services/httpd/stop"
-                    );
-                    expect(response.status).toBe(400);
-                });
-            });
-        });
-    });
-    describe("delete service", () => {
-        describe("given the user is not logged in", () => {
-            it("should return 401", async () => {
-                const response = await supertest(app).delete(
-                    "/services/httpd/delete"
-                );
-                expect(response.status).toBe(401);
-            });
-        });
-        describe("given the user is logged in", () => {
-            describe("given the service does not exist", () => {
-                it("it should return 404", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                        () => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        }
-                    );
-
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        return null;
-                    });
-
-                    const response = await supertest(app).delete(
-                        "/services/httpd/delete"
-                    );
-                    expect(response.status).toBe(404);
-                });
-            });
-            describe("given the service exists and it has CREATED or STOPPED status", () => {
-                it("it should return 200", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                        () => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        }
-                    );
-
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.CREATED;
-                        return foundService;
-                    });
-
-                    jest.spyOn(
-                        DockerLib,
-                        "deleteContainer"
-                    ).mockImplementationOnce(async () => {
-                        return Promise.resolve();
-                    });
-
-                    jest.spyOn(
-                        ServicesService,
-                        "deleteServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        return Promise.resolve();
-                    });
-
-                    const response = await supertest(app).delete(
-                        "/services/httpd/delete"
-                    );
-                    expect(response.status).toBe(200);
-                });
-                describe("given the container cannot be found", () => {
-                    it("it should return a 400", async () => {
-                        jest.spyOn(
-                            passport,
-                            "authenticate"
-                        ).mockImplementationOnce(() => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        });
-                        jest.spyOn(
-                            ServicesService,
-                            "findServiceByName"
-                        ).mockImplementationOnce(async () => {
-                            const foundService = createdService;
-                            foundService.status = ServiceStatus.CREATED;
-                            return foundService;
-                        });
-
-                        jest.spyOn(
-                            DockerLib,
-                            "deleteContainer"
-                        ).mockImplementationOnce(async () => {
-                            throw new Error("Container not found");
-                        });
-
-                        const response = await supertest(app).delete(
-                            "/services/httpd/delete"
-                        );
-                        expect(response.status).toBe(500);
-                    });
-                });
-            });
-            describe("given the service exists and it has RUNNING status", () => {
-                it("it should return 200", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementation(
-                        () => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        }
-                    );
-
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.RUNNING;
-                        return foundService;
-                    });
-
-                    const stopContainerMock = jest
-                        .spyOn(DockerLib, "stopContainer")
-                        .mockImplementationOnce(async () => {
-                            return Promise.resolve();
-                        });
-
-                    jest.spyOn(
-                        DockerLib,
-                        "deleteContainer"
-                    ).mockImplementationOnce(async (service: Service) => {
-                        await DockerLib.stopContainer(service);
-                        return Promise.resolve();
-                    });
-
-                    jest.spyOn(
-                        ServicesService,
-                        "deleteServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        return Promise.resolve();
-                    });
-
-                    const response = await supertest(app).delete(
-                        "/services/httpd/delete"
-                    );
-                    expect(response.status).toBe(200);
-                    expect(stopContainerMock).toHaveBeenCalledTimes(1);
-                });
-            });
-            describe("given the service exists and it has PULLING status", () => {
-                it("it should return 400", async () => {
-                    jest.spyOn(passport, "authenticate").mockImplementation(
-                        () => {
-                            return (
-                                req: Request,
-                                res: Response,
-                                next: NextFunction
-                            ) => {
-                                next();
-                            };
-                        }
-                    );
-
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.PULLING;
-                        return foundService;
-                    });
-
-                    const response = await supertest(app).delete(
-                        "/services/httpd/delete"
                     );
                     expect(response.status).toBe(400);
                 });
@@ -1361,6 +950,529 @@ describe("services", () => {
 
                         expect(response.status).toBe(500);
                     });
+                });
+            });
+        });
+    });
+    describe("stop service", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app).put(
+                    "/services/httpd/stop"
+                );
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given the user is logged in", () => {
+            describe("given the service does not exist", () => {
+                it("it should return 404", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(
+                        ServicesService,
+                        "findServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        return null;
+                    });
+
+                    const response = await supertest(app).put(
+                        "/services/httpd/stop"
+                    );
+                    expect(response.status).toBe(404);
+                });
+            });
+            describe("given the service exists and it has RUNNING status", () => {
+                it("it should return the service with STOPPED status", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(
+                        ServicesService,
+                        "findServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        const foundService = createdService;
+                        foundService.status = ServiceStatus.RUNNING;
+                        return foundService;
+                    });
+
+                    jest.spyOn(
+                        DockerLib,
+                        "stopContainer"
+                    ).mockImplementationOnce(async () => {
+                        return Promise.resolve();
+                    });
+
+                    jest.spyOn(
+                        ServicesService,
+                        "saveService"
+                    ).mockImplementationOnce(
+                        async (service: Service) => service
+                    );
+
+                    const response = await supertest(app).put(
+                        "/services/httpd/stop"
+                    );
+                    expect(response.status).toBe(200);
+                    expect(response.body.status).toBe(ServiceStatus.STOPPED);
+                });
+                describe("given the container cannot be found", () => {
+                    it("it should return a 400", async () => {
+                        jest.spyOn(
+                            passport,
+                            "authenticate"
+                        ).mockImplementationOnce(() => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        });
+                        jest.spyOn(
+                            ServicesService,
+                            "findServiceByName"
+                        ).mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.RUNNING;
+                            return foundService;
+                        });
+
+                        jest.spyOn(
+                            DockerLib,
+                            "stopContainer"
+                        ).mockImplementationOnce(async () => {
+                            throw new Error("Container not found");
+                        });
+
+                        jest.spyOn(
+                            ServicesService,
+                            "saveService"
+                        ).mockImplementationOnce(
+                            async (service: Service) => service
+                        );
+
+                        const response = await supertest(app).put(
+                            "/services/httpd/stop"
+                        );
+                        expect(response.status).toBe(500);
+                    });
+                });
+            });
+            describe("given the service exists and it has STOPPED status", () => {
+                it("it should return 400", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(
+                        ServicesService,
+                        "findServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        const foundService = createdService;
+                        foundService.status = ServiceStatus.STOPPED;
+                        return foundService;
+                    });
+
+                    const response = await supertest(app).put(
+                        "/services/httpd/stop"
+                    );
+                    expect(response.status).toBe(400);
+                });
+            });
+            describe("given the service exists and it has ERROR status", () => {
+                it("it should return 400", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(
+                        ServicesService,
+                        "findServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        const foundService = createdService;
+                        foundService.status = ServiceStatus.ERROR;
+                        return foundService;
+                    });
+
+                    const response = await supertest(app).put(
+                        "/services/httpd/stop"
+                    );
+                    expect(response.status).toBe(400);
+                });
+            });
+            describe("given the service exists and it has PULLING status", () => {
+                it("it should return 400", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(
+                        ServicesService,
+                        "findServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        const foundService = createdService;
+                        foundService.status = ServiceStatus.PULLING;
+                        return foundService;
+                    });
+
+                    const response = await supertest(app).put(
+                        "/services/httpd/stop"
+                    );
+                    expect(response.status).toBe(400);
+                });
+            });
+        });
+    });
+    describe("delete service", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app).delete(
+                    "/services/httpd/delete"
+                );
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given the user is logged in", () => {
+            describe("given the service does not exist", () => {
+                it("it should return 404", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(
+                        ServicesService,
+                        "findServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        return null;
+                    });
+
+                    const response = await supertest(app).delete(
+                        "/services/httpd/delete"
+                    );
+                    expect(response.status).toBe(404);
+                });
+            });
+            describe("given the service exists and it has CREATED or STOPPED status", () => {
+                it("it should return 200", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(
+                        ServicesService,
+                        "findServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        const foundService = createdService;
+                        foundService.status = ServiceStatus.CREATED;
+                        return foundService;
+                    });
+
+                    jest.spyOn(
+                        DockerLib,
+                        "deleteContainer"
+                    ).mockImplementationOnce(async () => {
+                        return Promise.resolve();
+                    });
+
+                    jest.spyOn(
+                        ServicesService,
+                        "deleteServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        return Promise.resolve();
+                    });
+
+                    const response = await supertest(app).delete(
+                        "/services/httpd/delete"
+                    );
+                    expect(response.status).toBe(200);
+                });
+                describe("given the container cannot be found", () => {
+                    it("it should return a 400", async () => {
+                        jest.spyOn(
+                            passport,
+                            "authenticate"
+                        ).mockImplementationOnce(() => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        });
+                        jest.spyOn(
+                            ServicesService,
+                            "findServiceByName"
+                        ).mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.CREATED;
+                            return foundService;
+                        });
+
+                        jest.spyOn(
+                            DockerLib,
+                            "deleteContainer"
+                        ).mockImplementationOnce(async () => {
+                            throw new Error("Container not found");
+                        });
+
+                        const response = await supertest(app).delete(
+                            "/services/httpd/delete"
+                        );
+                        expect(response.status).toBe(500);
+                    });
+                });
+            });
+            describe("given the service exists and it has RUNNING status", () => {
+                it("it should return 200", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(
+                        ServicesService,
+                        "findServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        const foundService = createdService;
+                        foundService.status = ServiceStatus.RUNNING;
+                        return foundService;
+                    });
+
+                    const stopContainerMock = jest
+                        .spyOn(DockerLib, "stopContainer")
+                        .mockImplementationOnce(async () => {
+                            return Promise.resolve();
+                        });
+
+                    jest.spyOn(
+                        DockerLib,
+                        "deleteContainer"
+                    ).mockImplementationOnce(async (service: Service) => {
+                        await DockerLib.stopContainer(service);
+                        return Promise.resolve();
+                    });
+
+                    jest.spyOn(
+                        ServicesService,
+                        "deleteServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        return Promise.resolve();
+                    });
+
+                    const response = await supertest(app).delete(
+                        "/services/httpd/delete"
+                    );
+                    expect(response.status).toBe(200);
+                    expect(stopContainerMock).toHaveBeenCalledTimes(1);
+                });
+            });
+            describe("given the service exists and it has PULLING status", () => {
+                it("it should return 400", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(
+                        ServicesService,
+                        "findServiceByName"
+                    ).mockImplementationOnce(async () => {
+                        const foundService = createdService;
+                        foundService.status = ServiceStatus.PULLING;
+                        return foundService;
+                    });
+
+                    const response = await supertest(app).delete(
+                        "/services/httpd/delete"
+                    );
+                    expect(response.status).toBe(400);
+                });
+            });
+        });
+    });
+    describe("update services ordering", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app).put("/services/order");
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given the user is logged in", () => {
+            describe("given an invalid request", () => {
+                it("should return 400", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    const response = await supertest(app)
+                        .put("/services/order")
+                        .send({
+                            service: [],
+                        });
+                    expect(response.status).toBe(400);
+                });
+            });
+            describe("given one of the services is not found", () => {
+                it("should return 404", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    const findServiceByNameMock = jest
+                        .spyOn(ServicesService, "findServiceByName")
+                        .mockImplementation(async (name: string) => {
+                            if (name === "httpd") {
+                                return Promise.resolve(createdService);
+                            }
+                            return Promise.resolve(null);
+                        });
+
+                    const saveServiceMock = jest
+                        .spyOn(ServicesService, "saveService")
+                        // @ts-ignore
+                        .mockImplementationOnce((service: Service) => service);
+
+                    const response = await supertest(app)
+                        .put("/services/order")
+                        .send({
+                            services: [
+                                { name: "httpd", order: 2 },
+                                { name: "notfound", order: 1 },
+                            ],
+                        });
+                    expect(response.status).toBe(404);
+                    expect(saveServiceMock).toHaveBeenCalledTimes(0);
+                    findServiceByNameMock.mockClear();
+                });
+            });
+            describe("given all the services are found", () => {
+                it("should return 200", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    const findServiceByNameMock = jest
+                        .spyOn(ServicesService, "findServiceByName")
+                        .mockImplementation(async (name: string) => {
+                            if (name === "httpd") {
+                                return Promise.resolve(createdService);
+                            }
+                            return Promise.resolve(null);
+                        });
+
+                    const saveServiceMock = jest
+                        .spyOn(ServicesService, "saveService")
+                        // @ts-ignore
+                        .mockImplementationOnce((service: Service) => service);
+
+                    const response = await supertest(app)
+                        .put("/services/order")
+                        .send({
+                            services: [{ name: "httpd", order: 2 }],
+                        });
+                    expect(response.status).toBe(200);
+                    expect(response.body[0].order).toBe(2);
+                    expect(saveServiceMock).toHaveBeenCalledTimes(1);
+                    findServiceByNameMock.mockClear();
                 });
             });
         });

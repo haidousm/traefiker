@@ -3,7 +3,7 @@ import DashboardTableBody from "./DashboardTableBody";
 
 function DashboardTable() {
     const columns = [
-        { name: "Service Tag", screenReaderOnly: false },
+        { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
         { name: "Service Hosts", screenReaderOnly: false },
         { name: "Run/Stop", screenReaderOnly: true },
@@ -14,7 +14,7 @@ function DashboardTable() {
     ];
 
     return (
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200 bg-gray-50">
             <DashboardTableHeader columns={columns} />
             <DashboardTableBody columns={columns} />
         </table>

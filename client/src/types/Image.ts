@@ -1,6 +1,6 @@
 export interface Image {
-    repository: string;
+    id?: string;
     name: string;
     tag: string;
-    resolvedName: string;
+    repository: string;
 }

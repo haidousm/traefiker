@@ -1,17 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { TrashIcon } from "@heroicons/react/solid";
 import { useEffect, useState } from "react";
-import Environment from "../../../types/Environment";
+import { EnvironmentVariable } from "../../../types/EnvironmentVariable";
 import { Redirect } from "../../../types/Redirect";
 
 interface Props {
-    data: Redirect | Environment;
+    data: Redirect | EnvironmentVariable;
     placeholderText: {
         columnA: string;
         columnB: string;
     };
-    handleUpdateData: (data: Redirect | Environment) => void;
-    handleDeleteData: (data: Redirect | Environment) => void;
+    handleUpdateData: (data: Redirect | EnvironmentVariable) => void;
+    handleDeleteData: (data: Redirect | EnvironmentVariable) => void;
 }
 
 function SettingsTableRow({
@@ -29,7 +29,7 @@ function SettingsTableRow({
             setColumnA(redirect.from);
             setColumnB(redirect.to);
         } else if ("key" in data) {
-            const environment = data as Environment;
+            const environment = data as EnvironmentVariable;
             setColumnA(environment.key);
             setColumnB(environment.value);
         }
@@ -44,7 +44,7 @@ function SettingsTableRow({
                 to: columnB!,
             });
         } else if ("key" in data) {
-            const environment = data as Environment;
+            const environment = data as EnvironmentVariable;
             handleUpdateData({
                 ...environment,
                 key: columnA!,

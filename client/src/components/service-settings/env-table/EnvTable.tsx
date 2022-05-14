@@ -1,17 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { env } from "process";
 import React, { useEffect, useState } from "react";
-import Environment from "../../../types/Environment";
+import { EnvironmentVariable } from "../../../types/EnvironmentVariable";
 import { Redirect } from "../../../types/Redirect";
 import SettingsTable from "../settings-table/SettingsTable";
 
 interface Props {
-    environments: Environment[];
-    handleUpdateData: (data: Environment[]) => void;
+    environments: EnvironmentVariable[];
+    handleUpdateData: (data: EnvironmentVariable[]) => void;
 }
 
 function EnvTable({ environments, handleUpdateData }: Props) {
-    const [envs, setEnvs] = useState<Environment[]>([]);
+    const [envs, setEnvs] = useState<EnvironmentVariable[]>([]);
 
     const columns = [{ name: "Key" }, { name: "Value" }];
 
@@ -44,10 +44,10 @@ function EnvTable({ environments, handleUpdateData }: Props) {
         });
     };
 
-    const updateEnvironment = (environment: Environment) => {
+    const updateEnvironment = (environment: EnvironmentVariable) => {
         setEnvs((prevEnvironments) => {
             return prevEnvironments!.map((prevEnvironment) => {
-                if (prevEnvironment._id == environment._id) {
+                if (prevEnvironment.key == environment.key) {
                     return environment;
                 }
                 return prevEnvironment;
@@ -55,9 +55,9 @@ function EnvTable({ environments, handleUpdateData }: Props) {
         });
     };
 
-    const deleteEnvironment = (environment: Environment) => {
+    const deleteEnvironment = (environment: EnvironmentVariable) => {
         const newEnvironments = environments!.filter((prevEnvironment) => {
-            return prevEnvironment._id !== environment._id;
+            return prevEnvironment.key !== environment.key;
         });
         setEnvs(newEnvironments);
     };
@@ -66,13 +66,13 @@ function EnvTable({ environments, handleUpdateData }: Props) {
             data={envs}
             columns={columns}
             placeholderText={placeholderText}
-            handleUpdateData={(data: Environment | Redirect) => {
-                const env = data as Environment;
+            handleUpdateData={(data: EnvironmentVariable | Redirect) => {
+                const env = data as EnvironmentVariable;
                 updateEnvironment(env);
             }}
             handleAddNewData={addNewEnvironment}
-            handleDeleteData={(data: Environment | Redirect) => {
-                const env = data as Environment;
+            handleDeleteData={(data: EnvironmentVariable | Redirect) => {
+                const env = data as EnvironmentVariable;
                 deleteEnvironment(env);
             }}
         />

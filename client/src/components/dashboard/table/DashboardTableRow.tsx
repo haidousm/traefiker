@@ -2,6 +2,7 @@ import { Service } from "../../../types/Service";
 import { Draggable } from "react-beautiful-dnd";
 import { CogIcon, MenuIcon } from "@heroicons/react/solid";
 import seedrandom from "seedrandom";
+import { ServiceStatus } from "../../../types/enums/ServiceStatus";
 
 interface Props {
     service: Service;
@@ -23,8 +24,8 @@ function DashboardTableRow({
     stopServiceClicked,
 }: Props) {
     const getActionIcon = () => {
-        switch (service.status) {
-            case "running":
+        switch (+service.status) {
+            case ServiceStatus.RUNNING:
                 return (
                     <button
                         className="rounded-md bg-red-600 p-2 text-white hover:bg-red-900 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:hover:bg-gray-600"
@@ -35,8 +36,8 @@ function DashboardTableRow({
                         Stop Service
                     </button>
                 );
-            case "stopped":
-            case "created":
+            case ServiceStatus.STOPPED:
+            case ServiceStatus.CREATED:
                 return (
                     <button
                         className="rounded-md bg-green-600 p-2 text-white hover:bg-green-900 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:hover:bg-gray-600"
@@ -48,6 +49,7 @@ function DashboardTableRow({
                     </button>
                 );
             default:
+                console.log(service.status);
                 return (
                     <button
                         className="rounded-md bg-green-600 p-2 text-white hover:bg-green-900 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:hover:bg-gray-600"
@@ -63,11 +65,11 @@ function DashboardTableRow({
     };
 
     const getStatusColor = () => {
-        switch (service.status) {
-            case "running":
+        switch (+service.status) {
+            case ServiceStatus.RUNNING:
                 return "border-green-600";
-            case "stopped":
-            case "created":
+            case ServiceStatus.STOPPED:
+            case ServiceStatus.CREATED:
                 return "border-red-600";
             default:
                 return "border-gray-600";
@@ -108,7 +110,7 @@ function DashboardTableRow({
                 lg:text-sm
             "
                         >
-                            {service.tag}
+                            {service.name}
                         </span>
                     </td>
                     <td className="hidden w-2/12 whitespace-nowrap px-2 py-1 text-center sm:table-cell lg:px-6 lg:py-4">
@@ -126,7 +128,9 @@ function DashboardTableRow({
                 lg:text-sm
             "
                         >
-                            {service.image.resolvedName}
+                            {service.image.repository != "_"
+                                ? `${service.image.repository}/${service.image.name}:${service.image.tag}`
+                                : `${service.image.name}:${service.image.tag}`}
                         </span>
                     </td>
                     <td className="w-3/12 whitespace-nowrap px-2 py-1 text-center lg:px-6 lg:py-4">

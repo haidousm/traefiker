@@ -28,21 +28,28 @@ const getServices = async () => {
 const createService = async (service: Service) => {
     return await authorizedAxios().post(`/services/create`, {
         name: service.name,
-        image: service.image.resolvedName,
+        image:
+            service.image.repository != "_"
+                ? `${service.image.repository}/${service.image.name}:${service.image.tag}`
+                : `${service.image.name}:${service.image.tag}`,
         hosts: service.hosts,
-        redirects: service.redirects,
-        order: service.order ?? 0,
     });
 };
 
 const updateService = async (service: Service) => {
-    return await authorizedAxios().put(`/services/${service.name}`, {
+    return await authorizedAxios().put(`/services/${service.name}/update`, {
         hosts: service.hosts,
-        image: service.image.resolvedName,
         redirects: service.redirects,
-        environments: service.environments,
-        tag: service.tag,
+        environments: service.environmentVariables,
     });
+};
+
+const startService = async (service: Service) => {
+    return await authorizedAxios().put(`/services/${service.name}/start`);
+};
+
+const stopService = async (service: Service) => {
+    return await authorizedAxios().put(`/services/${service.name}/stop`);
 };
 
 const deleteService = async (service: Service) => {
@@ -50,29 +57,23 @@ const deleteService = async (service: Service) => {
 };
 
 const updateServiceOrdering = async (services: Service[]) => {
-    const token = document.cookie.replace(
-        /(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/,
-        "$1"
-    );
-    return await authorizedAxios().put(
-        `/services/order`,
-        {
-            services,
-        },
-        {
-            headers: {
-                Authorization: token,
-            },
-        }
-    );
-};
+    // const token = document.cookie.replace(
+    //     /(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/,
+    //     "$1"
+    // );
 
-const startService = async (service: Service) => {
-    return await authorizedAxios().put(`/services/start/${service.name}`);
-};
-
-const stopService = async (service: Service) => {
-    return await authorizedAxios().put(`/services/stop/${service.name}`);
+    // return await authorizedAxios().put(
+    //     `/services/order`,
+    //     {
+    //         services,
+    //     },
+    //     {
+    //         headers: {
+    //             Authorization: token,
+    //         },
+    //     }
+    // );
+    console.log("temporarily disabled");
 };
 
 const login = async (username: string, password: string) => {

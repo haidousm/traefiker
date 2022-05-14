@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Service } from "../../../types/Service";
 import { Image } from "../../../types/Image";
 import ReactTooltip from "react-tooltip";
+import { ServiceStatus } from "../../../types/enums/ServiceStatus";
 
 interface Props {
     service?: Service;
@@ -21,7 +22,7 @@ function DashboardTableRowEditable({
 
     useEffect(() => {
         if (service) {
-            setTag(service.tag);
+            setTag(service.name);
             setImage(service.image);
             setHosts(service.hosts);
         }
@@ -75,11 +76,21 @@ function DashboardTableRowEditable({
                         type="text"
                         className="w-full bg-transparent text-center outline-none"
                         placeholder="Image name.."
-                        value={image ? image.resolvedName : ""}
+                        value={
+                            image
+                                ? image.repository != "_"
+                                    ? `${image.repository}/${image.name}:${image.tag}`
+                                    : `${image.name}:${image.tag}`
+                                : ""
+                        }
                         onChange={(e) => {
                             setImage({
-                                ...image!,
-                                resolvedName: e.target.value,
+                                ...image,
+                                repository: e.target.value.split("/")[0] ?? "_",
+                                name: e.target.value
+                                    .split("/")[1]
+                                    .split(":")[0],
+                                tag: e.target.value.split(":")[1],
                             });
                         }}
                     />
@@ -165,7 +176,6 @@ function DashboardTableRowEditable({
                     onClick={() => {
                         saveClicked({
                             name: service?.name ?? tag,
-                            tag: tag,
                             image: image!,
                             hosts:
                                 possibleHost !== ""
@@ -173,13 +183,18 @@ function DashboardTableRowEditable({
                                     : hosts,
                             order: service ? service.order : 0,
                             redirects: service?.redirects ?? [],
-                            status: service?.status ?? "pulling",
+                            environmentVariables:
+                                service?.environmentVariables ?? [],
+                            status: service?.status ?? ServiceStatus.PULLING,
                         });
                     }}
                 >
                     Save
                 </button>
             </td>
+            <td></td>
+            <td></td>
+            <td></td>
         </tr>
     );
 }

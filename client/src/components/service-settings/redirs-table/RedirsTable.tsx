@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import Environment from "../../../types/Environment";
+import { EnvironmentVariable } from "../../../types/EnvironmentVariable";
 import { Redirect } from "../../../types/Redirect";
 import SettingsTable from "../settings-table/SettingsTable";
 
@@ -63,12 +63,12 @@ function RedirsTable({ redirects, handleUpdateData }: Props) {
             data={redirs}
             columns={columns}
             placeholderText={placeholderText}
-            handleUpdateData={(data: Environment | Redirect) => {
+            handleUpdateData={(data: EnvironmentVariable | Redirect) => {
                 const redir = data as Redirect;
                 updateRedirect(redir);
             }}
             handleAddNewData={addNewRedirect}
-            handleDeleteData={(data: Environment | Redirect) => {
+            handleDeleteData={(data: EnvironmentVariable | Redirect) => {
                 const redir = data as Redirect;
                 deleteRedirect(redir);
             }}

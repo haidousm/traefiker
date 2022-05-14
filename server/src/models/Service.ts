@@ -83,7 +83,7 @@ serviceSchema.post(
         if (io.sockets) {
             io.sockets.emit("status", {
                 name: this.name,
-                status: ServiceStatus[status],
+                status: status,
             });
         }
         next();

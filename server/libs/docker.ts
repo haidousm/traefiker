@@ -43,17 +43,20 @@ export const createContainer = async (
                 service.environmentVariables.map(
                     (env) => `${env.key}=${env.value}`
                 );
-
-            const container = await docker.createContainer({
-                Image: imageIdentifier,
-                name: `traefiker_${service.name}`,
-                Labels: labels,
-                HostConfig: {
-                    NetworkMode: "traefiker",
-                },
-                Env: environmentVariables,
-            });
-            return onSuccess(service, container);
+            try {
+                const container = await docker.createContainer({
+                    Image: imageIdentifier,
+                    name: `traefiker_${service.name}`,
+                    Labels: labels,
+                    HostConfig: {
+                        NetworkMode: "traefiker",
+                    },
+                    Env: environmentVariables,
+                });
+                return onSuccess(service, container);
+            } catch (e) {
+                return onError(service, e);
+            }
         });
     } catch (e) {
         return onError(service, e);

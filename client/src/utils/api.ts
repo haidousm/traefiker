@@ -40,7 +40,7 @@ const updateService = async (service: Service) => {
     return await authorizedAxios().put(`/services/${service.name}/update`, {
         hosts: service.hosts,
         redirects: service.redirects,
-        environments: service.environmentVariables,
+        environmentVariables: service.environmentVariables,
     });
 };
 
@@ -53,7 +53,7 @@ const stopService = async (service: Service) => {
 };
 
 const deleteService = async (service: Service) => {
-    return await authorizedAxios().delete(`/services/delete/${service.name}`);
+    return await authorizedAxios().delete(`/services/${service.name}/delete`);
 };
 
 const updateServiceOrdering = async (services: Service[]) => {

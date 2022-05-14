@@ -221,7 +221,9 @@ export const deleteServiceHandler = async (req: Request, res: Response) => {
             });
         }
 
-        await deleteContainer(service);
+        if (service.status != ServiceStatus.ERROR) {
+            await deleteContainer(service);
+        }
         await deleteServiceByName(service.name);
         logger.info(`Service ${service.name} deleted`);
         return res.sendStatus(200);

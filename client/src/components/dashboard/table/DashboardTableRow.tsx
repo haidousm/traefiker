@@ -49,7 +49,6 @@ function DashboardTableRow({
                     </button>
                 );
             default:
-                console.log(service.status);
                 return (
                     <button
                         className="rounded-md bg-green-600 p-2 text-white hover:bg-green-900 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:hover:bg-gray-600"

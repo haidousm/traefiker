@@ -34,9 +34,6 @@ function EnvTable({ environments, handleUpdateData }: Props) {
             return [
                 ...prevEnvironments!,
                 {
-                    _id: prevEnvironments
-                        ? `${prevEnvironments.length + 1}`
-                        : "0",
                     key: "",
                     value: "",
                 },

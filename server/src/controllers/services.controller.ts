@@ -319,6 +319,12 @@ const attachContainerToService = async (
 ) => {
     const containerInfo = await container.inspect();
     service.network = containerInfo.HostConfig.NetworkMode;
+    service.environmentVariables = containerInfo.Config.Env.map((envString) => {
+        return {
+            key: envString.split("=")[0].trim(),
+            value: envString.split("=")[1].trim(),
+        };
+    });
     service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
     await saveService(service);

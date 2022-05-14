@@ -34,6 +34,9 @@ function EnvTable({ environments, handleUpdateData }: Props) {
             return [
                 ...prevEnvironments!,
                 {
+                    _id: prevEnvironments
+                        ? `${prevEnvironments.length + 1}`
+                        : "0",
                     key: "",
                     value: "",
                 },
@@ -44,7 +47,7 @@ function EnvTable({ environments, handleUpdateData }: Props) {
     const updateEnvironment = (environment: EnvironmentVariable) => {
         setEnvs((prevEnvironments) => {
             return prevEnvironments!.map((prevEnvironment) => {
-                if (prevEnvironment.key == environment.key) {
+                if (prevEnvironment._id == environment._id) {
                     return environment;
                 }
                 return prevEnvironment;
@@ -54,7 +57,7 @@ function EnvTable({ environments, handleUpdateData }: Props) {
 
     const deleteEnvironment = (environment: EnvironmentVariable) => {
         const newEnvironments = environments!.filter((prevEnvironment) => {
-            return prevEnvironment.key !== environment.key;
+            return prevEnvironment._id !== environment._id;
         });
         setEnvs(newEnvironments);
     };

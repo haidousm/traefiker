@@ -8,7 +8,7 @@ function LoginContainer() {
     const loginClicked = async () => {
         const response = await login(username, password);
         if (response.status === 200) {
-            const token = response.data.token.token;
+            const token = response.data.token;
             document.cookie = `token=${token}`;
             window.location.href = "/dashboard";
         }
@@ -35,6 +35,11 @@ function LoginContainer() {
                 className="mt-4 h-10 w-full rounded-sm border-b-2 border-b-white bg-transparent p-2 text-white shadow-lg focus:outline-none"
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="off"
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                        loginClicked();
+                    }
+                }}
             />
             <button
                 type="submit"

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Service } from "../../../types/Service";
 import { Image } from "../../../types/Image";
 import ReactTooltip from "react-tooltip";
+import { ServiceStatus } from "../../../types/enums/ServiceStatus";
 
 interface Props {
     service?: Service;
@@ -15,14 +16,18 @@ function DashboardTableRowEditable({
     cancelClicked,
 }: Props) {
     const [tag, setTag] = useState("");
-    const [image, setImage] = useState<Image | undefined>();
+    const [imageIdentifier, setImageIdentifier] = useState<string>("");
     const [hosts, setHosts] = useState<string[]>([]);
     const [possibleHost, setPossibleHost] = useState("");
 
     useEffect(() => {
         if (service) {
-            setTag(service.tag);
-            setImage(service.image);
+            const imageIdentifier =
+                service.image.repository != "_"
+                    ? `${service.image.repository}/${service.image.name}:${service.image.tag}`
+                    : `${service.image.name}:${service.image.tag}`;
+            setTag(service.name);
+            setImageIdentifier(imageIdentifier);
             setHosts(service.hosts);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -48,7 +53,7 @@ function DashboardTableRowEditable({
                         id="name"
                         type="text"
                         className="w-full bg-transparent text-center outline-none "
-                        placeholder="Service tag.."
+                        placeholder="Service name.."
                         value={tag}
                         onChange={(e) => {
                             setTag(e.target.value);
@@ -75,12 +80,9 @@ function DashboardTableRowEditable({
                         type="text"
                         className="w-full bg-transparent text-center outline-none"
                         placeholder="Image name.."
-                        value={image ? image.resolvedName : ""}
+                        value={imageIdentifier}
                         onChange={(e) => {
-                            setImage({
-                                ...image!,
-                                resolvedName: e.target.value,
-                            });
+                            setImageIdentifier(e.target.value);
                         }}
                     />
                 </span>
@@ -163,23 +165,40 @@ function DashboardTableRowEditable({
                 <button
                     className="text-indigo-600 hover:text-indigo-900"
                     onClick={() => {
+                        if (!imageIdentifier?.includes(":")) {
+                            alert("Please provide a valid image identifier");
+                            return;
+                        }
+                        const imageRepository = imageIdentifier.includes("/")
+                            ? imageIdentifier.split("/")[0]
+                            : "_";
+                        const imageName = imageIdentifier.split(":")[0];
+                        const imageTag = imageIdentifier.split(":")[1];
                         saveClicked({
                             name: service?.name ?? tag,
-                            tag: tag,
-                            image: image!,
+                            image: {
+                                repository: imageRepository,
+                                name: imageName,
+                                tag: imageTag,
+                            },
                             hosts:
                                 possibleHost !== ""
                                     ? [...hosts, possibleHost]
                                     : hosts,
                             order: service ? service.order : 0,
                             redirects: service?.redirects ?? [],
-                            status: service?.status ?? "pulling",
+                            environmentVariables:
+                                service?.environmentVariables ?? [],
+                            status: service?.status ?? ServiceStatus.PULLING,
                         });
                     }}
                 >
                     Save
                 </button>
             </td>
+            <td></td>
+            <td></td>
+            <td></td>
         </tr>
     );
 }

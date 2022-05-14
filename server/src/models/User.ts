@@ -1,4 +1,11 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+
+export interface UserDocument extends mongoose.Document {
+    username: string;
+    hash: string;
+    salt: string;
+}
+
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -18,5 +25,5 @@ UserSchema.set("toJSON", {
     virtuals: true,
 });
 
-const User = mongoose.model("User", UserSchema);
-module.exports = User;
+const UserModel = mongoose.model<UserDocument>("User", UserSchema);
+export default UserModel;

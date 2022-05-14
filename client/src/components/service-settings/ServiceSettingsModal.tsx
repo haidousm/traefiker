@@ -6,7 +6,7 @@ import { settingsModalState } from "../../atoms/atoms";
 import { Service } from "../../types/Service";
 import { Redirect } from "../../types/Redirect";
 import { updateService } from "../../utils/api";
-import Environment from "../../types/Environment";
+import { EnvironmentVariable } from "../../types/EnvironmentVariable";
 import EnvTable from "./env-table/EnvTable";
 import RedirsTable from "./redirs-table/RedirsTable";
 
@@ -18,12 +18,14 @@ function ServiceSettingsModal() {
         settingsModalOptions.service
     );
     const [redirects, setRedirects] = useState<Redirect[]>([]);
-    const [environments, setEnvironments] = useState<Environment[]>([]);
+    const [environments, setEnvironments] = useState<EnvironmentVariable[]>([]);
 
     useEffect(() => {
         setService(settingsModalOptions.service);
         setRedirects(settingsModalOptions.service.redirects ?? []);
-        setEnvironments(settingsModalOptions.service.environments ?? []);
+        setEnvironments(
+            settingsModalOptions.service.environmentVariables ?? []
+        );
     }, [settingsModalOptions.service]);
 
     const saveClicked = async () => {
@@ -46,7 +48,7 @@ function ServiceSettingsModal() {
         await updateService({
             ...service,
             redirects: noIdsRedirects,
-            environments: noIdsEnvironments,
+            environmentVariables: noIdsEnvironments,
         });
     };
 
@@ -78,9 +80,10 @@ function ServiceSettingsModal() {
                         />
                         <EnvTable
                             environments={
-                                settingsModalOptions.service.environments ?? []
+                                settingsModalOptions.service
+                                    .environmentVariables ?? []
                             }
-                            handleUpdateData={(data: Environment[]) => {
+                            handleUpdateData={(data: EnvironmentVariable[]) => {
                                 setEnvironments(data);
                             }}
                         />

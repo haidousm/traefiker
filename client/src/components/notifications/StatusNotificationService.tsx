@@ -4,6 +4,7 @@ import { useRecoilState } from "recoil";
 import { servicesState } from "../../atoms/atoms";
 import { io, Socket } from "socket.io-client";
 import getConfig from "next/config";
+import { ServiceStatus } from "../../types/enums/ServiceStatus";
 
 const { publicRuntimeConfig } = getConfig();
 const ROOT_API_URL: string =
@@ -31,10 +32,10 @@ function StatusNotificationService() {
             }
         }
         const { current: socket } = socketRef;
-
         socket.on("status", (message) => {
             setServices((prevServices) => {
-                const { serviceName, status } = message;
+                const serviceName: string = message.name;
+                const status: ServiceStatus = message.status;
                 const service = prevServices.find(
                     (service) => service.name === serviceName
                 );

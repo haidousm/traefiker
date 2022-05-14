@@ -1,10 +1,14 @@
-const fs = require("fs");
-const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
+import fs from "fs";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import { UserDocument } from "../models/User";
 
-const PRIV_KEY = fs.readFileSync(`${__dirname}/../config/keys/private.pem`);
-
-const validatePassword = (password, hash, salt) => {
+/* istanbul ignore next */
+export const validatePassword = (
+    password: string,
+    hash: string,
+    salt: string
+) => {
     const hashPassword = crypto
         .pbkdf2Sync(password, salt, 1000, 64, "sha512")
         .toString("hex");
@@ -12,17 +16,24 @@ const validatePassword = (password, hash, salt) => {
     return hashPassword === hash;
 };
 
-const generateSalt = () => {
+/* istanbul ignore next */
+export const generateSalt = () => {
     return crypto.randomBytes(16).toString("hex");
 };
 
-const generateHash = (password, salt) => {
+/* istanbul ignore next */
+export const generateHash = (password: string, salt: string) => {
     return crypto
         .pbkdf2Sync(password, salt, 1000, 64, "sha512")
         .toString("hex");
 };
 
-const issueJWT = (user) => {
+/* istanbul ignore next */
+export const issueJWT = (user: UserDocument) => {
+    const PRIV_KEY = fs.readFileSync(
+        `${__dirname}/../../config/keys/private.pem`
+    );
+
     const expiresIn = "1y";
     const payload = {
         sub: user.id,
@@ -37,5 +48,3 @@ const issueJWT = (user) => {
         expires: expiresIn,
     };
 };
-
-module.exports = { validatePassword, generateSalt, generateHash, issueJWT };

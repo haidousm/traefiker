@@ -1,10 +1,10 @@
 import { PlusCircleIcon } from "@heroicons/react/solid";
-import Environment from "../../../types/Environment";
+import { EnvironmentVariable } from "../../../types/EnvironmentVariable";
 import { Redirect } from "../../../types/Redirect";
 import SettingsTableRow from "./SettingsTableRow";
 
 interface Props {
-    data: Redirect[] | Environment[];
+    data: Redirect[] | EnvironmentVariable[];
     columns: {
         name: string;
     }[];
@@ -14,9 +14,9 @@ interface Props {
         columnB: string;
         notFound: string;
     };
-    handleUpdateData: (data: Redirect | Environment) => void;
+    handleUpdateData: (data: Redirect | EnvironmentVariable) => void;
     handleAddNewData: () => void;
-    handleDeleteData: (data: Redirect | Environment) => void;
+    handleDeleteData: (data: Redirect | EnvironmentVariable) => void;
 }
 function SettingsTable({
     data,
@@ -58,7 +58,7 @@ function SettingsTable({
             </thead>
             <tbody>
                 {data !== undefined && data.length !== 0 ? (
-                    data!.map((data: Redirect | Environment, i) => (
+                    data!.map((data: Redirect | EnvironmentVariable, i) => (
                         <SettingsTableRow
                             key={i}
                             data={data}

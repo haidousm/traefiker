@@ -1,4 +1,4 @@
-export default interface Environment {
+export interface EnvironmentVariable {
     _id?: string;
     key: string;
     value: string;

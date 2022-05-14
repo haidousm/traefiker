@@ -1,7 +1,7 @@
 FROM node:16-alpine as build
 WORKDIR /src/app
 COPY . .
-RUN yarn install && yarn gen-keys
+RUN yarn install && yarn prod-build && yarn prod-gen-keys
 
 FROM node:16-alpine
 LABEL Maintainer="Moussa Haidous <haidous.m@gmail.com>"
@@ -12,8 +12,8 @@ COPY --from=build /src/app .
 ENV NODE_ENV production
 ENV PORT 8010
 
-ENV MONGO_URI mongodb://localhost:27017/traefiker
+ENV MONGO_URI mongodb://0.0.0.0:27017/traefiker
 
-CMD ["yarn", "start"]
+CMD ["yarn", "prod-start"]
 
 EXPOSE $PORT

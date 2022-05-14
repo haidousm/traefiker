@@ -1,6 +1,7 @@
-import Docker, { Container } from "dockerode";
+import Docker, { Container, ContainerInfo } from "dockerode";
 import { ServiceStatus } from "../src/types/enums/ServiceStatus";
 import { Image } from "../src/types/Image";
+import { Redirect } from "../src/types/Redirect";
 import { Service } from "../src/types/Service";
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" });
@@ -32,14 +33,12 @@ export const createContainer = async (
                 image.repository != "_"
                     ? `${image.repository}/${image.name}:${image.tag}`
                     : `${image.name}:${image.tag}`;
-            const hostLabels = transformHostsToLabel(
-                service.name,
-                service.hosts
-            );
 
-            const labels = {
-                ...hostLabels,
-            };
+            const labels = getAllLabels(service);
+            const environmentVariables: string[] =
+                service.environmentVariables.map(
+                    (env) => `${env.key}=${env.value}`
+                );
 
             const container = await docker.createContainer({
                 Image: imageIdentifier,
@@ -48,6 +47,7 @@ export const createContainer = async (
                 HostConfig: {
                     NetworkMode: "traefiker",
                 },
+                Env: environmentVariables,
             });
             return onSuccess(service, container);
         });
@@ -84,9 +84,20 @@ export const deleteContainer = async (service: Service) => {
     return container.remove();
 };
 
+export const getAllContainers = async (): Promise<ContainerInfo[]> => {
+    return docker.listContainers({ all: true });
+};
+
+const getSSLLabels = (name: string) => {
+    return {
+        [`traefik.http.routers.${name}.tls`]: "true",
+        [`traefik.http.routers.${name}.tls.certresolver`]: "lets-encrypt",
+    };
+};
+
 const transformHostsToLabel = (name: string, hosts: string[]) => {
     const labelKey = `traefik.http.routers.${name}.rule`;
-    const formattedHosts = hosts.map((host) => {
+    const hostLabels = hosts.map((host) => {
         const [hostname, path] = host.split("/");
         const formattedHost = `Host(\`${hostname}\`)`;
         if (path) {
@@ -95,6 +106,85 @@ const transformHostsToLabel = (name: string, hosts: string[]) => {
         return formattedHost;
     });
     return {
-        [labelKey]: formattedHosts.join(" || "),
+        [labelKey]: hostLabels.join(" || "),
     };
+};
+
+const transformHostsToPathPrefixMiddlewareLabels = (
+    name: string,
+    hosts: string[]
+) => {
+    const hostsWithPaths = hosts.filter((host) => host.includes("/"));
+    const paths = hostsWithPaths.map((host) => {
+        const [, path] = host.split("/");
+        return path;
+    });
+
+    const labels: { [key: string]: string } = {};
+    paths.forEach((path) => {
+        labels[
+            `traefik.http.middlewares.${name}-${path}-prefix.stripprefix.prefixes`
+        ] = `/${path}`;
+    });
+    return labels;
+};
+
+const transformRedirectsToMiddlewareLabels = (
+    name: string,
+    redirects: Redirect[]
+) => {
+    const labels: { [key: string]: string } = {};
+    redirects.forEach((redirect: Redirect, i) => {
+        const from = redirect.from;
+        const to = redirect.to;
+
+        labels[
+            `traefik.http.middlewares.${i}-redirect-${name}.redirectregex.regex`
+        ] = from;
+        labels[
+            `traefik.http.middlewares.${i}-redirect-${name}.redirectregex.replacement`
+        ] = to;
+    });
+    return labels;
+};
+
+const getMiddlewareLabel = (
+    name: string,
+    labels: { [key: string]: string }
+) => {
+    const regex = /traefik\.http.middlewares\.(.+?)\..*/;
+    const middlewareNames: string[] = [];
+    Object.keys(labels).forEach((middleware) => {
+        const matches = regex.exec(middleware);
+        if (matches) {
+            middlewareNames.push(matches[1]);
+        }
+    });
+
+    const uniqueMiddlewareNames = [...new Set(middlewareNames)];
+    if (uniqueMiddlewareNames.length <= 0) {
+        return {};
+    }
+    return {
+        [`traefik.http.routers.${name}.middlewares`]:
+            uniqueMiddlewareNames.join(","),
+    };
+};
+const getAllLabels = (service: Service) => {
+    const SSLLabels = getSSLLabels(service.name);
+    const hostLabels = transformHostsToLabel(service.name, service.hosts);
+    const hostPathPrefixMiddlewareLabels =
+        transformHostsToPathPrefixMiddlewareLabels(service.name, service.hosts);
+    const redirectMiddlewareLabels = transformRedirectsToMiddlewareLabels(
+        service.name,
+        service.redirects
+    );
+    const labels = {
+        ...SSLLabels,
+        ...hostLabels,
+        ...hostPathPrefixMiddlewareLabels,
+        ...redirectMiddlewareLabels,
+    };
+    const middlewareLabel = getMiddlewareLabel(service.name, labels);
+    return { ...labels, ...middlewareLabel };
 };

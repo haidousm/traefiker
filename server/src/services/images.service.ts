@@ -42,6 +42,10 @@ export const getOrCreateImageByImageIdentifier = async (
     }
 };
 
+export const deleteAllImages = async () => {
+    return ImageModel.deleteMany({}).exec();
+};
+
 const parseImageIdentifier = (imageIdentifier: string) => {
     const regex = /^(.+)\/(.+):(.+)$|^(.+):(.+)$|^(.+)\/(.+)|^(.+)$/;
     const match = regex.exec(imageIdentifier);

@@ -67,11 +67,12 @@ export const createServiceHandler = async (req: Request, res: Response) => {
 
 export const updateServiceHandler = async (req: Request, res: Response) => {
     try {
+        const name = req.params.name;
         const hosts = req.body.hosts;
         const environmentVariables = req.body.environmentVariables;
         const redirects = req.body.redirects;
         if (!hosts && !environmentVariables && !redirects) {
-            logger.error(`No changes to service ${req.body.name} requested`);
+            logger.error(`No changes to service ${name} requested`);
             return res.status(400).json({
                 error: "Empty update request",
             });
@@ -83,13 +84,13 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
         if (!service) {
             logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
-                error: `Service with name ${req.body.name} not found`,
+                error: `Service with name ${name} not found`,
             });
         }
         if (service.status == ServiceStatus.PULLING) {
             logger.error(`Service ${req.params.name} is being pulled`);
             return res.status(400).json({
-                error: `Service with name ${req.body.name} is still pulling`,
+                error: `Service with name ${name} is still pulling`,
             });
         }
 

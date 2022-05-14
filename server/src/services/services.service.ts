@@ -75,6 +75,10 @@ export const deleteServiceByName = async (name: string) => {
     await internalService.remove();
 };
 
+export const deleteAllContainers = async () => {
+    return ServiceModel.deleteMany({}).exec();
+};
+
 const internalServiceToService = (
     internalService: Internal_ServiceDocument
 ): Service => {

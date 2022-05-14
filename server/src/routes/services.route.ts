@@ -9,6 +9,7 @@ import {
     createServiceHandler,
     deleteServiceHandler,
     getAllServicesHandler,
+    recreateServiceHandler,
     startServiceHandler,
     stopServiceHandler,
     updateServiceHandler,
@@ -187,6 +188,32 @@ router.put("/:name/stop", stopServiceHandler);
  *
  */
 router.delete("/:name/delete", deleteServiceHandler);
+
+/**
+ * @openapi
+ * '/services/{name}/recreate':
+ *      put:
+ *          tags:
+ *              - Services
+ *          summary: Recreate a service (useful for repulling images)
+ *          security:
+ *              - bearerAuth: []
+ *          parameters:
+ *             - name: name
+ *               in: path
+ *               required: true
+ *               description: Service name
+ *          responses:
+ *              200:
+ *                  description: Success
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              $ref: '#/components/schemas/Service'
+ *              401:
+ *                  description: Unauthorized
+ */
+router.put("/:name/recreate", recreateServiceHandler);
 
 /**
  * @openapi

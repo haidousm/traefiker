@@ -234,6 +234,45 @@ export const deleteServiceHandler = async (req: Request, res: Response) => {
     }
 };
 
+// since this is similar to the create service handler
+// istanbul ignore next
+export const recreateServiceHandler = async (req: Request, res: Response) => {
+    try {
+        const service: Service | null = await findServiceByName(
+            req.params.name
+        );
+        if (!service) {
+            logger.error(`Service ${req.params.name} not found`);
+            return res.status(404).json({
+                error: `Service with name ${req.params.name} not found`,
+            });
+        }
+        if (service.status == ServiceStatus.PULLING) {
+            logger.error(`Service ${req.params.name} is being pulled`);
+            return res.status(400).json({
+                error: `Service with name ${req.params.name} is still pulling`,
+            });
+        }
+        await deleteContainer(service);
+        await saveService(service);
+        createContainer(
+            service,
+            service.image,
+            attachContainerToService,
+            cleanUpOnError
+        );
+        logger.info(`Service ${service.name} recreated`);
+        return res.sendStatus(200);
+    } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
+        return res.status(500).json({
+            error: e,
+        });
+    }
+};
+
 export const updateServicesOrderHandler = async (
     req: Request,
     res: Response

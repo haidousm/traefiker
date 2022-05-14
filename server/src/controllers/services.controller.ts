@@ -280,6 +280,7 @@ const attachContainerToService = async (
     service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
     await saveService(service);
+    // istanbul ignore next
     logger.info(
         `Container ${container.id} attached to service ${service.name}`
     );
@@ -289,5 +290,6 @@ const attachContainerToService = async (
 const cleanUpOnError = async (service: Service, error: any) => {
     service.status = ServiceStatus.ERROR;
     await saveService(service);
+    // istanbul ignore next
     logger.error(`Service ${service.name} in error state because of ${error}`);
 };

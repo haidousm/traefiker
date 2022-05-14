@@ -1395,6 +1395,39 @@ describe("services", () => {
                     expect(response.status).toBe(400);
                 });
             });
+            describe("given something throws", () => {
+                it("should return 500", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    const findServiceByNameMock = jest
+                        .spyOn(ServicesService, "findServiceByName")
+                        .mockImplementation(async () => {
+                            throw new Error("Something went wrong");
+                        });
+
+                    jest.spyOn(ServicesService, "saveService")
+                        // @ts-ignore
+                        .mockImplementationOnce((service: Service) => service);
+
+                    const response = await supertest(app)
+                        .put("/services/order")
+                        .send({
+                            services: [{ name: "httpd", order: 2 }],
+                        });
+                    expect(response.status).toBe(500);
+                    findServiceByNameMock.mockClear();
+                });
+            });
             describe("given one of the services is not found", () => {
                 it("should return 404", async () => {
                     jest.spyOn(passport, "authenticate").mockImplementationOnce(

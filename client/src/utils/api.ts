@@ -57,23 +57,18 @@ const deleteService = async (service: Service) => {
 };
 
 const updateServiceOrdering = async (services: Service[]) => {
-    // const token = document.cookie.replace(
-    //     /(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/,
-    //     "$1"
-    // );
-
-    // return await authorizedAxios().put(
-    //     `/services/order`,
-    //     {
-    //         services,
-    //     },
-    //     {
-    //         headers: {
-    //             Authorization: token,
-    //         },
-    //     }
-    // );
-    console.log("temporarily disabled");
+    const updateOrderRequest: {
+        name: string;
+        order: number;
+    }[] = services.map((service, index) => {
+        return {
+            name: service.name,
+            order: service.order,
+        };
+    });
+    return await authorizedAxios().put(`/services/order`, {
+        services: updateOrderRequest,
+    });
 };
 
 const login = async (username: string, password: string) => {

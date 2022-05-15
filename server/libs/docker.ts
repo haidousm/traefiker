@@ -184,12 +184,13 @@ const getMiddlewareLabel = (
     };
 };
 const getAllLabels = (service: Service) => {
-    const SSLLabels = getSSLLabels(service.name);
-    const hostLabels = transformHostsToLabel(service.name, service.hosts);
+    const internalName = `traefiker_${service.name}`;
+    const SSLLabels = getSSLLabels(internalName);
+    const hostLabels = transformHostsToLabel(internalName, service.hosts);
     const hostPathPrefixMiddlewareLabels =
-        transformHostsToPathPrefixMiddlewareLabels(service.name, service.hosts);
+        transformHostsToPathPrefixMiddlewareLabels(internalName, service.hosts);
     const redirectMiddlewareLabels = transformRedirectsToMiddlewareLabels(
-        service.name,
+        internalName,
         service.redirects
     );
     const labels = {
@@ -198,6 +199,6 @@ const getAllLabels = (service: Service) => {
         ...hostPathPrefixMiddlewareLabels,
         ...redirectMiddlewareLabels,
     };
-    const middlewareLabel = getMiddlewareLabel(service.name, labels);
+    const middlewareLabel = getMiddlewareLabel(internalName, labels);
     return { ...labels, ...middlewareLabel };
 };

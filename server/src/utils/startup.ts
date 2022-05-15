@@ -17,24 +17,25 @@ export const useDockerAsSourceOfTruth = async () => {
         await deleteAllContainers();
         await deleteAllImages();
 
-        const containers = (await getAllContainers()).filter((container) =>
-            container.Names[0].includes("traefiker_")
+        const containers = (await getAllContainers()).filter(
+            (container) =>
+                container.Names[0].includes("traefiker_") &&
+                !container.Names[0].includes("traefiker-client") &&
+                !container.Names[0].includes("traefiker-server")
         );
         for (const container of containers) {
-            const serviceName = container.Names[0]
-                .replace("/", "")
-                .replace("traefiker_", "");
+            const serviceInternalName = container.Names[0].replace("/", "");
 
             const image = await getOrCreateImageByImageIdentifier(
                 container.Image
             );
             const hosts: string[] = transformLabelsToHosts(
-                serviceName,
+                serviceInternalName,
                 container.Labels
             );
 
             const redirects: Redirect[] = transformLabelsToRedirects(
-                serviceName,
+                serviceInternalName,
                 container.Labels
             );
 
@@ -52,7 +53,7 @@ export const useDockerAsSourceOfTruth = async () => {
                     ? ServiceStatus.CREATED
                     : ServiceStatus.STOPPED;
             await saveService({
-                name: serviceName,
+                name: serviceInternalName.replace("traefiker_", ""),
                 status: status, // TODO: use state from container
                 image: image,
                 hosts: hosts,
@@ -61,6 +62,7 @@ export const useDockerAsSourceOfTruth = async () => {
                 order: (await findLastUsedOrder()) + 1, // TODO: operation is not atomic ?? might(is) a problem if multiple requests are made at the same time
                 network: inspectData.HostConfig.NetworkMode,
                 containerId: container.Id,
+                internalName: serviceInternalName,
             });
         }
     } catch (e) {

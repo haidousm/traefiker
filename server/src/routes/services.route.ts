@@ -1,9 +1,9 @@
 import express from "express";
 import validateResource from "../middleware/validateResource";
+import { UpdateServicesOrderRequestSchema } from "../schemas/services.schema";
 import {
     CreateServiceRequestSchema,
     UpdateServiceRequestSchema,
-    UpdateServicesOrderRequestSchema,
 } from "../schemas/services.schema";
 import {
     createServiceHandler,

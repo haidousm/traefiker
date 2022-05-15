@@ -4,7 +4,6 @@ import ServiceModel from "./Service";
 export interface Internal_ProjectDocument {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
-    services: mongoose.Schema.Types.ObjectId[];
     createdAt: Date;
 }
 
@@ -13,11 +12,6 @@ const projectSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-    },
-    services: {
-        type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Service" }],
-        required: true,
-        default: [],
     },
     createdAt: {
         type: Date,
@@ -37,8 +31,6 @@ projectSchema.pre(
             if (!defaultProject) {
                 throw new Error("Default project not found");
             }
-            defaultProject.services.push(service._id);
-            await defaultProject.save();
             service.project = defaultProject._id;
             await service.save();
         }

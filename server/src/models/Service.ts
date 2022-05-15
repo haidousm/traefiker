@@ -77,20 +77,6 @@ const serviceSchema = new mongoose.Schema({
 });
 
 serviceSchema.pre(
-    "remove",
-    async function (this: Internal_ServiceDocument, next) {
-        const project = await ProjectModel.findById(this.project);
-        if (project) {
-            project.services = project.services.filter(
-                (service) => service.toString() !== this._id.toString()
-            );
-            await project.save();
-        }
-        next();
-    }
-);
-
-serviceSchema.pre(
     "save",
     async function (this: Internal_ServiceDocument, next) {
         if (!this.project) {
@@ -103,8 +89,6 @@ serviceSchema.pre(
                 await defaultProject.save();
             }
             this.project = defaultProject._id;
-            defaultProject.services.push(this._id);
-            await defaultProject.save();
         }
         next();
     }

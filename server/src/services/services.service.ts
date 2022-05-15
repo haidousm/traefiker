@@ -2,10 +2,12 @@ import ServiceModel, { Internal_ServiceDocument } from "../models/Service";
 import { Image } from "../types/Image";
 import { Service } from "../types/Service";
 import ImageModel, { Internal_ImageDocument } from "../models/Image";
+import { Internal_ProjectDocument } from "../models/Project";
+import { Project } from "../types/Project";
 
 export const findAllServices = async (): Promise<Service[]> => {
     const internalServices: Internal_ServiceDocument[] =
-        await ServiceModel.find().populate("image").exec();
+        await ServiceModel.find().populate("image").populate("project").exec();
     return internalServices.map(internalServiceToService);
 };
 
@@ -13,7 +15,10 @@ export const findServiceByName = async (
     name: string
 ): Promise<Service | null> => {
     const internalService: Internal_ServiceDocument | null =
-        await ServiceModel.findOne({ name }).populate("image").exec();
+        await ServiceModel.findOne({ name })
+            .populate("image")
+            .populate("project")
+            .exec();
     if (!internalService) {
         return null;
     }
@@ -90,6 +95,16 @@ const internalServiceToService = (
         tag: internalImage.tag,
         repository: internalImage.repository,
     };
+
+    const internalProject: Internal_ProjectDocument =
+        internalService.project as unknown as Internal_ProjectDocument;
+    let project: Project | undefined = undefined;
+    if (internalProject) {
+        project = {
+            id: internalProject._id.toString(),
+            name: internalProject.name,
+        };
+    }
     return {
         id: internalService._id.toString(),
         name: internalService.name,
@@ -101,6 +116,7 @@ const internalServiceToService = (
         environmentVariables: internalService.environmentVariables,
         order: internalService.order,
         internalName: internalService.internalName,
+        project: project,
         containerId: internalService.containerId,
     };
 };

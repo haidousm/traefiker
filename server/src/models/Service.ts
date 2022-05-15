@@ -3,6 +3,7 @@ import { ServiceStatus } from "../types/enums/ServiceStatus";
 import { EnvironmentVariable } from "../types/EnvironmentVariable";
 import { Redirect } from "../types/Redirect";
 import { io } from "../utils/socket";
+import ProjectModel from "./Project";
 export interface Internal_ServiceDocument {
     _id: mongoose.Schema.Types.ObjectId;
     name: string;
@@ -15,6 +16,7 @@ export interface Internal_ServiceDocument {
     containerId?: string;
     internalName?: string;
     order: number;
+    project: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
 }
 
@@ -64,15 +66,52 @@ const serviceSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    project: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Project",
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
 
+serviceSchema.pre(
+    "remove",
+    async function (this: Internal_ServiceDocument, next) {
+        const project = await ProjectModel.findById(this.project);
+        if (project) {
+            project.services = project.services.filter(
+                (service) => service.toString() !== this._id.toString()
+            );
+            await project.save();
+        }
+        next();
+    }
+);
+
+serviceSchema.pre(
+    "save",
+    async function (this: Internal_ServiceDocument, next) {
+        if (!this.project) {
+            // creates the default project if it doesn't exist (backward compatible with pre-project services)
+            let defaultProject = await ProjectModel.findOne({
+                name: "default",
+            }).exec();
+            if (!defaultProject) {
+                defaultProject = new ProjectModel({ name: "default" });
+                await defaultProject.save();
+            }
+            this.project = defaultProject._id;
+            defaultProject.services.push(this._id);
+            await defaultProject.save();
+        }
+        next();
+    }
+);
+
 serviceSchema.post(
     "save",
-
     function (
         this: HydratedDocument<Internal_ServiceDocument>,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

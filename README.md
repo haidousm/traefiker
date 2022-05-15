@@ -40,7 +40,7 @@ To contribute, please open an issue or pull request on [GitHub](https://github.c
 
 ## Possible TODOs:
 
--   [ ] Add support for using Traefiker as the source of truth vs Docker
+-   [x] Add support for using Traefiker as the source of truth vs Docker
 -   [ ] Add support for multiple projects (which contain multiple services)
 -   [ ] Add support for deploying on different physical machines from a single dashboard (using Docker's SSH)
 -   [ ] Add support for containerizing a GitHub repo (take in a repo name and clone it into a Docker image)

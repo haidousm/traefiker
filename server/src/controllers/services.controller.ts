@@ -322,7 +322,7 @@ export const updateServicesOrderHandler = async (
     }
 };
 
-const attachContainerToService = async (
+export const attachContainerToService = async (
     service: Service,
     container: Dockerode.Container
 ) => {
@@ -345,7 +345,7 @@ const attachContainerToService = async (
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const cleanUpOnError = async (service: Service, error: any) => {
+export const cleanUpOnError = async (service: Service, error: any) => {
     service.status = ServiceStatus.ERROR;
     await saveService(service);
     // istanbul ignore next

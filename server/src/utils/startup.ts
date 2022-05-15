@@ -4,13 +4,24 @@ import {
 } from "../services/images.service";
 import {
     deleteAllContainers,
+    findAllServices,
     findLastUsedOrder,
     saveService,
 } from "../services/services.service";
-import { getAllContainers, inspectContainerById } from "../../libs/docker";
+import {
+    createContainer,
+    deleteContainerByContainerId,
+    getAllContainers,
+    inspectContainerById,
+} from "../../libs/docker";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import { Redirect } from "../types/Redirect";
 import { EnvironmentVariable } from "../types/EnvironmentVariable";
+import {
+    attachContainerToService,
+    cleanUpOnError,
+} from "../controllers/services.controller";
+import logger from "./logger";
 
 export const useDockerAsSourceOfTruth = async () => {
     try {
@@ -68,6 +79,31 @@ export const useDockerAsSourceOfTruth = async () => {
     } catch (e) {
         console.log(e);
         process.exit(1);
+    }
+};
+
+export const useDBAsSourceOfTruth = async () => {
+    const containers = (await getAllContainers()).filter(
+        (container) =>
+            container.Names[0].includes("traefiker_") &&
+            !container.Names[0].includes("traefiker-client") &&
+            !container.Names[0].includes("traefiker-server")
+    );
+    for (const container of containers) {
+        await deleteContainerByContainerId(container.Id);
+    }
+    const services = await findAllServices();
+    for (const service of services) {
+        service.status = ServiceStatus.PULLING;
+        service.containerId = undefined;
+        await saveService(service);
+        logger.info(`Creating container for service ${service.name}`);
+        createContainer(
+            service,
+            service.image,
+            attachContainerToService,
+            cleanUpOnError
+        );
     }
 };
 

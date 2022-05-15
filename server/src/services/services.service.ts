@@ -2,8 +2,8 @@ import ServiceModel, { Internal_ServiceDocument } from "../models/Service";
 import { Image } from "../types/Image";
 import { Service } from "../types/Service";
 import ImageModel, { Internal_ImageDocument } from "../models/Image";
-import { Internal_ProjectDocument } from "../models/Project";
 import { Project } from "../types/Project";
+import { Internal_ProjectDocument } from "../models/Project";
 
 export const findAllServices = async (): Promise<Service[]> => {
     const internalServices: Internal_ServiceDocument[] =
@@ -82,6 +82,19 @@ export const deleteServiceByName = async (name: string) => {
 
 export const deleteAllContainers = async () => {
     return ServiceModel.deleteMany({}).exec();
+};
+
+export const findServicesByProjectId = async (
+    id: string
+): Promise<Service[]> => {
+    const internalServices: Internal_ServiceDocument[] =
+        await ServiceModel.find({
+            project: id,
+        })
+            .populate("image")
+            .populate("project")
+            .exec();
+    return internalServices.map(internalServiceToService);
 };
 
 const internalServiceToService = (

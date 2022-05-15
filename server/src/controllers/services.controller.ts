@@ -110,6 +110,9 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
         logger.info(`Service ${service.name} updated`);
         return res.json(service);
     } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
         return res.status(500).json({
             error: e,
         });
@@ -152,6 +155,9 @@ export const startServiceHandler = async (req: Request, res: Response) => {
         logger.info(`Service ${updatedService.name} started`);
         return res.json(updatedService);
     } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
         return res.status(500).json({
             error: e,
         });
@@ -197,6 +203,9 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
         logger.info(`Service ${updatedService.name} stopped`);
         return res.json(updatedService);
     } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
         return res.status(500).json({
             error: e,
         });
@@ -327,6 +336,7 @@ const attachContainerToService = async (
     });
     service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
+    service.internalName = `traefiker_${service.name}`;
     await saveService(service);
     // istanbul ignore next
     logger.info(

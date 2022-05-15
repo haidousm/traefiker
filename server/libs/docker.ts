@@ -95,6 +95,17 @@ export const getAllContainers = async (): Promise<ContainerInfo[]> => {
     return docker.listContainers({ all: true });
 };
 
+export const deleteContainerByContainerId = async (
+    containerId: string
+): Promise<void> => {
+    const container = docker.getContainer(containerId);
+    const containerInfo = await container.inspect();
+    if (containerInfo.State.Running) {
+        await container.stop();
+    }
+    return container.remove();
+};
+
 export const inspectContainerById = async (
     containerId: string
 ): Promise<ContainerInspectInfo> => {
@@ -106,6 +117,16 @@ const getSSLLabels = (name: string) => {
         [`traefik.http.routers.${name}.tls`]: "true",
         [`traefik.http.routers.${name}.tls.certresolver`]: "lets-encrypt",
     };
+};
+
+export const pruneSystem = async () => {
+    await docker.pruneContainers({
+        force: true,
+    });
+    await docker.pruneImages({
+        all: true,
+        force: true,
+    });
 };
 
 const transformHostsToLabel = (name: string, hosts: string[]) => {

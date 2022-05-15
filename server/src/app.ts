@@ -6,7 +6,10 @@ import connectDB from "./utils/db";
 import swaggerDocs from "./utils/swagger";
 import createServer from "./utils/server";
 import { io } from "./utils/socket";
-import { useDockerAsSourceOfTruth } from "./utils/startup";
+import {
+    useDBAsSourceOfTruth,
+    useDockerAsSourceOfTruth,
+} from "./utils/startup";
 
 const app = createServer();
 const httpServer = http.createServer(app);
@@ -23,7 +26,12 @@ httpServer.listen(port, async () => {
     logger.info(`Express server started on port ${port}`);
     await connectDB();
 
-    logger.info("Using Docker as source of truth");
-    await useDockerAsSourceOfTruth();
+    if (config.get<boolean>("DOCKER_SOURCE_OF_TRUTH")) {
+        logger.info("Using Docker as source of truth");
+        await useDockerAsSourceOfTruth();
+    } else {
+        logger.info("Using DB as source of truth");
+        await useDBAsSourceOfTruth();
+    }
     swaggerDocs(app, port);
 });

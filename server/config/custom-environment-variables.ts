@@ -1,4 +1,5 @@
 export default {
     PORT: "PORT",
     MONGO_URI: "MONGO_URI",
+    DOCKER_SOURCE_OF_TRUTH: "DOCKER_SOURCE_OF_TRUTH",
 };

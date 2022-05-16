@@ -165,21 +165,24 @@ function DashboardTableRowEditable({
                 <button
                     className="text-indigo-600 hover:text-indigo-900"
                     onClick={() => {
-                        if (!imageIdentifier?.includes(":")) {
+                        const regex =
+                            /^(.+)\/(.+):(.+)$|^(.+):(.+)$|^(.+)\/(.+)|^(.+)$/;
+                        const match = regex.exec(imageIdentifier);
+                        if (!match) {
                             alert("Please provide a valid image identifier");
                             return;
                         }
-                        const imageRepository = imageIdentifier.includes("/")
-                            ? imageIdentifier.split("/")[0]
-                            : "_";
-                        const imageName = imageIdentifier.split(":")[0];
-                        const imageTag = imageIdentifier.split(":")[1];
+                        const repository = match[1] ?? match[6] ?? "_";
+                        const name =
+                            match[2] ?? match[4] ?? match[7] ?? match[8];
+                        const tag = match[3] ?? match[5] ?? "latest";
+
                         saveClicked({
                             name: service?.name ?? tag,
                             image: {
-                                repository: imageRepository,
-                                name: imageName,
-                                tag: imageTag,
+                                repository: repository,
+                                name: name,
+                                tag: tag,
                             },
                             hosts:
                                 possibleHost !== ""

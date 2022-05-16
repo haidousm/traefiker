@@ -329,9 +329,12 @@ export const attachContainerToService = async (
     const containerInfo = await container.inspect();
     service.network = containerInfo.HostConfig.NetworkMode;
     service.environmentVariables = containerInfo.Config.Env.map((envString) => {
+        // TODO: split on first equal BUT NOT ALWAYS CORRECT
+        const i = envString.indexOf("=");
+        const [key, value] = [envString.slice(0, i), envString.slice(i + 1)];
         return {
-            key: envString.split("=")[0].trim(),
-            value: envString.split("=")[1].trim(),
+            key,
+            value,
         };
     });
     service.containerId = container.id;

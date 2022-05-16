@@ -76,6 +76,10 @@ export const stopContainer = async (service: Service) => {
         throw new Error("Container id is not set");
     }
     const container = docker.getContainer(service.containerId);
+    const containerInfo = await container.inspect();
+    if (!containerInfo.State.Running) {
+        return;
+    }
     return container.stop();
 };
 

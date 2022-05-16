@@ -15,7 +15,7 @@ function DashboardTableRowEditable({
     saveClicked,
     cancelClicked,
 }: Props) {
-    const [tag, setTag] = useState("");
+    const [name, setName] = useState("");
     const [imageIdentifier, setImageIdentifier] = useState<string>("");
     const [hosts, setHosts] = useState<string[]>([]);
     const [possibleHost, setPossibleHost] = useState("");
@@ -26,7 +26,7 @@ function DashboardTableRowEditable({
                 service.image.repository != "_"
                     ? `${service.image.repository}/${service.image.name}:${service.image.tag}`
                     : `${service.image.name}:${service.image.tag}`;
-            setTag(service.name);
+            setName(service.name);
             setImageIdentifier(imageIdentifier);
             setHosts(service.hosts);
         }
@@ -54,9 +54,9 @@ function DashboardTableRowEditable({
                         type="text"
                         className="w-full bg-transparent text-center outline-none "
                         placeholder="Service name.."
-                        value={tag}
+                        value={name}
                         onChange={(e) => {
-                            setTag(e.target.value);
+                            setName(e.target.value);
                         }}
                     />
                 </span>
@@ -172,17 +172,17 @@ function DashboardTableRowEditable({
                             alert("Please provide a valid image identifier");
                             return;
                         }
-                        const repository = match[1] ?? match[6] ?? "_";
-                        const name =
+                        const imageRepository = match[1] ?? match[6] ?? "_";
+                        const imageName =
                             match[2] ?? match[4] ?? match[7] ?? match[8];
-                        const tag = match[3] ?? match[5] ?? "latest";
+                        const imageTag = match[3] ?? match[5] ?? "latest";
 
                         saveClicked({
-                            name: service?.name ?? tag,
+                            name: service?.name ?? name,
                             image: {
-                                repository: repository,
-                                name: name,
-                                tag: tag,
+                                repository: imageRepository,
+                                name: imageName,
+                                tag: imageTag,
                             },
                             hosts:
                                 possibleHost !== ""

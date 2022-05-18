@@ -123,3 +123,28 @@ export const UpdateServicesOrderRequestSchema = object({
 export type UpdateServicesOrderRequest = z.infer<
     typeof UpdateServicesOrderRequestSchema
 >;
+
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *   RecreateServiceRequest:
+ *      type: object
+ *      properties:
+ *          image:
+ *              type: string
+ */
+export const RecreateServiceRequestSchema = object({
+    body: object({
+        image: z.union([
+            string({
+                required_error: "Image is required",
+            }),
+            z.undefined(),
+        ]),
+    }),
+});
+
+export type RecreateServiceRequest = z.infer<
+    typeof RecreateServiceRequestSchema
+>;

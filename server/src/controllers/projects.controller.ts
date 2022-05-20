@@ -14,9 +14,7 @@ export const getAllServicesForProjectHandler = async (
         if (!project) {
             return res.status(404).send("Project not found");
         }
-        const services: Service[] = await findServicesByProjectId(
-            project._id.toString()
-        );
+        const services: Service[] = await findServicesByProjectId(project.id);
         return res.json(services);
     } catch (e) {
         if (e instanceof Error) {

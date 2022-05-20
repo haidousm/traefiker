@@ -351,10 +351,10 @@ export const attachContainerToService = async (
     service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
     service.internalName = `traefiker_${service.name}`;
-    // istanbul ignore next
     logger.info(
         `Container ${container.id} attached to service ${service.name}`
     );
+    // istanbul ignore next
     if (start) {
         await startContainer(service);
         service.status = ServiceStatus.RUNNING;

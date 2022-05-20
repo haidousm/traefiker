@@ -11,6 +11,6 @@
  *              type: string
  */
 export interface Project {
-    id?: string;
+    id: string;
     name: string;
 }

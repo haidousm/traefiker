@@ -38,10 +38,45 @@ const mockService: Service = {
 const app = createServer();
 
 describe("projects", () => {
+    describe("get all projects", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app).get("/projects");
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given user is logged in", () => {
+            beforeEach(() => {
+                jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                    () => {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            next();
+                        };
+                    }
+                );
+            });
+
+            it("should return all projects", async () => {
+                jest.spyOn(ProjectsService, "findAllProjects")
+                    // @ts-ignore
+                    .mockReturnValueOnce([mockProject]);
+
+                const response = await supertest(app).get("/projects");
+                expect(response.statusCode).toBe(200);
+                expect(response.body).toStrictEqual([mockProject]);
+            });
+        });
+    });
     describe("get all services for project", () => {
         describe("given the user is not logged in", () => {
             it("should return 401", async () => {
-                const response = await supertest(app).get("/projects/services");
+                const response = await supertest(app).get(
+                    "/projects/default/services"
+                );
                 expect(response.status).toBe(401);
             });
         });

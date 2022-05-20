@@ -1,7 +1,33 @@
 import express from "express";
-import { getAllServicesForProjectHandler } from "../controllers/projects.controller";
+import {
+    getAllProjectsHandler,
+    getAllServicesForProjectHandler,
+} from "../controllers/projects.controller";
 
 const router = express.Router();
+
+/**
+ * @openapi
+ * '/projects':
+ *  get:
+ *     tags:
+ *     - Projects
+ *     summary: Returns all projects
+ *     responses:
+ *          200:
+ *              description: Success
+ *              content:
+ *                  application/json:
+ *                      type: array
+ *                      items:
+ *                          $ref: '#/components/schemas/Project'
+ *          400:
+ *              description: Bad request
+ *          401:
+ *              description: Unauthorized
+ */
+
+router.get("/", getAllProjectsHandler);
 
 /**
  * @openapi

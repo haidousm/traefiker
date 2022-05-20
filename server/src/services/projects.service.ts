@@ -2,6 +2,13 @@ import ProjectModel from "../models/Project";
 import { Internal_ProjectDocument } from "../models/Project";
 import { Project } from "../types/Project";
 
+export const findAllProjects = async () => {
+    const internalProjects: Internal_ProjectDocument[] =
+        await ProjectModel.find({}).exec();
+    return internalProjects.map((internalProject) =>
+        internalProjectToProject(internalProject)
+    );
+};
 export const findProjectByName = async (name: string) => {
     const internalProject = await ProjectModel.findOne({ name }).exec();
     if (!internalProject) {

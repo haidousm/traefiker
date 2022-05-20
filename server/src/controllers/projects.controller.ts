@@ -1,8 +1,17 @@
 import { Request, Response } from "express";
-import { findProjectByName } from "../services/projects.service";
+import {
+    findAllProjects,
+    findProjectByName,
+} from "../services/projects.service";
 import { findServicesByProjectId } from "../services/services.service";
+import { Project } from "../types/Project";
 import { Service } from "../types/Service";
 import logger from "../utils/logger";
+
+export const getAllProjectsHandler = async (req: Request, res: Response) => {
+    const projects: Project[] = await findAllProjects();
+    return res.json(projects);
+};
 
 export const getAllServicesForProjectHandler = async (
     req: Request,

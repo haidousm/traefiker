@@ -3,10 +3,14 @@ import {
     findAllProjects,
     findProjectByName,
 } from "../services/projects.service";
-import { findServicesByProjectId } from "../services/services.service";
+import {
+    findServicesByProjectId,
+    findServiceByName,
+} from "../services/services.service";
 import { Project } from "../types/Project";
 import { Service } from "../types/Service";
 import logger from "../utils/logger";
+import { saveService } from "../services/services.service";
 
 export const getAllProjectsHandler = async (req: Request, res: Response) => {
     const projects: Project[] = await findAllProjects();
@@ -25,6 +29,35 @@ export const getAllServicesForProjectHandler = async (
         }
         const services: Service[] = await findServicesByProjectId(project.id);
         return res.json(services);
+    } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
+        return res.status(500).json({
+            error: e,
+        });
+    }
+};
+
+export const addServiceToProjectHandler = async (
+    req: Request,
+    res: Response
+) => {
+    try {
+        const projectName = req.params.projectName;
+        const serviceName = req.params.serviceName;
+
+        const project = await findProjectByName(projectName);
+        if (!project) {
+            return res.status(404).send("Project not found");
+        }
+
+        const service = await findServiceByName(serviceName);
+        if (!service) {
+            return res.status(404).send("Service not found");
+        }
+        service.project = project;
+        return res.json(await saveService(service));
     } catch (e) {
         if (e instanceof Error) {
             logger.error(e.message);

@@ -17,6 +17,11 @@ const mockProject: Project = {
     name: "default",
 };
 
+const mockProject1: Project = {
+    id: "12512512423",
+    name: "ProjectA",
+};
+
 const mockImage: Image = {
     id: "5312949241",
     name: "httpd",
@@ -129,6 +134,100 @@ describe("projects", () => {
                         });
                     const response = await supertest(app).get(
                         "/projects/default/services"
+                    );
+                    expect(response.statusCode).toBe(500);
+                });
+            });
+        });
+    });
+    describe("add service to project", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app).put(
+                    "/projects/ProjectA/httpd"
+                );
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given user is logged in", () => {
+            beforeEach(() => {
+                jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                    () => {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            next();
+                        };
+                    }
+                );
+            });
+
+            describe("given the project does not exist", () => {
+                it("should return 404", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(null);
+
+                    const response = await supertest(app).put(
+                        "/projects/ProjectB/httpd"
+                    );
+                    expect(response.statusCode).toBe(404);
+                });
+            });
+
+            describe("given the service does not exist", () => {
+                it("should return 404", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockProject1);
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(null);
+
+                    const response = await supertest(app).put(
+                        "/projects/ProjectA/httpd_1"
+                    );
+                    expect(response.statusCode).toBe(404);
+                });
+            });
+            describe("given both project and service exist", () => {
+                it("should return 200", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockProject1);
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockService);
+                    jest.spyOn(ServicesService, "saveService")
+                        // @ts-ignore
+                        .mockImplementationOnce((service) => {
+                            service.project = mockProject1;
+                            return service;
+                        });
+                    const response = await supertest(app).put(
+                        "/projects/ProjectA/httpd1"
+                    );
+                    expect(response.statusCode).toBe(200);
+                    expect(response.body.project).toStrictEqual(mockProject1);
+                });
+            });
+            describe("given saving service throws an error", () => {
+                it("should return 500", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockProject1);
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockService);
+                    jest.spyOn(ServicesService, "saveService")
+                        // @ts-ignore
+                        .mockImplementationOnce(() => {
+                            throw new Error("oopsie daisie x2!");
+                        });
+                    const response = await supertest(app).put(
+                        "/projects/ProjectA/httpd1"
                     );
                     expect(response.statusCode).toBe(500);
                 });

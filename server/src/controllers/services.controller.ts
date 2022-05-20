@@ -18,6 +18,7 @@ import { ServiceStatus } from "../types/enums/ServiceStatus";
 import Dockerode from "dockerode";
 import { findLastUsedOrder } from "../services/services.service";
 import logger from "../utils/logger";
+import { bindTrailingArgs } from "../utils/misc";
 
 export const getAllServicesHandler = async (
     _req: Request,
@@ -266,15 +267,24 @@ export const recreateServiceHandler = async (req: Request, res: Response) => {
             });
         }
         await deleteContainer(service);
+
+        const image = req.body.image
+            ? await getOrCreateImageByImageIdentifier(req.body.image)
+            : service.image;
+        service.image = image;
         await saveService(service);
+        const attachWithRestart = bindTrailingArgs(
+            attachContainerToService,
+            true
+        );
         createContainer(
             service,
             service.image,
-            attachContainerToService,
+            attachWithRestart,
             cleanUpOnError
         );
         logger.info(`Service ${service.name} recreated`);
-        return res.sendStatus(200);
+        return res.json(service);
     } catch (e) {
         if (e instanceof Error) {
             logger.error(e.message);
@@ -324,24 +334,32 @@ export const updateServicesOrderHandler = async (
 
 export const attachContainerToService = async (
     service: Service,
-    container: Dockerode.Container
+    container: Dockerode.Container,
+    start = false
 ) => {
     const containerInfo = await container.inspect();
     service.network = containerInfo.HostConfig.NetworkMode;
     service.environmentVariables = containerInfo.Config.Env.map((envString) => {
+        // TODO: split on first equal BUT NOT ALWAYS CORRECT
+        const i = envString.indexOf("=");
+        const [key, value] = [envString.slice(0, i), envString.slice(i + 1)];
         return {
-            key: envString.split("=")[0].trim(),
-            value: envString.split("=")[1].trim(),
+            key,
+            value,
         };
     });
     service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
     service.internalName = `traefiker_${service.name}`;
-    await saveService(service);
     // istanbul ignore next
     logger.info(
         `Container ${container.id} attached to service ${service.name}`
     );
+    if (start) {
+        await startContainer(service);
+        service.status = ServiceStatus.RUNNING;
+    }
+    await saveService(service);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,6 +1,9 @@
 import express from "express";
 import validateResource from "../middleware/validateResource";
-import { UpdateServicesOrderRequestSchema } from "../schemas/services.schema";
+import {
+    RecreateServiceRequestSchema,
+    UpdateServicesOrderRequestSchema,
+} from "../schemas/services.schema";
 import {
     CreateServiceRequestSchema,
     UpdateServiceRequestSchema,
@@ -203,6 +206,12 @@ router.delete("/:name/delete", deleteServiceHandler);
  *               in: path
  *               required: true
  *               description: Service name
+ *          requestBody:
+ *              required: false
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/RecreateServiceRequest'
  *          responses:
  *              200:
  *                  description: Success
@@ -213,7 +222,11 @@ router.delete("/:name/delete", deleteServiceHandler);
  *              401:
  *                  description: Unauthorized
  */
-router.put("/:name/recreate", recreateServiceHandler);
+router.put(
+    "/:name/recreate",
+    validateResource(RecreateServiceRequestSchema),
+    recreateServiceHandler
+);
 
 /**
  * @openapi

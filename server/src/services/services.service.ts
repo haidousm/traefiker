@@ -59,8 +59,14 @@ export const saveService = async (service: Service) => {
         await internalService.save();
         return internalServiceToService(internalService);
     }
+    // todo: refactor this dumb ass code
+    const internalImage = await ImageModel.findById(service.image.id).exec();
+    if (!internalImage) {
+        throw new Error("Image not found");
+    }
     internalService.name = service.name;
     internalService.status = service.status;
+    internalService.image = internalImage._id;
     internalService.network = service.network;
     internalService.hosts = service.hosts;
     internalService.redirects = service.redirects;

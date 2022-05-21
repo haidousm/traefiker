@@ -29,7 +29,11 @@ const ProjectDashboard: NextPage = () => {
                         response.data
                     );
                     if (anotherResponse.status == 200) {
-                        setServices(anotherResponse.data);
+                        setServices(
+                            anotherResponse.data.sort(
+                                (a, b) => a.order - b.order
+                            )
+                        );
                     } else {
                         router.push("/500");
                     }

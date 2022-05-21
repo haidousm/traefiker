@@ -27,7 +27,7 @@ function ProjectCard({
         (async () => {
             const response = await getServicesForProject(project);
             if (response.status == 200) {
-                setServices(response.data);
+                setServices(response.data.sort((a, b) => a.order - b.order));
             } else {
                 router.push("500");
             }

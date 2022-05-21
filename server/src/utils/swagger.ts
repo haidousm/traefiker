@@ -4,7 +4,7 @@ import swaggerUi from "swagger-ui-express";
 import { version } from "../../package.json";
 import logger from "./logger";
 
-const options: swaggerJsdoc.Options = {
+const options: swaggerJsdoc.OAS3Options = {
     definition: {
         openapi: "3.0.0",
         info: {
@@ -20,7 +20,16 @@ const options: swaggerJsdoc.Options = {
                 },
             },
         },
-        basePath: "/api", // temp fix to work with deployment (not gonna work locally)
+        servers: [
+            {
+                url: "https://moussa.sh/api",
+                description: "Production Server",
+            },
+            {
+                url: "http://localhost:8010",
+                description: "Localhost",
+            },
+        ],
         security: [
             {
                 bearerAuth: [],

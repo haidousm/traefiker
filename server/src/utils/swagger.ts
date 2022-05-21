@@ -20,6 +20,7 @@ const options: swaggerJsdoc.Options = {
                 },
             },
         },
+        basePath: "/api", // temp fix to work with deployment (not gonna work locally)
         security: [
             {
                 bearerAuth: [],

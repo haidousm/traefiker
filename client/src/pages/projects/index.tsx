@@ -48,6 +48,7 @@ const Projects: NextPage = () => {
 
     const updateProjectNameClicked = async (project: Project, name: string) => {
         await updateProjectName(project.name, name);
+        getAllProjects();
     };
 
     return (

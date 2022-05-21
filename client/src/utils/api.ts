@@ -111,9 +111,9 @@ export const deleteProjectByName = async (name: string) => {
 };
 
 export const updateProjectName = async (oldName: string, newName: string) => {
-    return authorizedAxios().put(
-        `${ROOT_API_URL}/projects/${oldName}/${newName}`
-    );
+    return authorizedAxios().put(`${ROOT_API_URL}/projects/${oldName}`, {
+        name: newName,
+    });
 };
 
 export const getServicesForProject = async (

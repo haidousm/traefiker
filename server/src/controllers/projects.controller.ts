@@ -3,6 +3,7 @@ import {
     createProject,
     findAllProjects,
     findProjectByName,
+    saveProject,
 } from "../services/projects.service";
 import {
     findServicesByProjectId,
@@ -34,6 +35,25 @@ export const createProjectHandler = async (req: Request, res: Response) => {
         const projectName = req.params.projectName;
         const project = await createProject(projectName);
         return res.json(project);
+    } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
+        return res.status(500).json({
+            error: e,
+        });
+    }
+};
+
+export const updateProjectHandler = async (req: Request, res: Response) => {
+    try {
+        const projectName = req.params.projectName;
+        const project = await findProjectByName(projectName);
+        if (!project) {
+            return res.sendStatus(404);
+        }
+        project.name = req.body.name;
+        return res.json(await saveProject(project));
     } catch (e) {
         if (e instanceof Error) {
             logger.error(e.message);

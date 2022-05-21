@@ -2,6 +2,7 @@ import express from "express";
 import {
     deleteProjectHandler,
     getProjectHandler,
+    updateProjectHandler,
 } from "../controllers/projects.controller";
 import {
     addServiceToProjectHandler,
@@ -88,6 +89,40 @@ router.get("/:projectName", getProjectHandler);
  */
 
 router.post("/:projectName", createProjectHandler);
+
+/**
+ * @openapi
+ * '/projects/{projectName}':
+ *      put:
+ *          tags:
+ *              - Projects
+ *          summary: update project name
+ *          security:
+ *              - bearerAuth: []
+ *          parameters:
+ *              - name: projectName
+ *                in: path
+ *                required: true
+ *                description: Project name
+ *          requestBody:
+ *              required: true
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          name:
+ *                              type: string
+ *          responses:
+ *              200:
+ *                  description: Success
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              $ref: '#/components/schemas/Project'
+ *              401:
+ *                  description: Unauthorized
+ */
+
+router.put("/:projectName", updateProjectHandler);
 
 /**
  * @openapi

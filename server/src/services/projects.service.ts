@@ -17,6 +17,16 @@ export const findProjectByName = async (name: string) => {
     return internalProjectToProject(internalProject);
 };
 
+export const saveProject = async (project: Project) => {
+    const internalProject = await ProjectModel.findById(project.id).exec();
+    if (!internalProject) {
+        throw new Error("project not found");
+    }
+    internalProject.name = project.name;
+    await internalProject.save();
+    return internalProjectToProject(internalProject);
+};
+
 export const createProject = async (name: string) => {
     if (await findProjectByName(name)) {
         throw new Error(`Project ${name} already exists`);

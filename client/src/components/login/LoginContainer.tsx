@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { login } from "../../utils/api";
 
@@ -5,12 +6,13 @@ function LoginContainer() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
+    const router = useRouter();
     const loginClicked = async () => {
         const response = await login(username, password);
         if (response.status === 200) {
             const token = response.data.token;
             document.cookie = `token=${token}`;
-            window.location.href = "/dashboard";
+            router.push("/");
         }
     };
 

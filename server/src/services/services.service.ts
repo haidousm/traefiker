@@ -37,29 +37,6 @@ export const findLastUsedOrder = async (): Promise<number> => {
 
 export const saveService = async (service: Service) => {
     const internalService = await ServiceModel.findById(service.id).exec();
-    if (!internalService) {
-        const internalImage = await ImageModel.findById(
-            service.image.id
-        ).exec();
-        if (!internalImage) {
-            throw new Error("Image not found");
-        }
-        const internalService = new ServiceModel({
-            name: service.name,
-            status: service.status,
-            image: internalImage,
-            network: service.network,
-            hosts: service.hosts,
-            redirects: service.redirects,
-            environmentVariables: service.environmentVariables,
-            order: service.order,
-            internalName: service.internalName,
-            containerId: service.containerId,
-        });
-        await internalService.save();
-        return internalServiceToService(internalService);
-    }
-    // todo: refactor this dumb ass code
     const internalImage = await ImageModel.findById(service.image.id).exec();
     if (!internalImage) {
         throw new Error("Image not found");
@@ -71,7 +48,24 @@ export const saveService = async (service: Service) => {
     if (!internalProject) {
         throw new Error("Project not found");
     }
-
+    if (!internalService) {
+        const internalService = new ServiceModel({
+            name: service.name,
+            status: service.status,
+            image: internalImage,
+            network: service.network,
+            hosts: service.hosts,
+            redirects: service.redirects,
+            environmentVariables: service.environmentVariables,
+            order: service.order,
+            internalName: service.internalName,
+            project: service.project?.id,
+            containerId: service.containerId,
+        });
+        await internalService.save();
+        return internalServiceToService(internalService);
+    }
+    // todo: refactor this dumb ass code
     internalService.name = service.name;
     internalService.status = service.status;
     internalService.image = internalImage._id;

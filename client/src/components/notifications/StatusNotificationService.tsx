@@ -1,17 +1,25 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { Fragment, useEffect, useRef } from "react";
-import { useRecoilState } from "recoil";
-import { servicesState } from "../../atoms/atoms";
+import React, {
+    Dispatch,
+    Fragment,
+    SetStateAction,
+    useEffect,
+    useRef,
+} from "react";
 import { io, Socket } from "socket.io-client";
 import getConfig from "next/config";
 import { ServiceStatus } from "../../types/enums/ServiceStatus";
+import { Service } from "../../types/Service";
 
 const { publicRuntimeConfig } = getConfig();
 const ROOT_API_URL: string =
     publicRuntimeConfig.NEXT_PUBLIC_API_URL ?? "http://localhost:8010";
 
-function StatusNotificationService() {
-    const [_, setServices] = useRecoilState(servicesState);
+interface Props {
+    setServices: Dispatch<SetStateAction<Service[]>>;
+}
+
+function StatusNotificationService({ setServices }: Props) {
     const socketRef = useRef<Socket>();
     useEffect(() => {
         if (socketRef.current == null) {

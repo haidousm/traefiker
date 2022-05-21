@@ -1,8 +1,5 @@
 import { Dialog } from "@headlessui/react";
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { settingsModalState } from "../../atoms/atoms";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Service } from "../../types/Service";
 import { Redirect } from "../../types/Redirect";
 import { updateService } from "../../utils/api";
@@ -10,27 +7,21 @@ import { EnvironmentVariable } from "../../types/EnvironmentVariable";
 import EnvTable from "./env-table/EnvTable";
 import RedirsTable from "./redirs-table/RedirsTable";
 
-function ServiceSettingsModal() {
-    const [settingsModalOptions, setSettingsModalOptions] =
-        useRecoilState(settingsModalState);
+interface Props {
+    service: Service;
+    setServiceToConfigure: Dispatch<SetStateAction<Service | undefined>>;
+}
 
-    const [service, setService] = useState<Service>(
-        settingsModalOptions.service
-    );
+function ServiceSettingsModal({ service, setServiceToConfigure }: Props) {
     const [redirects, setRedirects] = useState<Redirect[]>([]);
     const [environments, setEnvironments] = useState<EnvironmentVariable[]>([]);
 
     useEffect(() => {
-        setService(settingsModalOptions.service);
-        setRedirects(settingsModalOptions.service.redirects ?? []);
-        setEnvironments(
-            settingsModalOptions.service.environmentVariables ?? []
-        );
-    }, [settingsModalOptions.service]);
+        setRedirects(service.redirects ?? []);
+        setEnvironments(service.environmentVariables ?? []);
+    }, [service]);
 
     const saveClicked = async () => {
-        closeModal();
-
         const noIdsRedirects = redirects!.map((redirect) => {
             return {
                 from: redirect.from,
@@ -50,18 +41,16 @@ function ServiceSettingsModal() {
             redirects: noIdsRedirects,
             environmentVariables: noIdsEnvironments,
         });
+        closeModal();
     };
 
     const closeModal = () => {
-        setSettingsModalOptions((state) => ({
-            ...state,
-            isEditingSettings: false,
-        }));
+        setServiceToConfigure(undefined);
     };
 
     return (
         <Dialog
-            open={settingsModalOptions.isEditingSettings}
+            open={true}
             onClose={() => {}}
             className="fixed inset-0 z-10 overflow-y-auto"
         >
@@ -71,18 +60,13 @@ function ServiceSettingsModal() {
                 {service !== undefined ? (
                     <div className="relative mx-auto flex w-3/4 flex-col items-center justify-center rounded bg-gray-800 p-4 shadow-lg ">
                         <RedirsTable
-                            redirects={
-                                settingsModalOptions.service.redirects ?? []
-                            }
+                            redirects={service.redirects ?? []}
                             handleUpdateData={(data: Redirect[]) => {
                                 setRedirects(data);
                             }}
                         />
                         <EnvTable
-                            environments={
-                                settingsModalOptions.service
-                                    .environmentVariables ?? []
-                            }
+                            environments={service.environmentVariables ?? []}
                             handleUpdateData={(data: EnvironmentVariable[]) => {
                                 setEnvironments(data);
                             }}

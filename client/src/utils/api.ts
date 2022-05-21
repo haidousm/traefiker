@@ -27,14 +27,17 @@ const getServices = async () => {
 };
 
 const createService = async (service: Service) => {
-    return await authorizedAxios().post(`/services/create`, {
-        name: service.name,
-        image:
-            service.image.repository != "_"
-                ? `${service.image.repository}/${service.image.name}:${service.image.tag}`
-                : `${service.image.name}:${service.image.tag}`,
-        hosts: service.hosts,
-    });
+    return (
+        await authorizedAxios().post(`/services/create`, {
+            name: service.name,
+            image:
+                service.image.repository != "_"
+                    ? `${service.image.repository}/${service.image.name}:${service.image.tag}`
+                    : `${service.image.name}:${service.image.tag}`,
+            hosts: service.hosts,
+            project: service.project?.name,
+        })
+    ).data;
 };
 
 const updateService = async (service: Service) => {
@@ -79,8 +82,26 @@ const login = async (username: string, password: string) => {
     });
 };
 
-export const getProjects = async () => {
+export const getProjects = async (): Promise<Project[]> => {
     return (await authorizedAxios().get(`${ROOT_API_URL}/projects`, {})).data;
+};
+
+export const getServicesForProject = async (projectName: string) => {
+    return (
+        await authorizedAxios().get(
+            `${ROOT_API_URL}/projects/${projectName}/services`,
+            {}
+        )
+    ).data;
+};
+
+export const moveServiceToProject = async (
+    projectName: string,
+    serviceName: string
+) => {
+    return await authorizedAxios().put(
+        `${ROOT_API_URL}/projects/${projectName}/${serviceName}`
+    );
 };
 
 export {

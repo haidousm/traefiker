@@ -5,16 +5,19 @@ import passport from "passport";
 
 import * as ServicesService from "../services/services.service";
 import * as ImagesService from "../services/images.service";
+import * as ProjectsService from "../services/projects.service";
 import * as DockerLib from "../../libs/docker";
 import { NextFunction, Request, Response } from "express";
 import { Service } from "../types/Service";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import { Image } from "../types/Image";
+import { Project } from "../types/Project";
 
 const createServiceRequest = {
     name: "httpd",
     image: "httpd",
     hosts: ["httpd.haidousm.com"],
+    project: "default",
 };
 
 const invalidCreateServiceRequest = {
@@ -68,6 +71,11 @@ const invalidUpdateRequest = {
     ],
 };
 
+const mockProject: Project = {
+    id: "1249124912",
+    name: "default",
+};
+
 const createdImage: Image = {
     id: "5312949241",
     name: "httpd",
@@ -83,6 +91,7 @@ const createdService: Service = {
     redirects: [],
     environmentVariables: [],
     order: 1,
+    project: mockProject,
 };
 
 const createdContainer = {
@@ -182,6 +191,10 @@ describe("services", () => {
                         // @ts-ignore
                         .mockReturnValueOnce(createdImage);
 
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockProject);
+
                     jest.spyOn(ServicesService, "findLastUsedOrder")
                         //@ts-ignore
                         .mockReturnValueOnce(0);
@@ -256,6 +269,9 @@ describe("services", () => {
                         // @ts-ignore
                         .mockReturnValueOnce(createdImage);
 
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockProject);
                     jest.spyOn(ServicesService, "findLastUsedOrder")
                         //@ts-ignore
                         .mockReturnValueOnce(0);
@@ -280,7 +296,7 @@ describe("services", () => {
                 });
             });
             describe("given the image does not exist", () => {
-                it("should return a 400", async () => {
+                it("should return a 500", async () => {
                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
                         () => {
                             return (
@@ -303,6 +319,10 @@ describe("services", () => {
                     )
                         // @ts-ignore
                         .mockReturnValueOnce(createdImage);
+
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockProject);
 
                     jest.spyOn(ServicesService, "findLastUsedOrder")
                         //@ts-ignore

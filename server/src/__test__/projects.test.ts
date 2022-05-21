@@ -336,6 +336,94 @@ describe("projects", () => {
             });
         });
     });
+    describe("update project name", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app)
+                    .put("/projects/ProjectA")
+                    .send({
+                        name: "ProjectB",
+                    });
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given user is logged in", () => {
+            beforeEach(() => {
+                jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                    () => {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            next();
+                        };
+                    }
+                );
+            });
+
+            describe("given the does not exist", () => {
+                it("should return 404", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(null);
+
+                    const response = await supertest(app)
+                        .put("/projects/ProjectA")
+                        .send({
+                            name: "ProjectB",
+                        });
+                    expect(response.statusCode).toBe(404);
+                });
+            });
+
+            describe("given the project does exist", () => {
+                it("should return 200", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(() => {
+                            return mockProject;
+                        });
+                    jest.spyOn(ProjectsService, "saveProject")
+                        // @ts-ignore
+                        .mockImplementationOnce(() => {
+                            return {
+                                id: mockProject.id,
+                                name: "ProjectB",
+                            };
+                        });
+                    const response = await supertest(app)
+                        .put("/projects/ProjectA")
+                        .send({
+                            name: "ProjectB",
+                        });
+                    expect(response.statusCode).toBe(200);
+                    expect(response.body.id).toBe(mockProject.id);
+                    expect(response.body.name).toBe("ProjectB");
+                });
+            });
+            describe("given saving the project throws", () => {
+                it("should return 500", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(() => {
+                            return mockProject;
+                        });
+                    jest.spyOn(ProjectsService, "saveProject")
+                        // @ts-ignore
+                        .mockImplementationOnce(() => {
+                            throw new Error("project not found");
+                        });
+                    const response = await supertest(app)
+                        .put("/projects/ProjectA")
+                        .send({
+                            name: "ProjectB",
+                        });
+                    expect(response.statusCode).toBe(500);
+                });
+            });
+        });
+    });
     describe("delete a project", () => {
         describe("given the user is not logged in", () => {
             it("should return 401", async () => {

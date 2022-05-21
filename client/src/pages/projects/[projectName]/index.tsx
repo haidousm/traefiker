@@ -16,24 +16,27 @@ const ProjectDashboard: NextPage = () => {
     const [services, setServices] = useState<Service[]>([]);
     const [project, setProject] = useState<Project>();
     const [serviceToConfigure, setServiceToConfigure] = useState<Service>();
-
     const router = useRouter();
 
     useEffect(() => {
         (async () => {
             const projectName: string = router.query.projectName as string;
-            const response = await getProjectByName(projectName);
-            if (response.status == 200) {
-                setProject(response.data);
-                const anotherResponse = await getServicesForProject(
-                    response.data
-                );
-                if (anotherResponse.status == 200) {
-                    setServices(anotherResponse.data);
+            try {
+                const response = await getProjectByName(projectName);
+                if (response.status == 200) {
+                    setProject(response.data);
+                    const anotherResponse = await getServicesForProject(
+                        response.data
+                    );
+                    if (anotherResponse.status == 200) {
+                        setServices(anotherResponse.data);
+                    } else {
+                        router.push("/500");
+                    }
                 } else {
                     router.push("/500");
                 }
-            } else {
+            } catch (e) {
                 router.push("/500");
             }
         })();

@@ -97,7 +97,23 @@ export const getProjects = async (): Promise<AxiosResponse<Project[]>> => {
 export const getProjectByName = async (
     name: string
 ): Promise<AxiosResponse<Project>> => {
-    return authorizedAxios().get(`${ROOT_API_URL}/projects/${name}`, {});
+    return authorizedAxios().get(`${ROOT_API_URL}/projects/${name}`);
+};
+
+export const createProject = async (
+    name: string
+): Promise<AxiosResponse<Project>> => {
+    return authorizedAxios().post(`${ROOT_API_URL}/projects/${name}`);
+};
+
+export const deleteProjectByName = async (name: string) => {
+    return authorizedAxios().delete(`${ROOT_API_URL}/projects/${name}`);
+};
+
+export const updateProjectName = async (oldName: string, newName: string) => {
+    return authorizedAxios().put(
+        `${ROOT_API_URL}/projects/${oldName}/${newName}`
+    );
 };
 
 export const getServicesForProject = async (

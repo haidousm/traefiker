@@ -18,7 +18,7 @@ function ProjectStatusIndicatorRectangle({ serviceStatus }: Props) {
     };
     return (
         <div
-            className={`h-3 w-3 ${getStatusIndicatorColor(serviceStatus)}`}
+            className={`m-1 h-3 w-3 ${getStatusIndicatorColor(serviceStatus)}`}
         ></div>
     );
 }

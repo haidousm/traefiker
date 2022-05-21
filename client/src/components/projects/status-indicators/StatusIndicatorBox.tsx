@@ -1,10 +1,10 @@
-import { ServiceStatus } from "../../types/enums/ServiceStatus";
+import { ServiceStatus } from "../../../types/enums/ServiceStatus";
 
 interface Props {
     serviceStatus: ServiceStatus;
 }
 
-function StatusIndicatorBox({ serviceStatus }: Props) {
+function ProjectStatusIndicatorRectangle({ serviceStatus }: Props) {
     const getStatusIndicatorColor = (serviceStatus: ServiceStatus) => {
         switch (+serviceStatus) {
             case ServiceStatus.RUNNING:
@@ -23,4 +23,4 @@ function StatusIndicatorBox({ serviceStatus }: Props) {
     );
 }
 
-export default StatusIndicatorBox;
+export default ProjectStatusIndicatorRectangle;

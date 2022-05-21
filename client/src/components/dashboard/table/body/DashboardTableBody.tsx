@@ -5,10 +5,10 @@ import { useRecoilState } from "recoil";
 import {
     isCreatingServiceState,
     loadingFlagsState,
-} from "../../../atoms/atoms";
-import { Project } from "../../../types/Project";
+} from "../../../../atoms/atoms";
+import { Project } from "../../../../types/Project";
 
-import { Service } from "../../../types/Service";
+import { Service } from "../../../../types/Service";
 import {
     createService,
     deleteService,
@@ -17,10 +17,10 @@ import {
     stopService,
     updateService,
     updateServiceOrdering,
-} from "../../../utils/api";
-import SkeletonRow from "../../loading/SkeletonRow";
-import DashboardTableRow from "./DashboardTableRow";
-import DashboardTableRowEditable from "./DashboardTableRowEditable";
+} from "../../../../utils/api";
+import SkeletonRow from "../../../loading/SkeletonRow";
+import DashboardTableRow from "../rows/DashboardTableRow";
+import DashboardTableRowEditable from "../rows/DashboardTableRowEditable";
 
 interface Props {
     columns: {
@@ -102,13 +102,16 @@ function DashboardTableBody({
                 creatingService: true,
             });
             service.project = project;
-            const createdService = await createService(service);
-            await addServiceToProject(project.name, service.name);
-            await parentSetServices([...services, createdService]);
-            setLoadingFlags({
-                ...loadingFlags,
-                creatingService: false,
-            });
+            const response = await createService(service);
+            if (response.status == 200) {
+                const createdService = response.data;
+                await addServiceToProject(project.name, service.name);
+                await parentSetServices([...services, createdService]);
+                setLoadingFlags({
+                    ...loadingFlags,
+                    creatingService: false,
+                });
+            }
         }
     };
     const cancelClicked = () => {

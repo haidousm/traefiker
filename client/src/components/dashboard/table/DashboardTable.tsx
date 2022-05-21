@@ -1,5 +1,5 @@
-import DashboardTableHeader from "./DashboardTableHeader";
-import DashboardTableBody from "./DashboardTableBody";
+import DashboardTableHeader from "./header/DashboardTableHeader";
+import DashboardTableBody from "./body/DashboardTableBody";
 import { Service } from "../../../types/Service";
 import { Project } from "../../../types/Project";
 import { Dispatch, SetStateAction } from "react";

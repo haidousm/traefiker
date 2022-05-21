@@ -5,7 +5,7 @@ import { Project } from "../../types/Project";
 import { Service } from "../../types/Service";
 import { getServicesForProject } from "../../utils/api";
 import StatusNotificationService from "../notifications/StatusNotificationService";
-import StatusIndicatorBox from "./StatusIndicatorBox";
+import ProjectStatusIndicatorRectangle from "./status-indicators/StatusIndicatorBox";
 
 interface Props {
     project: Project;
@@ -39,7 +39,7 @@ function ProjectCard({ project }: Props) {
                 <div className="flex">
                     {services.map((service, i) => {
                         return (
-                            <StatusIndicatorBox
+                            <ProjectStatusIndicatorRectangle
                                 key={i}
                                 serviceStatus={service.status}
                             />

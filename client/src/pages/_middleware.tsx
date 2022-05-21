@@ -6,15 +6,15 @@ export async function middleware(req: NextRequest, ev: NextFetchEvent) {
 
     if (pathname === "/") {
         if (token) {
-            return NextResponse.redirect("/dashboard");
+            return NextResponse.redirect("/projects");
         } else {
             return NextResponse.redirect("/login");
         }
     } else if (pathname === "/login") {
         if (token) {
-            return NextResponse.redirect("/dashboard");
+            return NextResponse.redirect("/projects");
         }
-    } else if (pathname === "/dashboard") {
+    } else if (pathname === "/projects") {
         if (!token) {
             return NextResponse.redirect("/login");
         }

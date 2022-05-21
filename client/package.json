@@ -1,6 +1,7 @@
 {
-    "name": "traefiker",
-    "private": true,
+    "name": "traefiker-client",
+    "version": "1.2.0",
+    "license": "MIT",
     "scripts": {
         "dev": "PORT=8020 next dev",
         "build": "next build",

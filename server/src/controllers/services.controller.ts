@@ -19,6 +19,8 @@ import Dockerode from "dockerode";
 import { findLastUsedOrder } from "../services/services.service";
 import logger from "../utils/logger";
 import { bindTrailingArgs } from "../utils/misc";
+import { Project } from "../types/Project";
+import { findProjectByName } from "../services/projects.service";
 
 export const getAllServicesHandler = async (
     _req: Request,
@@ -39,12 +41,25 @@ export const createServiceHandler = async (req: Request, res: Response) => {
         const image: Image = await getOrCreateImageByImageIdentifier(
             req.body.image
         );
+        const project: Project | null = await findProjectByName(
+            req.body.project
+        );
+
+        if (!project) {
+            logger.error(
+                `Project with name ${req.body.project} does not exist`
+            );
+            return res.status(404).json({
+                error: `Project with name ${req.body.project} does not exist`,
+            });
+        }
         const service: Service = await saveService({
             name: req.body.name,
             status: ServiceStatus.PULLING,
             image: image,
             hosts: req.body.hosts,
             environmentVariables: [],
+            project: project,
             redirects: [],
             order: (await findLastUsedOrder()) + 1, // TODO: operation is not atomic ?? might(is) a problem if multiple requests are made at the same time
         });
@@ -351,10 +366,10 @@ export const attachContainerToService = async (
     service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
     service.internalName = `traefiker_${service.name}`;
-    // istanbul ignore next
     logger.info(
         `Container ${container.id} attached to service ${service.name}`
     );
+    // istanbul ignore next
     if (start) {
         await startContainer(service);
         service.status = ServiceStatus.RUNNING;

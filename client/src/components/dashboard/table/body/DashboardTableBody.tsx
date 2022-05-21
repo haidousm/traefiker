@@ -1,33 +1,36 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
 import {
     isCreatingServiceState,
     loadingFlagsState,
-    settingsModalState,
-    servicesState,
-} from "../../../atoms/atoms";
+} from "../../../../atoms/atoms";
+import { Project } from "../../../../types/Project";
 
-import { Service } from "../../../types/Service";
+import { Service } from "../../../../types/Service";
 import {
     createService,
     deleteService,
-    getServices,
+    addServiceToProject,
     startService,
     stopService,
     updateService,
     updateServiceOrdering,
-} from "../../../utils/api";
-import SkeletonRow from "../../loading/SkeletonRow";
-import DashboardTableRow from "./DashboardTableRow";
-import DashboardTableRowEditable from "./DashboardTableRowEditable";
+} from "../../../../utils/api";
+import SkeletonRow from "../../../loading/SkeletonRow";
+import DashboardTableRow from "../rows/DashboardTableRow";
+import DashboardTableRowEditable from "../rows/DashboardTableRowEditable";
 
 interface Props {
     columns: {
         name: string;
         screenReaderOnly: boolean;
     }[];
+    project: Project;
+    services: Service[];
+    setServices: (services: Service[]) => void;
+    setServiceToConfigure: Dispatch<SetStateAction<Service | undefined>>;
 }
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
@@ -45,13 +48,17 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     return reordered;
 };
 
-function DashboardTableBody({ columns }: Props) {
-    const [services, setServices] = useRecoilState(servicesState);
+function DashboardTableBody({
+    columns,
+    project,
+    services,
+    setServices,
+    setServiceToConfigure,
+}: Props) {
     const [isCreatingService, setIsCreatingService] = useRecoilState(
         isCreatingServiceState
     );
     const [loadingFlags, setLoadingFlags] = useRecoilState(loadingFlagsState);
-    const [, setSettingsModalOptions] = useRecoilState(settingsModalState);
 
     const [serviceUnderEditing, setServiceUnderEditing] = useState<
         Service | undefined
@@ -60,20 +67,11 @@ function DashboardTableBody({ columns }: Props) {
     const [isEditingService, setIsEditingService] = useState(false);
 
     useEffect(() => {
-        (async () => {
-            const services = await getServices();
-            await sortAndSetServices(services);
-        })();
-    }, []);
-
-    useEffect(() => {
         setIsEditingService(serviceUnderEditing !== undefined);
     }, [serviceUnderEditing]);
 
-    const sortAndSetServices = async (services: Service[]) => {
-        setServices(
-            services.sort((a: Service, b: Service) => a.order - b.order)
-        );
+    const parentSetServices = async (services: Service[]) => {
+        setServices(services);
     };
 
     const onDragEnd = async (result: any) => {
@@ -85,7 +83,7 @@ function DashboardTableBody({ columns }: Props) {
             result.source.index,
             result.destination.index
         );
-        setServices(reorderedServices);
+        parentSetServices(reorderedServices);
         updateServiceOrdering(reorderedServices);
     };
 
@@ -96,21 +94,24 @@ function DashboardTableBody({ columns }: Props) {
         if (index !== -1) {
             const updatedServices = [...services];
             updatedServices[index] = service;
-            await sortAndSetServices(updatedServices);
+            await parentSetServices(updatedServices);
             await updateService(service);
         } else {
             setLoadingFlags({
                 ...loadingFlags,
                 creatingService: true,
             });
-            service.order = services.length;
-            await createService(service);
-            const updatedServices = await getServices();
-            await sortAndSetServices(updatedServices);
-            setLoadingFlags({
-                ...loadingFlags,
-                creatingService: false,
-            });
+            service.project = project;
+            const response = await createService(service);
+            if (response.status == 200) {
+                const createdService = response.data;
+                await addServiceToProject(project.name, service.name);
+                await parentSetServices([...services, createdService]);
+                setLoadingFlags({
+                    ...loadingFlags,
+                    creatingService: false,
+                });
+            }
         }
     };
     const cancelClicked = () => {
@@ -123,17 +124,12 @@ function DashboardTableBody({ columns }: Props) {
     };
 
     const deleteClicked = async (service: Service) => {
-        setServices((prevServices) =>
-            prevServices.filter((s) => s.name !== service.name)
-        );
+        parentSetServices(services.filter((s) => s.name !== service.name));
         await deleteService(service);
     };
 
-    const redirectsClicked = (service: Service) => {
-        setSettingsModalOptions({
-            isEditingSettings: true,
-            service: service,
-        });
+    const configureServiceClicked = (service: Service) => {
+        setServiceToConfigure(service);
     };
 
     const startServiceClicked = async (service: Service) => {
@@ -177,7 +173,7 @@ function DashboardTableBody({ columns }: Props) {
                                         loadingFlags.updatingService ||
                                         loadingFlags.deletingService
                                     }
-                                    redirectsClicked={redirectsClicked}
+                                    redirectsClicked={configureServiceClicked}
                                     editClicked={editClicked}
                                     deleteClicked={deleteClicked}
                                     startServiceClicked={startServiceClicked}

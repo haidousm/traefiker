@@ -15,6 +15,8 @@ import { number, object, string, z } from "zod";
  *              type: array
  *              items:
  *                 type: string
+ *          project:
+ *              type: string
  */
 
 export const CreateServiceRequestSchema = object({
@@ -28,6 +30,9 @@ export const CreateServiceRequestSchema = object({
         hosts: string({
             required_error: "Hosts are required",
         }).array(),
+        project: string({
+            required_error: "Project name is required",
+        }),
     }),
 });
 

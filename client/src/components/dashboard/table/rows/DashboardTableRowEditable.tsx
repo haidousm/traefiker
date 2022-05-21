@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Service } from "../../../types/Service";
-import { Image } from "../../../types/Image";
+import { Service } from "../../../../types/Service";
 import ReactTooltip from "react-tooltip";
-import { ServiceStatus } from "../../../types/enums/ServiceStatus";
+import { ServiceStatus } from "../../../../types/enums/ServiceStatus";
 
 interface Props {
     service?: Service;

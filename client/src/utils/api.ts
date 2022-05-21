@@ -1,6 +1,7 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { Service } from "../types/Service";
 import getConfig from "next/config";
+import { Project } from "../types/Project";
 const { publicRuntimeConfig } = getConfig();
 
 const ROOT_API_URL =
@@ -19,44 +20,62 @@ const authorizedAxios = () => {
     });
 };
 
-const getServices = async () => {
-    return await (
-        await authorizedAxios().get(`/services`, {})
-    ).data;
+export const login = async (username: string, password: string) => {
+    return axios.post(`${ROOT_API_URL}/auth/login`, {
+        username,
+        password,
+    });
 };
 
-const createService = async (service: Service) => {
-    return await authorizedAxios().post(`/services/create`, {
+export const getServices = async (): Promise<AxiosResponse<Service[]>> => {
+    return authorizedAxios().get(`/services`, {});
+};
+
+export const createService = async (
+    service: Service
+): Promise<AxiosResponse<Service>> => {
+    return authorizedAxios().post(`/services/create`, {
         name: service.name,
         image:
             service.image.repository != "_"
                 ? `${service.image.repository}/${service.image.name}:${service.image.tag}`
                 : `${service.image.name}:${service.image.tag}`,
         hosts: service.hosts,
+        project: service.project?.name,
     });
 };
 
-const updateService = async (service: Service) => {
-    return await authorizedAxios().put(`/services/${service.name}/update`, {
+export const updateService = async (
+    service: Service
+): Promise<AxiosResponse<Service>> => {
+    return authorizedAxios().put(`/services/${service.name}/update`, {
         hosts: service.hosts,
         redirects: service.redirects,
         environmentVariables: service.environmentVariables,
     });
 };
 
-const startService = async (service: Service) => {
-    return await authorizedAxios().put(`/services/${service.name}/start`);
+export const startService = async (
+    service: Service
+): Promise<AxiosResponse<Service>> => {
+    return authorizedAxios().put(`/services/${service.name}/start`);
 };
 
-const stopService = async (service: Service) => {
-    return await authorizedAxios().put(`/services/${service.name}/stop`);
+export const stopService = async (
+    service: Service
+): Promise<AxiosResponse<Service>> => {
+    return authorizedAxios().put(`/services/${service.name}/stop`);
 };
 
-const deleteService = async (service: Service) => {
+export const deleteService = async (
+    service: Service
+): Promise<AxiosResponse<Service>> => {
     return await authorizedAxios().delete(`/services/${service.name}/delete`);
 };
 
-const updateServiceOrdering = async (services: Service[]) => {
+export const updateServiceOrdering = async (
+    services: Service[]
+): Promise<AxiosResponse<Service[]>> => {
     const updateOrderRequest: {
         name: string;
         order: number;
@@ -66,25 +85,51 @@ const updateServiceOrdering = async (services: Service[]) => {
             order: service.order,
         };
     });
-    return await authorizedAxios().put(`/services/order`, {
+    return authorizedAxios().put(`/services/order`, {
         services: updateOrderRequest,
     });
 };
 
-const login = async (username: string, password: string) => {
-    return await axios.post(`${ROOT_API_URL}/auth/login`, {
-        username,
-        password,
+export const getProjects = async (): Promise<AxiosResponse<Project[]>> => {
+    return authorizedAxios().get(`${ROOT_API_URL}/projects`, {});
+};
+
+export const getProjectByName = async (
+    name: string
+): Promise<AxiosResponse<Project>> => {
+    return authorizedAxios().get(`${ROOT_API_URL}/projects/${name}`);
+};
+
+export const createProject = async (
+    name: string
+): Promise<AxiosResponse<Project>> => {
+    return authorizedAxios().post(`${ROOT_API_URL}/projects/${name}`);
+};
+
+export const deleteProjectByName = async (name: string) => {
+    return authorizedAxios().delete(`${ROOT_API_URL}/projects/${name}`);
+};
+
+export const updateProjectName = async (oldName: string, newName: string) => {
+    return authorizedAxios().put(`${ROOT_API_URL}/projects/${oldName}`, {
+        name: newName,
     });
 };
 
-export {
-    getServices,
-    createService,
-    updateService,
-    deleteService,
-    updateServiceOrdering,
-    startService,
-    stopService,
-    login,
+export const getServicesForProject = async (
+    project: Project
+): Promise<AxiosResponse<Service[]>> => {
+    return authorizedAxios().get(
+        `${ROOT_API_URL}/projects/${project.name}/services`,
+        {}
+    );
+};
+
+export const addServiceToProject = async (
+    projectName: string,
+    serviceName: string
+) => {
+    return authorizedAxios().put(
+        `${ROOT_API_URL}/projects/${projectName}/services/${serviceName}`
+    );
 };

@@ -1,8 +1,8 @@
-import { Service } from "../../../types/Service";
+import { Service } from "../../../../types/Service";
 import { Draggable } from "react-beautiful-dnd";
 import { CogIcon, MenuIcon } from "@heroicons/react/solid";
 import seedrandom from "seedrandom";
-import { ServiceStatus } from "../../../types/enums/ServiceStatus";
+import { ServiceStatus } from "../../../../types/enums/ServiceStatus";
 
 interface Props {
     service: Service;

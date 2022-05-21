@@ -1,6 +1,7 @@
 import { ServiceStatus } from "./enums/ServiceStatus";
 import { EnvironmentVariable } from "./EnvironmentVariable";
 import { Image } from "./Image";
+import { Project } from "./Project";
 import { Redirect } from "./Redirect";
 
 /**
@@ -36,6 +37,8 @@ import { Redirect } from "./Redirect";
  *              type: string
  *          internalName:
  *             type: string
+ *          project:
+ *             $ref: '#/components/schemas/Project'
  *          order:
  *              type: integer
  */
@@ -50,5 +53,6 @@ export interface Service {
     network?: string;
     containerId?: string;
     internalName?: string;
+    project?: Project;
     order: number;
 }

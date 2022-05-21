@@ -1,7 +1,22 @@
-import DashboardTableHeader from "./DashboardTableHeader";
-import DashboardTableBody from "./DashboardTableBody";
+import DashboardTableHeader from "./header/DashboardTableHeader";
+import DashboardTableBody from "./body/DashboardTableBody";
+import { Service } from "../../../types/Service";
+import { Project } from "../../../types/Project";
+import { Dispatch, SetStateAction } from "react";
 
-function DashboardTable() {
+interface Props {
+    project: Project;
+    services: Service[];
+    setServices: (services: Service[]) => void;
+    setServiceToConfigure: Dispatch<SetStateAction<Service | undefined>>;
+}
+
+function DashboardTable({
+    project,
+    services,
+    setServices,
+    setServiceToConfigure,
+}: Props) {
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
@@ -16,7 +31,13 @@ function DashboardTable() {
     return (
         <table className="min-w-full divide-y divide-gray-200 bg-gray-50">
             <DashboardTableHeader columns={columns} />
-            <DashboardTableBody columns={columns} />
+            <DashboardTableBody
+                columns={columns}
+                project={project}
+                services={services}
+                setServices={setServices}
+                setServiceToConfigure={setServiceToConfigure}
+            />
         </table>
     );
 }

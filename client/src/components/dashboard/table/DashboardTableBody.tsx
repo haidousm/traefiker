@@ -12,7 +12,7 @@ import { Service } from "../../../types/Service";
 import {
     createService,
     deleteService,
-    moveServiceToProject,
+    addServiceToProject,
     startService,
     stopService,
     updateService,
@@ -103,7 +103,7 @@ function DashboardTableBody({
             });
             service.project = project;
             const createdService = await createService(service);
-            await moveServiceToProject(project.name, service.name);
+            await addServiceToProject(project.name, service.name);
             await parentSetServices([...services, createdService]);
             setLoadingFlags({
                 ...loadingFlags,

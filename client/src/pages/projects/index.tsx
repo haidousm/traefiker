@@ -5,16 +5,21 @@ import ProjectCard from "../../components/projects/ProjectCard";
 import { useEffect, useState } from "react";
 import { getProjects } from "../../utils/api";
 import { Project } from "../../types/Project";
+import { useRouter } from "next/router";
 
 const Projects: NextPage = () => {
     const [projects, setProjects] = useState<Project[]>([]);
-
+    const router = useRouter();
     useEffect(() => {
         (async () => {
-            const fetchedProjects = await getProjects();
-            setProjects(fetchedProjects);
+            const response = await getProjects();
+            if (response.status == 200) {
+                setProjects(response.data);
+            } else {
+                router.push("/500");
+            }
         })();
-    }, []);
+    }, [router]);
 
     return (
         <div>
@@ -40,11 +45,15 @@ const Projects: NextPage = () => {
                     </header>
                 </div>
                 <div className="m-4 grid grid-cols-3 place-items-center">
-                    {projects.map((project) => {
-                        return (
-                            <ProjectCard key={project.id} project={project} />
-                        );
-                    })}
+                    {projects &&
+                        projects.map((project) => {
+                            return (
+                                <ProjectCard
+                                    key={project.id}
+                                    project={project}
+                                />
+                            );
+                        })}
                 </div>
             </main>
         </div>

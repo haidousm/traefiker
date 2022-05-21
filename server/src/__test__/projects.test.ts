@@ -43,7 +43,7 @@ const mockService: Service = {
 const app = createServer();
 
 describe("projects", () => {
-    describe("get all projects", () => {
+    describe("get all project", () => {
         describe("given the user is not logged in", () => {
             it("should return 401", async () => {
                 const response = await supertest(app).get("/projects");
@@ -73,6 +73,55 @@ describe("projects", () => {
                 const response = await supertest(app).get("/projects");
                 expect(response.statusCode).toBe(200);
                 expect(response.body).toStrictEqual([mockProject]);
+            });
+        });
+    });
+    describe("get a project", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app).get("/projects/default");
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given user is logged in", () => {
+            beforeEach(() => {
+                jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                    () => {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            next();
+                        };
+                    }
+                );
+            });
+
+            describe("given the project exists", () => {
+                it("should return the project", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockProject);
+
+                    const response = await supertest(app).get(
+                        "/projects/default"
+                    );
+                    expect(response.statusCode).toBe(200);
+                    expect(response.body).toStrictEqual(mockProject);
+                });
+            });
+            describe("given the project does not exist", () => {
+                it("should return 404", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(null);
+
+                    const response = await supertest(app).get(
+                        "/projects/default"
+                    );
+                    expect(response.statusCode).toBe(404);
+                });
             });
         });
     });
@@ -144,7 +193,7 @@ describe("projects", () => {
         describe("given the user is not logged in", () => {
             it("should return 401", async () => {
                 const response = await supertest(app).put(
-                    "/projects/ProjectA/httpd"
+                    "/projects/ProjectA/services/httpd"
                 );
                 expect(response.status).toBe(401);
             });
@@ -171,7 +220,7 @@ describe("projects", () => {
                         .mockReturnValueOnce(null);
 
                     const response = await supertest(app).put(
-                        "/projects/ProjectB/httpd"
+                        "/projects/ProjectB/services/httpd"
                     );
                     expect(response.statusCode).toBe(404);
                 });
@@ -187,7 +236,7 @@ describe("projects", () => {
                         .mockReturnValueOnce(null);
 
                     const response = await supertest(app).put(
-                        "/projects/ProjectA/httpd_1"
+                        "/projects/ProjectA/services/httpd_1"
                     );
                     expect(response.statusCode).toBe(404);
                 });
@@ -207,7 +256,7 @@ describe("projects", () => {
                             return service;
                         });
                     const response = await supertest(app).put(
-                        "/projects/ProjectA/httpd1"
+                        "/projects/ProjectA/services/httpd1"
                     );
                     expect(response.statusCode).toBe(200);
                     expect(response.body.project).toStrictEqual(mockProject1);
@@ -227,7 +276,7 @@ describe("projects", () => {
                             throw new Error("oopsie daisie x2!");
                         });
                     const response = await supertest(app).put(
-                        "/projects/ProjectA/httpd1"
+                        "/projects/ProjectA/services/httpd1"
                     );
                     expect(response.statusCode).toBe(500);
                 });

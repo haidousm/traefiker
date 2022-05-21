@@ -19,6 +19,16 @@ export const getAllProjectsHandler = async (req: Request, res: Response) => {
     return res.json(projects);
 };
 
+export const getProjectHandler = async (req: Request, res: Response) => {
+    const project: Project | null = await findProjectByName(
+        req.params.projectName
+    );
+    if (!project) {
+        return res.sendStatus(404);
+    }
+    return res.json(project);
+};
+
 export const createProjectHandler = async (req: Request, res: Response) => {
     try {
         const projectName = req.params.projectName;

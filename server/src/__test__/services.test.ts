@@ -344,6 +344,41 @@ describe("services", () => {
                     expect(response.body.status).toBe(ServiceStatus.ERROR);
                 });
             });
+            describe("given the project does not exist", () => {
+                it("should return a 404", async () => {
+                    jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                        () => {
+                            return (
+                                req: Request,
+                                res: Response,
+                                next: NextFunction
+                            ) => {
+                                next();
+                            };
+                        }
+                    );
+
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        //@ts-ignore
+                        .mockReturnValueOnce(null);
+
+                    jest.spyOn(
+                        ImagesService,
+                        "getOrCreateImageByImageIdentifier"
+                    )
+                        // @ts-ignore
+                        .mockReturnValueOnce(createdImage);
+
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(null);
+
+                    const response = await supertest(app)
+                        .post("/services/create")
+                        .send(createServiceRequest);
+                    expect(response.status).toBe(404);
+                });
+            });
             describe("given the create service payload is invalid", () => {
                 it("should return a 400", async () => {
                     jest.spyOn(passport, "authenticate").mockImplementationOnce(

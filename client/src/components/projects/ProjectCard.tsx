@@ -16,12 +16,14 @@ function ProjectCard({ project }: Props) {
     const router = useRouter();
     useEffect(() => {
         (async () => {
-            const servicesForProject = await getServicesForProject(
-                project.name
-            );
-            setServices(servicesForProject);
+            const response = await getServicesForProject(project);
+            if (response.status == 200) {
+                setServices(response.data);
+            } else {
+                router.push("500");
+            }
         })();
-    }, [project.name]);
+    }, [project, router]);
     return (
         <div
             className="h-40 w-80 cursor-pointer rounded-lg bg-blue-100 shadow-lg"

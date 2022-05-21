@@ -49,7 +49,7 @@ export const createServiceHandler = async (req: Request, res: Response) => {
             logger.error(
                 `Project with name ${req.body.project} does not exist`
             );
-            return res.status(400).json({
+            return res.status(404).json({
                 error: `Project with name ${req.body.project} does not exist`,
             });
         }

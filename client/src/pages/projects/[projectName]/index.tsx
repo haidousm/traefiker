@@ -10,7 +10,7 @@ import StatusNotificationService from "../../../components/notifications/StatusN
 import ServiceSettingsModal from "../../../components/service-settings/ServiceSettingsModal";
 import { Project } from "../../../types/Project";
 import { Service } from "../../../types/Service";
-import { getProjects, getServicesForProject } from "../../../utils/api";
+import { getServicesForProject, getProjectByName } from "../../../utils/api";
 
 const ProjectDashboard: NextPage = () => {
     const [services, setServices] = useState<Service[]>([]);
@@ -22,16 +22,20 @@ const ProjectDashboard: NextPage = () => {
     useEffect(() => {
         (async () => {
             const projectName: string = router.query.projectName as string;
-            const fetchedProjects = (await getProjects()).filter(
-                (project) => project.name === projectName
-            );
-            if (fetchedProjects.length === 0) {
-                router.push("/projects");
-                return;
+            const response = await getProjectByName(projectName);
+            if (response.status == 200) {
+                setProject(response.data);
+                const anotherResponse = await getServicesForProject(
+                    response.data
+                );
+                if (anotherResponse.status == 200) {
+                    setServices(anotherResponse.data);
+                } else {
+                    router.push("/500");
+                }
+            } else {
+                router.push("/500");
             }
-            setProject(fetchedProjects[0]);
-            const servicesForProject = await getServicesForProject(projectName);
-            setServices(servicesForProject);
         })();
     }, [router]);
 

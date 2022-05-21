@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+    createProject,
     findAllProjects,
     findProjectByName,
 } from "../services/projects.service";
@@ -11,10 +12,41 @@ import { Project } from "../types/Project";
 import { Service } from "../types/Service";
 import logger from "../utils/logger";
 import { saveService } from "../services/services.service";
+import { deleteProjectByName } from "../services/projects.service";
 
 export const getAllProjectsHandler = async (req: Request, res: Response) => {
     const projects: Project[] = await findAllProjects();
     return res.json(projects);
+};
+
+export const createProjectHandler = async (req: Request, res: Response) => {
+    try {
+        const projectName = req.params.projectName;
+        const project = await createProject(projectName);
+        return res.json(project);
+    } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
+        return res.status(500).json({
+            error: e,
+        });
+    }
+};
+
+export const deleteProjectHandler = async (req: Request, res: Response) => {
+    try {
+        const projectName = req.params.projectName;
+        await deleteProjectByName(projectName);
+        return res.sendStatus(200);
+    } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
+        return res.status(500).json({
+            error: e,
+        });
+    }
 };
 
 export const getAllServicesForProjectHandler = async (

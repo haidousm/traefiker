@@ -3,7 +3,7 @@ import { Image } from "../types/Image";
 import { Service } from "../types/Service";
 import ImageModel, { Internal_ImageDocument } from "../models/Image";
 import { Project } from "../types/Project";
-import { Internal_ProjectDocument } from "../models/Project";
+import ProjectModel, { Internal_ProjectDocument } from "../models/Project";
 
 export const findAllServices = async (): Promise<Service[]> => {
     const internalServices: Internal_ServiceDocument[] =
@@ -64,6 +64,14 @@ export const saveService = async (service: Service) => {
     if (!internalImage) {
         throw new Error("Image not found");
     }
+
+    const internalProject = await ProjectModel.findById(
+        service.project?.id
+    ).exec();
+    if (!internalProject) {
+        throw new Error("Project not found");
+    }
+
     internalService.name = service.name;
     internalService.status = service.status;
     internalService.image = internalImage._id;
@@ -74,6 +82,7 @@ export const saveService = async (service: Service) => {
     internalService.order = service.order;
     internalService.internalName = service.internalName;
     internalService.containerId = service.containerId;
+    internalService.project = internalProject._id;
     await internalService.save();
     return internalServiceToService(internalService);
 };

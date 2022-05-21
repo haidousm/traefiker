@@ -234,4 +234,110 @@ describe("projects", () => {
             });
         });
     });
+    describe("create a project", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app).post(
+                    "/projects/ProjectA"
+                );
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given user is logged in", () => {
+            beforeEach(() => {
+                jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                    () => {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            next();
+                        };
+                    }
+                );
+            });
+
+            describe("given the project already exists", () => {
+                it("should return 500", async () => {
+                    jest.spyOn(ProjectsService, "findProjectByName")
+                        // @ts-ignore
+                        .mockReturnValueOnce(mockProject1);
+
+                    const response = await supertest(app).post(
+                        "/projects/ProjectA"
+                    );
+                    expect(response.statusCode).toBe(500);
+                });
+            });
+
+            describe("given the project does not exist", () => {
+                it("should return 200", async () => {
+                    jest.spyOn(ProjectsService, "createProject")
+                        // @ts-ignore
+                        .mockImplementationOnce(() => {
+                            return mockProject1;
+                        });
+                    const response = await supertest(app).post(
+                        "/projects/ProjectA"
+                    );
+                    expect(response.statusCode).toBe(200);
+                    expect(response.body.name).toBe("ProjectA");
+                });
+            });
+        });
+    });
+    describe("delete a project", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app).delete(
+                    "/projects/ProjectA"
+                );
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given user is logged in", () => {
+            beforeEach(() => {
+                jest.spyOn(passport, "authenticate").mockImplementationOnce(
+                    () => {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            next();
+                        };
+                    }
+                );
+            });
+
+            describe("given the project does not exist", () => {
+                it("should return 500", async () => {
+                    jest.spyOn(ProjectsService, "deleteProjectByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(() => {
+                            throw new Error("Project not found");
+                        });
+                    const response = await supertest(app).delete(
+                        "/projects/ProjectA"
+                    );
+                    expect(response.statusCode).toBe(500);
+                });
+            });
+
+            describe("given the project does exist", () => {
+                it("should return 200", async () => {
+                    jest.spyOn(ProjectsService, "deleteProjectByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(() => {
+                            return mockProject1;
+                        });
+                    const response = await supertest(app).delete(
+                        "/projects/ProjectA"
+                    );
+                    expect(response.statusCode).toBe(200);
+                });
+            });
+        });
+    });
 });

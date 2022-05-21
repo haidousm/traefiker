@@ -1,6 +1,8 @@
 import express from "express";
+import { deleteProjectHandler } from "../controllers/projects.controller";
 import {
     addServiceToProjectHandler,
+    createProjectHandler,
     getAllProjectsHandler,
     getAllServicesForProjectHandler,
 } from "../controllers/projects.controller";
@@ -29,6 +31,60 @@ const router = express.Router();
  */
 
 router.get("/", getAllProjectsHandler);
+
+/**
+ * @openapi
+ * '/projects/{projectName}':
+ *      post:
+ *          tags:
+ *              - Projects
+ *          summary: Create a project
+ *          security:
+ *              - bearerAuth: []
+ *          parameters:
+ *              - name: projectName
+ *                in: path
+ *                required: true
+ *                description: Project name
+ *          responses:
+ *              200:
+ *                  description: Success
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              $ref: '#/components/schemas/Project'
+ *              401:
+ *                  description: Unauthorized
+ */
+
+router.post("/:projectName", createProjectHandler);
+
+/**
+ * @openapi
+ * '/projects/{projectName}':
+ *      delete:
+ *          tags:
+ *              - Projects
+ *          summary: Delete a project
+ *          security:
+ *              - bearerAuth: []
+ *          parameters:
+ *              - name: projectName
+ *                in: path
+ *                required: true
+ *                description: Project name
+ *          responses:
+ *              200:
+ *                  description: Success
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              $ref: '#/components/schemas/Project'
+ *              401:
+ *                  description: Unauthorized
+ */
+
+router.delete("/:projectName", deleteProjectHandler);
 
 /**
  * @openapi

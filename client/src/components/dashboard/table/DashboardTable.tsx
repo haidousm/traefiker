@@ -1,7 +1,11 @@
 import DashboardTableHeader from "./DashboardTableHeader";
 import DashboardTableBody from "./DashboardTableBody";
 
-function DashboardTable() {
+interface Props {
+    projectName: string;
+}
+
+function DashboardTable({ projectName }: Props) {
     const columns = [
         { name: "Service Name", screenReaderOnly: false },
         { name: "Image Name", screenReaderOnly: false },
@@ -16,7 +20,7 @@ function DashboardTable() {
     return (
         <table className="min-w-full divide-y divide-gray-200 bg-gray-50">
             <DashboardTableHeader columns={columns} />
-            <DashboardTableBody columns={columns} />
+            <DashboardTableBody columns={columns} projectName={projectName} />
         </table>
     );
 }

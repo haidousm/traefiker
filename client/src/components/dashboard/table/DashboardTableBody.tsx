@@ -28,6 +28,7 @@ interface Props {
         name: string;
         screenReaderOnly: boolean;
     }[];
+    projectName: string;
 }
 
 const reorder = (list: Service[], startIndex: number, endIndex: number) => {
@@ -45,7 +46,7 @@ const reorder = (list: Service[], startIndex: number, endIndex: number) => {
     return reordered;
 };
 
-function DashboardTableBody({ columns }: Props) {
+function DashboardTableBody({ columns, projectName }: Props) {
     const [services, setServices] = useRecoilState(servicesState);
     const [isCreatingService, setIsCreatingService] = useRecoilState(
         isCreatingServiceState
@@ -72,7 +73,9 @@ function DashboardTableBody({ columns }: Props) {
 
     const sortAndSetServices = async (services: Service[]) => {
         setServices(
-            services.sort((a: Service, b: Service) => a.order - b.order)
+            services
+                .filter((service) => service.project?.name === projectName)
+                .sort((a: Service, b: Service) => a.order - b.order)
         );
     };
 
@@ -85,7 +88,7 @@ function DashboardTableBody({ columns }: Props) {
             result.source.index,
             result.destination.index
         );
-        setServices(reorderedServices);
+        sortAndSetServices(reorderedServices);
         updateServiceOrdering(reorderedServices);
     };
 
@@ -123,9 +126,7 @@ function DashboardTableBody({ columns }: Props) {
     };
 
     const deleteClicked = async (service: Service) => {
-        setServices((prevServices) =>
-            prevServices.filter((s) => s.name !== service.name)
-        );
+        sortAndSetServices(services.filter((s) => s.name !== service.name));
         await deleteService(service);
     };
 

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Service } from "../types/Service";
 import getConfig from "next/config";
+import { Project } from "../types/Project";
 const { publicRuntimeConfig } = getConfig();
 
 const ROOT_API_URL =
@@ -76,6 +77,10 @@ const login = async (username: string, password: string) => {
         username,
         password,
     });
+};
+
+export const getProjects = async () => {
+    return (await authorizedAxios().get(`${ROOT_API_URL}/projects`, {})).data;
 };
 
 export {

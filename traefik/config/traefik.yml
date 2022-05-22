@@ -1,0 +1,20 @@
+entryPoints:
+    web:
+        address: ":80"
+        http:
+            redirections:
+                entryPoint:
+                    to: websecure
+                    scheme: https
+    websecure:
+        address: ":443"
+certificatesResolvers:
+    lets-encrypt:
+        acme:
+            email: haidous.m@gmail.com
+            storage: acme.json
+            tlsChallenge: {}
+providers:
+    docker:
+        watch: true
+        network: web

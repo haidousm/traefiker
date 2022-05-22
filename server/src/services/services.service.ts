@@ -4,6 +4,7 @@ import { Service } from "../types/Service";
 import ImageModel, { Internal_ImageDocument } from "../models/Image";
 import { Project } from "../types/Project";
 import ProjectModel, { Internal_ProjectDocument } from "../models/Project";
+import ServerModel, { Internal_ServerDocument } from "../models/Server";
 
 export const findAllServices = async (): Promise<Service[]> => {
     const internalServices: Internal_ServiceDocument[] =
@@ -41,13 +42,19 @@ export const saveService = async (service: Service) => {
     if (!internalImage) {
         throw new Error("Image not found");
     }
-
     const internalProject = await ProjectModel.findById(
         service.project?.id
     ).exec();
     if (!internalProject) {
         throw new Error("Project not found");
     }
+    const internalServer = await ServerModel.findById(
+        service.server?.id
+    ).exec();
+    if (!internalServer) {
+        throw new Error("Server not found");
+    }
+
     if (!internalService) {
         const internalService = new ServiceModel({
             name: service.name,
@@ -60,6 +67,7 @@ export const saveService = async (service: Service) => {
             order: service.order,
             internalName: service.internalName,
             project: service.project?.id,
+            server: service.server?.id,
             containerId: service.containerId,
         });
         await internalService.save();
@@ -106,6 +114,20 @@ export const findServicesByProjectId = async (
     return internalServices.map(internalServiceToService);
 };
 
+export const findServicesByServerId = async (
+    id: string
+): Promise<Service[]> => {
+    const internalServices: Internal_ServiceDocument[] =
+        await ServiceModel.find({
+            server: id,
+        })
+            .populate("image")
+            .populate("project")
+            .populate("server")
+            .exec();
+    return internalServices.map(internalServiceToService);
+};
+
 const internalServiceToService = (
     internalService: Internal_ServiceDocument
 ): Service => {
@@ -127,6 +149,16 @@ const internalServiceToService = (
             name: internalProject.name,
         };
     }
+
+    const internalServer =
+        internalService.server as unknown as Internal_ServerDocument;
+    const server = {
+        id: internalServer._id.toString(),
+        name: internalServer.name,
+        host: internalServer.host,
+        port: internalServer.port,
+    };
+
     return {
         id: internalService._id.toString(),
         name: internalService.name,
@@ -139,6 +171,7 @@ const internalServiceToService = (
         order: internalService.order,
         internalName: internalService.internalName,
         project: project,
+        server: server,
         containerId: internalService.containerId,
     };
 };

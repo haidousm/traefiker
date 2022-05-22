@@ -17,6 +17,7 @@ export interface Internal_ServiceDocument {
     internalName?: string;
     order: number;
     project: mongoose.Schema.Types.ObjectId;
+    server: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
 }
 
@@ -69,6 +70,10 @@ const serviceSchema = new mongoose.Schema({
     project: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Project",
+    },
+    server: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Server",
     },
     createdAt: {
         type: Date,

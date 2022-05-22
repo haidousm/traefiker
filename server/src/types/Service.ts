@@ -3,6 +3,7 @@ import { EnvironmentVariable } from "./EnvironmentVariable";
 import { Image } from "./Image";
 import { Project } from "./Project";
 import { Redirect } from "./Redirect";
+import { Server } from "./Server";
 
 /**
  * @openapi
@@ -39,6 +40,8 @@ import { Redirect } from "./Redirect";
  *             type: string
  *          project:
  *             $ref: '#/components/schemas/Project'
+ *          server:
+ *             $ref: '#/components/schemas/Server'
  *          order:
  *              type: integer
  */
@@ -54,5 +57,6 @@ export interface Service {
     containerId?: string;
     internalName?: string;
     project?: Project;
+    server?: Server;
     order: number;
 }

@@ -1,17 +1,23 @@
 import { inspectContainerById } from "../../libs/docker";
+import { createSocketDockerClient } from "../../libs/dockerClient";
 import { findAllServices, saveService } from "../services/services.service";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import logger from "./logger";
 
 export const refreshServicesStatuses = async () => {
     const services = await findAllServices();
+    /* if localhost */
+    const docker = createSocketDockerClient();
     for (const service of services) {
         const containerId = service.containerId ?? undefined;
         if (!containerId) {
             continue;
         }
         try {
-            const containerInfo = await inspectContainerById(containerId);
+            const containerInfo = await inspectContainerById(
+                docker,
+                containerId
+            );
 
             const containerState = containerInfo.State;
             if (containerState.Running) {

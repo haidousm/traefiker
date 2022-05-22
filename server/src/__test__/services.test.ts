@@ -12,6 +12,7 @@ import { Service } from "../types/Service";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import { Image } from "../types/Image";
 import { Project } from "../types/Project";
+import Docker from "dockerode";
 
 const createServiceRequest = {
     name: "httpd",
@@ -206,7 +207,7 @@ describe("services", () => {
                     jest.spyOn(DockerLib, "createContainer")
                         //@ts-ignore
                         .mockImplementationOnce(
-                            async (service, image, callback) =>
+                            async (_, service, image, callback) =>
                                 //@ts-ignore
                                 callback(service, createdContainer)
                         );
@@ -758,7 +759,7 @@ describe("services", () => {
                     jest.spyOn(DockerLib, "createContainer")
                         //@ts-ignore
                         .mockImplementationOnce(
-                            async (service, image, callback) =>
+                            async (_, service, image, callback) =>
                                 //@ts-ignore
                                 callback(service, postUpdateContainer)
                         );
@@ -816,7 +817,7 @@ describe("services", () => {
                     jest.spyOn(DockerLib, "createContainer")
                         //@ts-ignore
                         .mockImplementationOnce(
-                            async (service, image, callback) =>
+                            async (_, service, image, callback) =>
                                 //@ts-ignore
                                 callback(service, postUpdateContainer)
                         );
@@ -874,7 +875,7 @@ describe("services", () => {
                     jest.spyOn(DockerLib, "createContainer")
                         //@ts-ignore
                         .mockImplementationOnce(
-                            async (service, image, callback) =>
+                            async (_, service, image, callback) =>
                                 //@ts-ignore
                                 callback(service, postUpdateContainer)
                         );
@@ -932,7 +933,7 @@ describe("services", () => {
                     jest.spyOn(DockerLib, "createContainer")
                         //@ts-ignore
                         .mockImplementationOnce(
-                            async (service, image, callback) =>
+                            async (_, service, image, callback) =>
                                 //@ts-ignore
                                 callback(service, postUpdateContainer)
                         );
@@ -1000,7 +1001,7 @@ describe("services", () => {
                         jest.spyOn(DockerLib, "createContainer")
                             //@ts-ignore
                             .mockImplementationOnce(
-                                async (service, image, callback) =>
+                                async (_, service, image, callback) =>
                                     //@ts-ignore
                                     callback(service, postUpdateContainer)
                             );
@@ -1376,10 +1377,12 @@ describe("services", () => {
                     jest.spyOn(
                         DockerLib,
                         "deleteContainer"
-                    ).mockImplementationOnce(async (service: Service) => {
-                        await DockerLib.stopContainer(service);
-                        return Promise.resolve();
-                    });
+                    ).mockImplementationOnce(
+                        async (docker: Docker, service: Service) => {
+                            await DockerLib.stopContainer(docker, service);
+                            return Promise.resolve();
+                        }
+                    );
 
                     jest.spyOn(
                         ServicesService,

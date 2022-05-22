@@ -21,6 +21,7 @@ import logger from "../utils/logger";
 import { bindTrailingArgs } from "../utils/misc";
 import { Project } from "../types/Project";
 import { findProjectByName } from "../services/projects.service";
+import { createSocketDockerClient } from "../../libs/dockerClient";
 
 export const getAllServicesHandler = async (
     _req: Request,
@@ -63,7 +64,11 @@ export const createServiceHandler = async (req: Request, res: Response) => {
             redirects: [],
             order: (await findLastUsedOrder()) + 1, // TODO: operation is not atomic ?? might(is) a problem if multiple requests are made at the same time
         });
+
+        /* if localhost */
+        const docker = createSocketDockerClient();
         createContainer(
+            docker,
             service,
             image,
             attachContainerToService,
@@ -115,9 +120,13 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             environmentVariables ?? service.environmentVariables;
         service.redirects = redirects ?? service.redirects;
         const image = service.image;
-        await deleteContainer(service);
+
+        /* if localhost */
+        const docker = createSocketDockerClient();
+        await deleteContainer(docker, service);
         await saveService(service);
         createContainer(
+            docker,
             service,
             image,
             attachContainerToService,
@@ -165,7 +174,9 @@ export const startServiceHandler = async (req: Request, res: Response) => {
                 error: `Service with name ${req.params.name} is in error state`,
             });
         }
-        await startContainer(service);
+        /* if localhost */
+        const docker = createSocketDockerClient();
+        await startContainer(docker, service);
         service.status = ServiceStatus.RUNNING;
         const updatedService = await saveService(service);
         logger.info(`Service ${updatedService.name} started`);
@@ -213,7 +224,9 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
                 error: `Service with name ${req.params.name} is in error state`,
             });
         }
-        await stopContainer(service);
+        /* if localhost */
+        const docker = createSocketDockerClient();
+        await stopContainer(docker, service);
         service.status = ServiceStatus.STOPPED;
         const updatedService = await saveService(service);
         logger.info(`Service ${updatedService.name} stopped`);
@@ -247,7 +260,9 @@ export const deleteServiceHandler = async (req: Request, res: Response) => {
         }
 
         if (service.status != ServiceStatus.ERROR) {
-            await deleteContainer(service);
+            /* if localhost */
+            const docker = createSocketDockerClient();
+            await deleteContainer(docker, service);
         }
         await deleteServiceByName(service.name);
         logger.info(`Service ${service.name} deleted`);
@@ -281,8 +296,9 @@ export const recreateServiceHandler = async (req: Request, res: Response) => {
                 error: `Service with name ${req.params.name} is still pulling`,
             });
         }
-        await deleteContainer(service);
-
+        /* if localhost */
+        const docker = createSocketDockerClient();
+        await deleteContainer(docker, service);
         const image = req.body.image
             ? await getOrCreateImageByImageIdentifier(req.body.image)
             : service.image;
@@ -293,6 +309,7 @@ export const recreateServiceHandler = async (req: Request, res: Response) => {
             true
         );
         createContainer(
+            docker,
             service,
             service.image,
             attachWithRestart,
@@ -371,7 +388,9 @@ export const attachContainerToService = async (
     );
     // istanbul ignore next
     if (start) {
-        await startContainer(service);
+        /* if localhost */
+        const docker = createSocketDockerClient();
+        await startContainer(docker, service);
         service.status = ServiceStatus.RUNNING;
     }
     await saveService(service);

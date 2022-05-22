@@ -8,9 +8,8 @@ import { Image } from "../src/types/Image";
 import { Redirect } from "../src/types/Redirect";
 import { Service } from "../src/types/Service";
 
-const docker = new Docker({ socketPath: "/var/run/docker.sock" });
-
 export const pullImage = async (
+    docker: Docker,
     image: Image
 ): Promise<NodeJS.ReadableStream> => {
     const imageIdentifier =
@@ -22,13 +21,14 @@ export const pullImage = async (
 };
 
 export const createContainer = async (
+    docker: Docker,
     service: Service,
     image: Image,
     onSuccess: (service: Service, container: Container) => void,
     onError: (service: Service, error: unknown) => void
 ): Promise<void> => {
     try {
-        const stream = await pullImage(image);
+        const stream = await pullImage(docker, image);
         docker.modem.followProgress(stream, async (error) => {
             if (error) {
                 return onError(service, error);
@@ -63,7 +63,7 @@ export const createContainer = async (
     }
 };
 
-export const startContainer = async (service: Service) => {
+export const startContainer = async (docker: Docker, service: Service) => {
     if (!service.containerId) {
         throw new Error("Container id is not set");
     }
@@ -71,7 +71,7 @@ export const startContainer = async (service: Service) => {
     return container.start();
 };
 
-export const stopContainer = async (service: Service) => {
+export const stopContainer = async (docker: Docker, service: Service) => {
     if (!service.containerId) {
         throw new Error("Container id is not set");
     }
@@ -83,23 +83,26 @@ export const stopContainer = async (service: Service) => {
     return container.stop();
 };
 
-export const deleteContainer = async (service: Service) => {
+export const deleteContainer = async (docker: Docker, service: Service) => {
     if (!service.containerId) {
         throw new Error("Container id is not set");
     }
     if (service.status == ServiceStatus.RUNNING) {
-        await stopContainer(service);
+        await stopContainer(docker, service);
     }
     const container = docker.getContainer(service.containerId);
     service.containerId = undefined;
     return container.remove();
 };
 
-export const getAllContainers = async (): Promise<ContainerInfo[]> => {
+export const getAllContainers = async (
+    docker: Docker
+): Promise<ContainerInfo[]> => {
     return docker.listContainers({ all: true });
 };
 
 export const deleteContainerByContainerId = async (
+    docker: Docker,
     containerId: string
 ): Promise<void> => {
     const container = docker.getContainer(containerId);
@@ -111,19 +114,13 @@ export const deleteContainerByContainerId = async (
 };
 
 export const inspectContainerById = async (
+    docker: Docker,
     containerId: string
 ): Promise<ContainerInspectInfo> => {
     return docker.getContainer(containerId).inspect();
 };
 
-const getSSLLabels = (name: string) => {
-    return {
-        [`traefik.http.routers.${name}.tls`]: "true",
-        [`traefik.http.routers.${name}.tls.certresolver`]: "lets-encrypt",
-    };
-};
-
-export const pruneSystem = async () => {
+export const pruneSystem = async (docker: Docker) => {
     await docker.pruneContainers({
         force: true,
     });
@@ -226,4 +223,11 @@ const getAllLabels = (service: Service) => {
     };
     const middlewareLabel = getMiddlewareLabel(internalName, labels);
     return { ...labels, ...middlewareLabel };
+};
+
+const getSSLLabels = (name: string) => {
+    return {
+        [`traefik.http.routers.${name}.tls`]: "true",
+        [`traefik.http.routers.${name}.tls.certresolver`]: "lets-encrypt",
+    };
 };

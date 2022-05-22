@@ -22,13 +22,15 @@ import {
     cleanUpOnError,
 } from "../controllers/services.controller";
 import logger from "./logger";
+import { createSocketDockerClient } from "../../libs/dockerClient";
 
 export const useDockerAsSourceOfTruth = async () => {
     try {
         await deleteAllContainers();
         await deleteAllImages();
-
-        const containers = (await getAllContainers()).filter(
+        /* if localhost */
+        const docker = createSocketDockerClient();
+        const containers = (await getAllContainers(docker)).filter(
             (container) =>
                 container.Names[0].includes("traefiker_") &&
                 !container.Names[0].includes("traefiker-client") &&
@@ -50,7 +52,10 @@ export const useDockerAsSourceOfTruth = async () => {
                 container.Labels
             );
 
-            const inspectData = await inspectContainerById(container.Id);
+            const inspectData = await inspectContainerById(
+                docker,
+                container.Id
+            );
             const environmentVariables: EnvironmentVariable[] =
                 inspectData.Config.Env.map((env) => {
                     const [key, value] = env.split("=");
@@ -83,14 +88,16 @@ export const useDockerAsSourceOfTruth = async () => {
 };
 
 export const useDBAsSourceOfTruth = async () => {
-    const containers = (await getAllContainers()).filter(
+    /* if localhost */
+    const docker = createSocketDockerClient();
+    const containers = (await getAllContainers(docker)).filter(
         (container) =>
             container.Names[0].includes("traefiker_") &&
             !container.Names[0].includes("traefiker-client") &&
             !container.Names[0].includes("traefiker-server")
     );
     for (const container of containers) {
-        await deleteContainerByContainerId(container.Id);
+        await deleteContainerByContainerId(docker, container.Id);
     }
     const services = await findAllServices();
     for (const service of services) {
@@ -99,6 +106,7 @@ export const useDBAsSourceOfTruth = async () => {
         await saveService(service);
         logger.info(`Creating container for service ${service.name}`);
         createContainer(
+            docker,
             service,
             service.image,
             attachContainerToService,

@@ -1,14 +1,7 @@
 import mongoose from "mongoose";
+import { Image } from "../types/Image";
 
-export interface Internal_ImageDocument {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    tag: string;
-    repository: string;
-    createdAt: Date;
-}
-
-const ImageSchema = new mongoose.Schema<Internal_ImageDocument>({
+const imageSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -27,5 +20,5 @@ const ImageSchema = new mongoose.Schema<Internal_ImageDocument>({
     },
 });
 
-const ImageModel = mongoose.model<Internal_ImageDocument>("Image", ImageSchema);
+const ImageModel = mongoose.model<Image>("Image", imageSchema);
 export default ImageModel;

@@ -64,18 +64,18 @@ export const createContainer = async (
 };
 
 export const startContainer = async (service: Service) => {
-    if (!service.containerId) {
+    if (!service.dockerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
-    const container = docker.getContainer(service.containerId);
+    const container = docker.getContainer(service.dockerInfo.containerId);
     return container.start();
 };
 
 export const stopContainer = async (service: Service) => {
-    if (!service.containerId) {
+    if (!service.dockerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
-    const container = docker.getContainer(service.containerId);
+    const container = docker.getContainer(service.dockerInfo.containerId);
     const containerInfo = await container.inspect();
     if (!containerInfo.State.Running) {
         return;
@@ -84,14 +84,14 @@ export const stopContainer = async (service: Service) => {
 };
 
 export const deleteContainer = async (service: Service) => {
-    if (!service.containerId) {
+    if (!service.dockerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
     if (service.status == ServiceStatus.RUNNING) {
         await stopContainer(service);
     }
-    const container = docker.getContainer(service.containerId);
-    service.containerId = undefined;
+    const container = docker.getContainer(service.dockerInfo.containerId);
+    service.dockerInfo.containerId = undefined;
     return container.remove();
 };
 

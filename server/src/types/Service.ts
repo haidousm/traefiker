@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { ServiceStatus } from "./enums/ServiceStatus";
 import { EnvironmentVariable } from "./EnvironmentVariable";
 import { Image } from "./Image";
@@ -42,17 +43,20 @@ import { Redirect } from "./Redirect";
  *          order:
  *              type: integer
  */
+
 export interface Service {
-    id?: string;
+    _id?: string;
     name: string;
     status: ServiceStatus;
     image: Image;
     hosts: string[];
     environmentVariables: EnvironmentVariable[];
     redirects: Redirect[];
-    network?: string;
-    containerId?: string;
-    internalName?: string;
-    project?: Project;
+    project: Project;
     order: number;
+    dockerInfo?: {
+        network?: string;
+        containerId?: string;
+        containerName?: string;
+    };
 }

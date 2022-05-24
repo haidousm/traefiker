@@ -5,8 +5,6 @@
  *          Image:
  *              type: object
  *              properties:
- *                  id:
- *                     type: string
  *                  name:
  *                      type: string
  *                  tag:
@@ -15,7 +13,7 @@
  *                      type: string
  */
 export interface Image {
-    id: string;
+    _id?: string;
     name: string;
     tag: string;
     repository: string;

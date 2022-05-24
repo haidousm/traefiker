@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
-import ServiceModel from "./Service";
-
-export interface Internal_ProjectDocument {
-    _id: mongoose.Schema.Types.ObjectId;
-    name: string;
-    createdAt: Date;
-}
+import { Project } from "../types/Project";
 
 const projectSchema = new mongoose.Schema({
     name: {
@@ -20,26 +14,23 @@ const projectSchema = new mongoose.Schema({
     },
 });
 
-projectSchema.pre(
-    "remove",
-    async function (this: Internal_ProjectDocument, next) {
-        const services = await ServiceModel.find({ project: this._id });
-        for (const service of services) {
-            const defaultProject = await ProjectModel.findOne({
-                name: "default",
-            }).exec();
-            if (!defaultProject) {
-                throw new Error("Default project not found");
-            }
-            service.project = defaultProject._id;
-            await service.save();
-        }
-        next();
-    }
-);
+// projectSchema.pre(
+//     "remove",
+//     async function (this: Internal_ProjectDocument, next) {
+//         const services = await ServiceModel.find({ project: this._id });
+//         for (const service of services) {
+//             const defaultProject = await ProjectModel.findOne({
+//                 name: "default",
+//             }).exec();
+//             if (!defaultProject) {
+//                 throw new Error("Default project not found");
+//             }
+//             service.project = defaultProject._id;
+//             await service.save();
+//         }
+//         next();
+//     }
+// );
 
-const ProjectModel = mongoose.model<Internal_ProjectDocument>(
-    "Project",
-    projectSchema
-);
+const ProjectModel = mongoose.model<Project>("Project", projectSchema);
 export default ProjectModel;

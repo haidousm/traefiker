@@ -1,45 +1,38 @@
-import ImageModel, { Internal_ImageDocument } from "../models/Image";
+import ImageModel from "../models/Image";
 import { Image } from "../types/Image";
 
-export const findImageById = (imageId: string) => {
-    return ImageModel.findById(imageId).exec();
+export const findImageById = async (imageId: string) => {
+    return await ImageModel.findById(imageId).exec();
 };
-export const findImageByImageIdentifier = async (
-    identifier: string
-): Promise<Image> => {
+export const findImageByImageIdentifier = async (identifier: string) => {
     const { repository, name, tag } = parseImageIdentifier(identifier);
-    const internalImage = await ImageModel.findOne({
+    return await ImageModel.findOne({
         repository,
         name,
         tag,
     }).exec();
-    if (internalImage) {
-        return internalImageToImage(internalImage);
-    }
-    throw new Error(`Image not found: ${identifier}`);
 };
 
 export const createImageByImageIdentifier = async (
     identifier: string
 ): Promise<Image> => {
     const { repository, name, tag } = parseImageIdentifier(identifier);
-    const internalImage = new ImageModel({
+    const image = new ImageModel({
         name,
         tag,
         repository,
     });
-    await internalImage.save();
-    return internalImageToImage(internalImage);
+    return await image.save();
 };
 
 export const getOrCreateImageByImageIdentifier = async (
     imageIdentifier: string
 ) => {
-    try {
-        return await findImageByImageIdentifier(imageIdentifier);
-    } catch (e) {
+    const image = await findImageByImageIdentifier(imageIdentifier);
+    if (!image) {
         return await createImageByImageIdentifier(imageIdentifier);
     }
+    return image;
 };
 
 export const deleteAllImages = async () => {
@@ -62,13 +55,4 @@ const parseImageIdentifier = (imageIdentifier: string) => {
         };
     }
     throw new Error(`Invalid image identifier: ${imageIdentifier}`);
-};
-
-const internalImageToImage = (internalImage: Internal_ImageDocument) => {
-    return {
-        id: internalImage._id.toString(),
-        name: internalImage.name,
-        tag: internalImage.tag,
-        repository: internalImage.repository,
-    };
 };

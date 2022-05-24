@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import {
     findAllServices,
-    saveService,
     findServiceByName,
     deleteServiceByName,
+    findLastUsedOrder,
+    saveService,
 } from "../services/services.service";
 import { Service } from "../types/Service";
 import { getOrCreateImageByImageIdentifier } from "../services/images.service";
@@ -16,17 +17,14 @@ import {
 } from "../../libs/docker";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import Dockerode from "dockerode";
-import { findLastUsedOrder } from "../services/services.service";
 import logger from "../utils/logger";
 import { bindTrailingArgs } from "../utils/misc";
 import { Project } from "../types/Project";
 import { findProjectByName } from "../services/projects.service";
+import ServiceModel from "../models/Service";
 
-export const getAllServicesHandler = async (
-    _req: Request,
-    res: Response<Service[]>
-) => {
-    const services: Service[] = await findAllServices();
+export const getAllServicesHandler = async (_req: Request, res: Response) => {
+    const services = await findAllServices();
     return res.json(services);
 };
 
@@ -44,7 +42,6 @@ export const createServiceHandler = async (req: Request, res: Response) => {
         const project: Project | null = await findProjectByName(
             req.body.project
         );
-
         if (!project) {
             logger.error(
                 `Project with name ${req.body.project} does not exist`
@@ -53,24 +50,24 @@ export const createServiceHandler = async (req: Request, res: Response) => {
                 error: `Project with name ${req.body.project} does not exist`,
             });
         }
-        const service: Service = await saveService({
+
+        const service = new ServiceModel({
             name: req.body.name,
             status: ServiceStatus.PULLING,
-            image: image,
+            image: image._id,
             hosts: req.body.hosts,
-            environmentVariables: [],
-            project: project,
-            redirects: [],
+            project: project._id,
             order: (await findLastUsedOrder()) + 1, // TODO: operation is not atomic ?? might(is) a problem if multiple requests are made at the same time
         });
+        const savedService = await saveService(service);
         createContainer(
-            service,
+            savedService,
             image,
             attachContainerToService,
             cleanUpOnError
         );
-        logger.info(`Service ${service.name} created`);
-        return res.json(service);
+        logger.info(`Service ${savedService.name} created`);
+        return res.json(savedService);
     } catch (e) {
         if (e instanceof Error) {
             logger.error(e.message);
@@ -94,9 +91,7 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             });
         }
 
-        const service: Service | null = await findServiceByName(
-            req.params.name
-        );
+        const service = await findServiceByName(req.params.name);
         if (!service) {
             logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
@@ -114,9 +109,10 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
         service.environmentVariables =
             environmentVariables ?? service.environmentVariables;
         service.redirects = redirects ?? service.redirects;
+
         const image = service.image;
         await deleteContainer(service);
-        await saveService(service);
+        await service.save();
         createContainer(
             service,
             image,
@@ -353,7 +349,6 @@ export const attachContainerToService = async (
     start = false
 ) => {
     const containerInfo = await container.inspect();
-    service.network = containerInfo.HostConfig.NetworkMode;
     service.environmentVariables = containerInfo.Config.Env.map((envString) => {
         // TODO: split on first equal BUT NOT ALWAYS CORRECT
         const i = envString.indexOf("=");
@@ -363,9 +358,12 @@ export const attachContainerToService = async (
             value,
         };
     });
-    service.containerId = container.id;
     service.status = ServiceStatus.CREATED;
-    service.internalName = `traefiker_${service.name}`;
+    service.dockerInfo = {
+        network: containerInfo.HostConfig.NetworkMode,
+        containerId: container.id,
+        containerName: `traefiker_${service.name}`,
+    };
     logger.info(
         `Container ${container.id} attached to service ${service.name}`
     );

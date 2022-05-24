@@ -12,6 +12,7 @@ import { Service } from "../types/Service";
 import { ServiceStatus } from "../types/enums/ServiceStatus";
 import { Image } from "../types/Image";
 import { Project } from "../types/Project";
+import { HydratedDocument } from "mongoose";
 
 const createServiceRequest = {
     name: "httpd",
@@ -72,12 +73,10 @@ const invalidUpdateRequest = {
 };
 
 const mockProject: Project = {
-    id: "1249124912",
     name: "default",
 };
 
 const createdImage: Image = {
-    id: "5312949241",
     name: "httpd",
     tag: "latest",
     repository: "haidousm/httpd",
@@ -216,6 +215,7 @@ describe("services", () => {
                         .send(createServiceRequest);
 
                     expect(response.status).toBe(200);
+                    console.log(response.body);
                     expect(response.body).toEqual(createdService);
                 });
             });
@@ -456,7 +456,8 @@ describe("services", () => {
                         ServicesService,
                         "findServiceByName"
                     ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
+                        const foundService =
+                            createdService as unknown as HydratedDocument<Service>;
                         foundService.status = ServiceStatus.CREATED;
                         return foundService;
                     });
@@ -468,12 +469,9 @@ describe("services", () => {
                         return Promise.resolve();
                     });
 
-                    jest.spyOn(
-                        ServicesService,
-                        "saveService"
-                    ).mockImplementationOnce(
-                        async (service: Service) => service
-                    );
+                    jest.spyOn(ServicesService, "saveService")
+                        //@ts-ignore
+                        .mockImplementationOnce(async (service) => service);
 
                     const response = await supertest(app).put(
                         "/services/httpd/start"
@@ -495,14 +493,13 @@ describe("services", () => {
                                 next();
                             };
                         });
-                        jest.spyOn(
-                            ServicesService,
-                            "findServiceByName"
-                        ).mockImplementationOnce(async () => {
-                            const foundService = createdService;
-                            foundService.status = ServiceStatus.CREATED;
-                            return foundService;
-                        });
+                        jest.spyOn(ServicesService, "findServiceByName")
+                            // @ts-ignore
+                            .mockImplementationOnce(async () => {
+                                const foundService = createdService;
+                                foundService.status = ServiceStatus.CREATED;
+                                return foundService;
+                            });
 
                         jest.spyOn(
                             DockerLib,
@@ -511,12 +508,9 @@ describe("services", () => {
                             throw new Error("Container not found");
                         });
 
-                        jest.spyOn(
-                            ServicesService,
-                            "saveService"
-                        ).mockImplementationOnce(
-                            async (service: Service) => service
-                        );
+                        jest.spyOn(ServicesService, "saveService")
+                            //@ts-ignore
+                            .mockImplementationOnce(async (service) => service);
 
                         const response = await supertest(app).put(
                             "/services/httpd/start"
@@ -539,14 +533,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.RUNNING;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.RUNNING;
+                            return foundService;
+                        });
 
                     const response = await supertest(app).put(
                         "/services/httpd/start"
@@ -568,14 +561,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.ERROR;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.ERROR;
+                            return foundService;
+                        });
 
                     const response = await supertest(app).put(
                         "/services/httpd/start"
@@ -597,14 +589,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.PULLING;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.PULLING;
+                            return foundService;
+                        });
 
                     const response = await supertest(app).put(
                         "/services/httpd/start"
@@ -701,14 +692,13 @@ describe("services", () => {
                             };
                         }
                     );
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.PULLING;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.PULLING;
+                            return foundService;
+                        });
                     const response = await supertest(app)
                         .put("/services/httpd/update")
                         .send(updateAllRequest);
@@ -728,14 +718,13 @@ describe("services", () => {
                             };
                         }
                     );
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.CREATED;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.CREATED;
+                            return foundService;
+                        });
 
                     jest.spyOn(
                         ImagesService,
@@ -786,14 +775,13 @@ describe("services", () => {
                             };
                         }
                     );
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.CREATED;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.CREATED;
+                            return foundService;
+                        });
 
                     jest.spyOn(
                         ImagesService,
@@ -844,14 +832,13 @@ describe("services", () => {
                             };
                         }
                     );
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.CREATED;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.CREATED;
+                            return foundService;
+                        });
 
                     jest.spyOn(
                         ImagesService,
@@ -902,14 +889,13 @@ describe("services", () => {
                             };
                         }
                     );
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.CREATED;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.CREATED;
+                            return foundService;
+                        });
 
                     jest.spyOn(
                         ImagesService,
@@ -966,14 +952,13 @@ describe("services", () => {
                                 next();
                             };
                         });
-                        jest.spyOn(
-                            ServicesService,
-                            "findServiceByName"
-                        ).mockImplementationOnce(async () => {
-                            const foundService = createdService;
-                            foundService.status = ServiceStatus.CREATED;
-                            return foundService;
-                        });
+                        jest.spyOn(ServicesService, "findServiceByName")
+                            // @ts-ignore
+                            .mockImplementationOnce(async () => {
+                                const foundService = createdService;
+                                foundService.status = ServiceStatus.CREATED;
+                                return foundService;
+                            });
 
                         jest.spyOn(
                             ImagesService,
@@ -1066,14 +1051,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.RUNNING;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.RUNNING;
+                            return foundService;
+                        });
 
                     jest.spyOn(
                         DockerLib,
@@ -1082,12 +1066,9 @@ describe("services", () => {
                         return Promise.resolve();
                     });
 
-                    jest.spyOn(
-                        ServicesService,
-                        "saveService"
-                    ).mockImplementationOnce(
-                        async (service: Service) => service
-                    );
+                    jest.spyOn(ServicesService, "saveService")
+                        // @ts-ignore
+                        .mockImplementationOnce((service: Service) => service);
 
                     const response = await supertest(app).put(
                         "/services/httpd/stop"
@@ -1109,14 +1090,13 @@ describe("services", () => {
                                 next();
                             };
                         });
-                        jest.spyOn(
-                            ServicesService,
-                            "findServiceByName"
-                        ).mockImplementationOnce(async () => {
-                            const foundService = createdService;
-                            foundService.status = ServiceStatus.RUNNING;
-                            return foundService;
-                        });
+                        jest.spyOn(ServicesService, "findServiceByName")
+                            // @ts-ignore
+                            .mockImplementationOnce(async () => {
+                                const foundService = createdService;
+                                foundService.status = ServiceStatus.RUNNING;
+                                return foundService;
+                            });
 
                         jest.spyOn(
                             DockerLib,
@@ -1129,7 +1109,8 @@ describe("services", () => {
                             ServicesService,
                             "saveService"
                         ).mockImplementationOnce(
-                            async (service: Service) => service
+                            // @ts-ignore
+                            (service: Service) => service
                         );
 
                         const response = await supertest(app).put(
@@ -1153,14 +1134,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.STOPPED;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.STOPPED;
+                            return foundService;
+                        });
 
                     const response = await supertest(app).put(
                         "/services/httpd/stop"
@@ -1182,14 +1162,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.ERROR;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.ERROR;
+                            return foundService;
+                        });
 
                     const response = await supertest(app).put(
                         "/services/httpd/stop"
@@ -1211,14 +1190,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.PULLING;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.PULLING;
+                            return foundService;
+                        });
 
                     const response = await supertest(app).put(
                         "/services/httpd/stop"
@@ -1279,14 +1257,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.CREATED;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.CREATED;
+                            return foundService;
+                        });
 
                     jest.spyOn(
                         DockerLib,
@@ -1295,12 +1272,11 @@ describe("services", () => {
                         return Promise.resolve();
                     });
 
-                    jest.spyOn(
-                        ServicesService,
-                        "deleteServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        return Promise.resolve();
-                    });
+                    jest.spyOn(ServicesService, "deleteServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            return Promise.resolve();
+                        });
 
                     const response = await supertest(app).delete(
                         "/services/httpd/delete"
@@ -1321,14 +1297,13 @@ describe("services", () => {
                                 next();
                             };
                         });
-                        jest.spyOn(
-                            ServicesService,
-                            "findServiceByName"
-                        ).mockImplementationOnce(async () => {
-                            const foundService = createdService;
-                            foundService.status = ServiceStatus.CREATED;
-                            return foundService;
-                        });
+                        jest.spyOn(ServicesService, "findServiceByName")
+                            // @ts-ignore
+                            .mockImplementationOnce(async () => {
+                                const foundService = createdService;
+                                foundService.status = ServiceStatus.CREATED;
+                                return foundService;
+                            });
 
                         jest.spyOn(
                             DockerLib,
@@ -1358,14 +1333,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.RUNNING;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.RUNNING;
+                            return foundService;
+                        });
 
                     const stopContainerMock = jest
                         .spyOn(DockerLib, "stopContainer")
@@ -1381,12 +1355,11 @@ describe("services", () => {
                         return Promise.resolve();
                     });
 
-                    jest.spyOn(
-                        ServicesService,
-                        "deleteServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        return Promise.resolve();
-                    });
+                    jest.spyOn(ServicesService, "deleteServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            return Promise.resolve();
+                        });
 
                     const response = await supertest(app).delete(
                         "/services/httpd/delete"
@@ -1409,14 +1382,13 @@ describe("services", () => {
                         }
                     );
 
-                    jest.spyOn(
-                        ServicesService,
-                        "findServiceByName"
-                    ).mockImplementationOnce(async () => {
-                        const foundService = createdService;
-                        foundService.status = ServiceStatus.PULLING;
-                        return foundService;
-                    });
+                    jest.spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
+                        .mockImplementationOnce(async () => {
+                            const foundService = createdService;
+                            foundService.status = ServiceStatus.PULLING;
+                            return foundService;
+                        });
 
                     const response = await supertest(app).delete(
                         "/services/httpd/delete"
@@ -1505,6 +1477,7 @@ describe("services", () => {
 
                     const findServiceByNameMock = jest
                         .spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
                         .mockImplementation(async (name: string) => {
                             if (name === "httpd") {
                                 return Promise.resolve(createdService);
@@ -1546,6 +1519,7 @@ describe("services", () => {
 
                     const findServiceByNameMock = jest
                         .spyOn(ServicesService, "findServiceByName")
+                        // @ts-ignore
                         .mockImplementation(async (name: string) => {
                             if (name === "httpd") {
                                 return Promise.resolve(createdService);

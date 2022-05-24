@@ -63,12 +63,8 @@ export const createServiceHandler = async (req: Request, res: Response) => {
             redirects: [],
             order: (await findLastUsedOrder()) + 1, // TODO: operation is not atomic ?? might(is) a problem if multiple requests are made at the same time
         });
-        createContainer(
-            service,
-            image,
-            attachContainerToService,
-            cleanUpOnError
-        );
+
+        createContainer(service, image, attachWithRestart, cleanUpOnError);
         logger.info(`Service ${service.name} created`);
         return res.json(service);
     } catch (e) {
@@ -117,12 +113,7 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
         const image = service.image;
         await deleteContainer(service);
         await saveService(service);
-        createContainer(
-            service,
-            image,
-            attachContainerToService,
-            cleanUpOnError
-        );
+        createContainer(service, image, attachWithRestart, cleanUpOnError);
         logger.info(`Service ${service.name} updated`);
         return res.json(service);
     } catch (e) {
@@ -288,10 +279,6 @@ export const recreateServiceHandler = async (req: Request, res: Response) => {
             : service.image;
         service.image = image;
         await saveService(service);
-        const attachWithRestart = bindTrailingArgs(
-            attachContainerToService,
-            true
-        );
         createContainer(
             service,
             service.image,
@@ -384,3 +371,5 @@ export const cleanUpOnError = async (service: Service, error: any) => {
     // istanbul ignore next
     logger.error(`Service ${service.name} in error state because of ${error}`);
 };
+
+const attachWithRestart = bindTrailingArgs(attachContainerToService, true);

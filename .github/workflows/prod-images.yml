@@ -63,3 +63,4 @@ jobs:
                   docker ps
                   docker-compose pull
                   docker-compose -f docker-compose.yml -f conf/prod.yml up -d
+                  docker system prune -a -f

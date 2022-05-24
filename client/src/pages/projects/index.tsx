@@ -100,7 +100,7 @@ const Projects: NextPage = () => {
                         </div>
                     </header>
                 </div>
-                <div className="m-4 grid grid-cols-3 place-items-center gap-1">
+                <div className="m-4 grid grid-cols-3 place-items-center gap-6">
                     {projects &&
                         projects.map((project) => {
                             return (

@@ -30,6 +30,7 @@
         "passport": "^0.5.2",
         "passport-jwt": "^4.0.0",
         "pino": "^7.11.0",
+        "prisma": "^4.1.1",
         "socket.io": "^4.5.0",
         "swagger-jsdoc": "^6.2.1",
         "swagger-ui-express": "^4.3.0",

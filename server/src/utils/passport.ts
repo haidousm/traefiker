@@ -17,7 +17,10 @@ const configurePassport = (passport: PassportStatic) => {
     passport.use(
         new Strategy(jwtOptions, async (jwtPayload: JwtPayload, done) => {
             try {
-                const user = await findUser({ id: jwtPayload.sub });
+                if (!jwtPayload.sub) throw Error("fuck?");
+                const user = await findUser({
+                    id: Number.parseInt(jwtPayload.sub),
+                });
                 if (user) {
                     return done(null, user);
                 }

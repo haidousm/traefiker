@@ -18,7 +18,7 @@ enum ServiceStatus {
 model User {
   id Int @id @default(autoincrement())
 
-  username String
+  username String @unique
   hash     String
   salt     String
 

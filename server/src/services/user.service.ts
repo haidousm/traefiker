@@ -1,18 +1,27 @@
-import { FilterQuery } from "mongoose";
-import UserModel, { UserDocument } from "../models/User";
+import { Prisma } from "@prisma/client";
+import prisma from "../utils/db";
 import { generateSalt, generateHash } from "../utils/password";
 
-export const findUser = async (query: FilterQuery<UserDocument>) => {
-    return UserModel.findOne(query).exec();
+export const findUser = (query: Prisma.UserWhereUniqueInput) => {
+    return prisma.user.findUnique({
+        where: query,
+    });
 };
 
 export const createUser = (username: string, password: string) => {
     const salt = generateSalt();
     const hash = generateHash(password, salt);
-    const user = new UserModel({
-        username: username,
-        hash,
-        salt,
+    return prisma.user.create({
+        data: {
+            username,
+            salt,
+            hash,
+        },
     });
-    return user.save();
+};
+
+export const deleteUser = async (query: Prisma.UserWhereUniqueInput) => {
+    return prisma.user.delete({
+        where: query,
+    });
 };

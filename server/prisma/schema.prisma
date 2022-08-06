@@ -28,7 +28,7 @@ model User {
 
 model Service {
   id     Int           @id @default(autoincrement())
-  name   String
+  name   String        @unique
   status ServiceStatus @default(PULLING)
   hosts  String[]
 
@@ -49,12 +49,16 @@ model Service {
 }
 
 model Image {
-  id         Int       @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   name       String
   tag        String
   repository String
-  services   Service[]
-  createdAt  DateTime  @default(now())
+
+  services Service[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([name, tag, repository], name: "imageIdentifier")
 }
 
 model ContainerInfo {

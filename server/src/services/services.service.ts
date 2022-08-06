@@ -1,144 +1,66 @@
-import ServiceModel, { Internal_ServiceDocument } from "../models/Service";
-import { Image } from "../types/Image";
-import { Service } from "../types/Service";
-import ImageModel, { Internal_ImageDocument } from "../models/Image";
-import { Project } from "../types/Project";
-import ProjectModel, { Internal_ProjectDocument } from "../models/Project";
+import { Prisma } from "@prisma/client";
+import prisma from "../utils/db";
 
-export const findAllServices = async (): Promise<Service[]> => {
-    const internalServices: Internal_ServiceDocument[] =
-        await ServiceModel.find().populate("image").populate("project").exec();
-    return internalServices.map(internalServiceToService);
+const SERVICE_INCLUDE_OBJ = {
+    image: true,
+    environmentVariables: true,
+    redirects: true,
+    containerInfo: true,
 };
 
-export const findServiceByName = async (
-    name: string
-): Promise<Service | null> => {
-    const internalService: Internal_ServiceDocument | null =
-        await ServiceModel.findOne({ name })
-            .populate("image")
-            .populate("project")
-            .exec();
-    if (!internalService) {
-        return null;
-    }
-    return internalServiceToService(internalService);
+export const findAllServices = () => {
+    return prisma.service.findMany({
+        include: SERVICE_INCLUDE_OBJ,
+    });
 };
 
-export const findLastUsedOrder = async (): Promise<number> => {
-    const internalService = await ServiceModel.findOne({})
-        .sort({ order: -1 })
-        .exec();
-    if (!internalService) {
-        return 0;
-    }
-    return internalService.order;
+export const findServiceByName = (name: string) => {
+    return prisma.service.findUnique({
+        where: {
+            name,
+        },
+        include: SERVICE_INCLUDE_OBJ,
+    });
 };
 
-export const saveService = async (service: Service) => {
-    const internalService = await ServiceModel.findById(service.id).exec();
-    const internalImage = await ImageModel.findById(service.image.id).exec();
-    if (!internalImage) {
-        throw new Error("Image not found");
-    }
-
-    const internalProject = await ProjectModel.findById(
-        service.project?.id
-    ).exec();
-    if (!internalProject) {
-        throw new Error("Project not found");
-    }
-    if (!internalService) {
-        const internalService = new ServiceModel({
-            name: service.name,
-            status: service.status,
-            image: internalImage,
-            network: service.network,
-            hosts: service.hosts,
-            redirects: service.redirects,
-            environmentVariables: service.environmentVariables,
-            order: service.order,
-            internalName: service.internalName,
-            project: service.project?.id,
-            containerId: service.containerId,
-        });
-        await internalService.save();
-        return internalServiceToService(internalService);
-    }
-    // todo: refactor this dumb ass code
-    internalService.name = service.name;
-    internalService.status = service.status;
-    internalService.image = internalImage._id;
-    internalService.network = service.network;
-    internalService.hosts = service.hosts;
-    internalService.redirects = service.redirects;
-    internalService.environmentVariables = service.environmentVariables;
-    internalService.order = service.order;
-    internalService.internalName = service.internalName;
-    internalService.containerId = service.containerId;
-    internalService.project = internalProject._id;
-    await internalService.save();
-    return internalServiceToService(internalService);
+export const createService = (service: Prisma.ServiceCreateInput) => {
+    return prisma.service.create({
+        data: service,
+        include: SERVICE_INCLUDE_OBJ,
+    });
 };
 
-export const deleteServiceByName = async (name: string) => {
-    const internalService = await ServiceModel.findOne({ name }).exec();
-    if (!internalService) {
-        throw new Error("Service not found");
-    }
-    await internalService.remove();
+export const updateService = (
+    name: string,
+    service: Omit<
+        PopulatedService,
+        "id" | "imageId" | "containerInfoId" | "userId"
+    >
+) => {
+    return prisma.service.update({
+        where: { name },
+        data: {
+            ...service,
+            image: { connect: service.image },
+            environmentVariables: { connect: service.environmentVariables },
+            redirects: { connect: service.redirects },
+            containerInfo: undefined,
+        },
+        include: SERVICE_INCLUDE_OBJ,
+    });
 };
 
-export const deleteAllContainers = async () => {
-    return ServiceModel.deleteMany({}).exec();
+export const deleteServiceByName = (name: string) => {
+    return prisma.service.delete({ where: { name } });
 };
 
-export const findServicesByProjectId = async (
-    id: string
-): Promise<Service[]> => {
-    const internalServices: Internal_ServiceDocument[] =
-        await ServiceModel.find({
-            project: id,
-        })
-            .populate("image")
-            .populate("project")
-            .exec();
-    return internalServices.map(internalServiceToService);
+export const deleteAllServices = () => {
+    return prisma.service.deleteMany();
 };
 
-const internalServiceToService = (
-    internalService: Internal_ServiceDocument
-): Service => {
-    const internalImage: Internal_ImageDocument =
-        internalService.image as unknown as Internal_ImageDocument;
-    const image: Image = {
-        id: internalImage._id.toString(),
-        name: internalImage.name,
-        tag: internalImage.tag,
-        repository: internalImage.repository,
-    };
+/*TODO: find a better place for this later */
 
-    const internalProject: Internal_ProjectDocument =
-        internalService.project as unknown as Internal_ProjectDocument;
-    let project: Project | undefined = undefined;
-    if (internalProject) {
-        project = {
-            id: internalProject._id.toString(),
-            name: internalProject.name,
-        };
-    }
-    return {
-        id: internalService._id.toString(),
-        name: internalService.name,
-        status: internalService.status,
-        image,
-        network: internalService.network,
-        hosts: internalService.hosts,
-        redirects: internalService.redirects,
-        environmentVariables: internalService.environmentVariables,
-        order: internalService.order,
-        internalName: internalService.internalName,
-        project: project,
-        containerId: internalService.containerId,
-    };
-};
+export type PopulatedService = Exclude<
+    Prisma.PromiseReturnType<typeof findServiceByName>,
+    null
+>;

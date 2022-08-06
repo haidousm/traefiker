@@ -1,49 +1,44 @@
-import ImageModel, { Internal_ImageDocument } from "../models/Image";
-import { Image } from "../types/Image";
+import prisma from "../utils/db";
 
-export const findImageById = (imageId: string) => {
-    return ImageModel.findById(imageId).exec();
-};
-export const findImageByImageIdentifier = async (
-    identifier: string
-): Promise<Image> => {
-    const { repository, name, tag } = parseImageIdentifier(identifier);
-    const internalImage = await ImageModel.findOne({
-        repository,
-        name,
-        tag,
-    }).exec();
-    if (internalImage) {
-        return internalImageToImage(internalImage);
-    }
-    throw new Error(`Image not found: ${identifier}`);
-};
-
-export const createImageByImageIdentifier = async (
-    identifier: string
-): Promise<Image> => {
-    const { repository, name, tag } = parseImageIdentifier(identifier);
-    const internalImage = new ImageModel({
-        name,
-        tag,
-        repository,
+export const findImageById = (imageId: number) => {
+    return prisma.image.findUnique({
+        where: { id: imageId },
     });
-    await internalImage.save();
-    return internalImageToImage(internalImage);
+};
+export const findImageByImageIdentifier = async (identifier: string) => {
+    const { repository, name, tag } = parseImageIdentifier(identifier);
+    return prisma.image.findUnique({
+        where: {
+            imageIdentifier: {
+                repository,
+                name,
+                tag,
+            },
+        },
+    });
+};
+
+export const createImageByImageIdentifier = async (identifier: string) => {
+    const { repository, name, tag } = parseImageIdentifier(identifier);
+    return prisma.image.create({
+        data: {
+            repository,
+            name,
+            tag,
+        },
+    });
 };
 
 export const getOrCreateImageByImageIdentifier = async (
     imageIdentifier: string
 ) => {
-    try {
-        return await findImageByImageIdentifier(imageIdentifier);
-    } catch (e) {
-        return await createImageByImageIdentifier(imageIdentifier);
-    }
+    const image = await findImageByImageIdentifier(imageIdentifier);
+    if (!image) return await createImageByImageIdentifier(imageIdentifier);
+    return image;
 };
 
-export const deleteAllImages = async () => {
-    return ImageModel.deleteMany({}).exec();
+export const deleteAllImages = () => {
+    return prisma.image.deleteMany();
 };
 
 const parseImageIdentifier = (imageIdentifier: string) => {
@@ -62,13 +57,4 @@ const parseImageIdentifier = (imageIdentifier: string) => {
         };
     }
     throw new Error(`Invalid image identifier: ${imageIdentifier}`);
-};
-
-const internalImageToImage = (internalImage: Internal_ImageDocument) => {
-    return {
-        id: internalImage._id.toString(),
-        name: internalImage.name,
-        tag: internalImage.tag,
-        repository: internalImage.repository,
-    };
 };

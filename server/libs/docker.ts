@@ -3,10 +3,14 @@ import Docker, {
     ContainerInfo,
     ContainerInspectInfo,
 } from "dockerode";
-import { ServiceStatus } from "../src/types/enums/ServiceStatus";
-import { Image } from "../src/types/Image";
-import { Redirect } from "../src/types/Redirect";
-import { Service } from "../src/types/Service";
+import {
+    EnvironmentVariable,
+    Image,
+    Redirect,
+    Service,
+    ServiceStatus,
+} from "@prisma/client";
+import { PopulatedService } from "../src/services/services.service";
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
@@ -22,10 +26,10 @@ export const pullImage = async (
 };
 
 export const createContainer = async (
-    service: Service,
+    service: PopulatedService,
     image: Image,
-    onSuccess: (service: Service, container: Container) => void,
-    onError: (service: Service, error: unknown) => void
+    onSuccess: (service: PopulatedService, container: Container) => void,
+    onError: (service: PopulatedService, error: unknown) => void
 ): Promise<void> => {
     try {
         const stream = await pullImage(image);
@@ -39,10 +43,9 @@ export const createContainer = async (
                     : `${image.name}:${image.tag}`;
 
             const labels = getAllLabels(service);
-            const environmentVariables: string[] =
-                service.environmentVariables.map(
-                    (env) => `${env.key}=${env.value}`
-                );
+            const mappedEnvVars: string[] = service.environmentVariables.map(
+                (env) => `${env.key}=${env.value}`
+            );
             try {
                 const container = await docker.createContainer({
                     Image: imageIdentifier,
@@ -51,7 +54,7 @@ export const createContainer = async (
                     HostConfig: {
                         NetworkMode: "web",
                     },
-                    Env: environmentVariables,
+                    Env: mappedEnvVars,
                 });
                 return onSuccess(service, container);
             } catch (e) {
@@ -63,19 +66,19 @@ export const createContainer = async (
     }
 };
 
-export const startContainer = async (service: Service) => {
-    if (!service.containerId) {
+export const startContainer = async (service: PopulatedService) => {
+    if (!service?.containerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
-    const container = docker.getContainer(service.containerId);
+    const container = docker.getContainer(service.containerInfo.containerId);
     return container.start();
 };
 
-export const stopContainer = async (service: Service) => {
-    if (!service.containerId) {
+export const stopContainer = async (service: PopulatedService) => {
+    if (!service?.containerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
-    const container = docker.getContainer(service.containerId);
+    const container = docker.getContainer(service.containerInfo.containerId);
     const containerInfo = await container.inspect();
     if (!containerInfo.State.Running) {
         return;
@@ -83,15 +86,16 @@ export const stopContainer = async (service: Service) => {
     return container.stop();
 };
 
-export const deleteContainer = async (service: Service) => {
-    if (!service.containerId) {
+export const deleteContainer = async (service: PopulatedService) => {
+    if (!service?.containerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
     if (service.status == ServiceStatus.RUNNING) {
         await stopContainer(service);
     }
-    const container = docker.getContainer(service.containerId);
-    service.containerId = undefined;
+    const container = docker.getContainer(service.containerInfo.containerId);
+    service.containerInfo = null;
+    // TODO: update service obj in db
     return container.remove();
 };
 
@@ -208,7 +212,7 @@ const getMiddlewareLabel = (
             uniqueMiddlewareNames.join(","),
     };
 };
-const getAllLabels = (service: Service) => {
+const getAllLabels = (service: PopulatedService) => {
     const internalName = `traefiker_${service.name}`;
     const SSLLabels = getSSLLabels(internalName);
     const hostLabels = transformHostsToLabel(internalName, service.hosts);

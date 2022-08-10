@@ -26,7 +26,6 @@ const port =
     8010;
 httpServer.listen(port, async () => {
     logger.info(`Express server started on port ${port}`);
-    await connectDB();
     if (config.get<boolean>("DOCKER_SOURCE_OF_TRUTH")) {
         logger.info("Using Docker as source of truth");
         await useDockerAsSourceOfTruth();

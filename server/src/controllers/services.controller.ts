@@ -21,17 +21,10 @@ import logger from "../utils/logger";
 import { bindTrailingArgs } from "../utils/misc";
 import { Project } from "../types/Project";
 import { findProjectByName } from "../services/projects.service";
-import {
-    Service,
-    Image,
-    ServiceStatus,
-    EnvironmentVariable,
-    Redirect,
-    ContainerInfo,
-    Prisma,
-} from "@prisma/client";
+import { Service, ServiceStatus, User, Prisma } from "@prisma/client";
 import { createEnvironmentVariable } from "../services/environmentVariables.service";
 import { createRedirect } from "../services/redirects.service";
+import { createContainerInfo } from "../services/containerInfo.service";
 
 export const getAllServicesHandler = async (
     _req: Request,
@@ -49,13 +42,14 @@ export const createServiceHandler = async (req: Request, res: Response) => {
                 error: `Service with name ${req.body.name} already exists`,
             });
         }
+        const user = req.user! as User;
         const image = await getOrCreateImageByImageIdentifier(req.body.image);
         const service = await createService({
             name: req.body.name,
             status: ServiceStatus.PULLING,
-            image: { connect: image },
+            image: { connect: { id: image.id } },
             hosts: req.body.hosts,
-            user: { connect: req.body.user },
+            user: { connect: { id: user.id } },
         });
 
         createContainer(service, image, attachWithRestart, cleanUpOnError);
@@ -106,7 +100,11 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
                 (envVar: Prisma.EnvironmentVariableCreateInput) => {
                     createEnvironmentVariable({
                         ...envVar,
-                        service: { connect: service },
+                        service: {
+                            connect: {
+                                id: service.id,
+                            },
+                        },
                     });
                 }
             );
@@ -116,7 +114,11 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             redirects.map((redirect: Prisma.RedirectCreateInput) => {
                 createRedirect({
                     ...redirect,
-                    service: { connect: service },
+                    service: {
+                        connect: {
+                            id: service.id,
+                        },
+                    },
                 });
             });
         }
@@ -359,11 +361,11 @@ export const attachContainerToService = async (
     start = false
 ) => {
     const dockerContainerInfo = await container.inspect();
-    const containerInfo = {
+    const containerInfo = await createContainerInfo({
         network: dockerContainerInfo.HostConfig.NetworkMode!,
         name: `traefiker_${service.name}`,
         containerId: container.id,
-    };
+    });
 
     // TODO: refactor
     const environmentVariables = dockerContainerInfo.Config.Env.map(
@@ -384,17 +386,24 @@ export const attachContainerToService = async (
     environmentVariables.map((envVar) => {
         createEnvironmentVariable({
             ...envVar,
-            service: { connect: service },
+            service: {
+                connect: {
+                    id: service.id,
+                },
+            },
         });
     });
 
     service.status = ServiceStatus.CREATED;
+    service.containerInfoId = containerInfo.id;
+    const updatedService = await updateService(service.name, service);
+    // TODO: rethink, maybe pass containerId vs service
     logger.info(
         `Container ${container.id} attached to service ${service.name}`
     );
     // istanbul ignore next
     if (start) {
-        await startContainer(service);
+        await startContainer(updatedService);
         service.status = ServiceStatus.RUNNING;
     }
     await updateService(service.name, service);

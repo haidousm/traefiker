@@ -22,8 +22,8 @@ model User {
   hash     String
   salt     String
 
-  createdAt DateTime @default(now())
-  Service   Service?
+  createdAt DateTime  @default(now())
+  Service   Service[]
 }
 
 model Service {
@@ -39,13 +39,13 @@ model Service {
   redirects            Redirect[]
 
   containerInfo   ContainerInfo? @relation(fields: [containerInfoId], references: [id])
-  containerInfoId Int            @unique
+  containerInfoId Int?           @unique
 
   order     Int      @default(autoincrement())
   createdAt DateTime @default(now())
 
   user   User @relation(fields: [userId], references: [id])
-  userId Int  @unique
+  userId Int
 }
 
 model Image {

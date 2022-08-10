@@ -70,8 +70,8 @@ export const createContainer = async (
 };
 
 export const startContainer = async (service: Service) => {
-    const containerInfo = await findContainerInfoById(service.containerInfoId);
-    if (!containerInfo || containerInfo?.containerId) {
+    const containerInfo = await findContainerInfoById(service.containerInfoId!);
+    if (!containerInfo || !containerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
     const container = docker.getContainer(containerInfo.containerId);
@@ -79,8 +79,8 @@ export const startContainer = async (service: Service) => {
 };
 
 export const stopContainer = async (service: Service) => {
-    const containerInfo = await findContainerInfoById(service.containerInfoId);
-    if (!containerInfo || containerInfo?.containerId) {
+    const containerInfo = await findContainerInfoById(service.containerInfoId!);
+    if (!containerInfo || !containerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
     const container = docker.getContainer(containerInfo.containerId);
@@ -92,8 +92,8 @@ export const stopContainer = async (service: Service) => {
 };
 
 export const deleteContainer = async (service: Service) => {
-    const containerInfo = await findContainerInfoById(service.containerInfoId);
-    if (!containerInfo || containerInfo?.containerId) {
+    const containerInfo = await findContainerInfoById(service.containerInfoId!);
+    if (!containerInfo || !containerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
     if (containerInfo?.containerId) {
@@ -103,7 +103,7 @@ export const deleteContainer = async (service: Service) => {
         await stopContainer(service);
     }
     const container = docker.getContainer(containerInfo.containerId);
-    await deleteContainerInfoById(service.containerInfoId);
+    await deleteContainerInfoById(service.containerInfoId!);
     return container.remove();
 };
 

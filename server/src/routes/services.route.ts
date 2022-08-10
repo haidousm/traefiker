@@ -16,7 +16,6 @@ import {
     startServiceHandler,
     stopServiceHandler,
     updateServiceHandler,
-    updateServicesOrderHandler,
 } from "../controllers/services.controller";
 
 const router = express.Router();
@@ -250,10 +249,10 @@ router.put(
  *                  description: Unauthorized
  *
  */
-router.put(
-    "/order",
-    validateResource(UpdateServicesOrderRequestSchema),
-    updateServicesOrderHandler
-);
+// router.put(
+//     "/order",
+//     validateResource(UpdateServicesOrderRequestSchema),
+//     updateServicesOrderHandler
+// );
 
 export default router;

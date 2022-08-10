@@ -5,9 +5,11 @@ import {
     deleteServiceByName,
     createService,
     updateService,
-    PopulatedService,
 } from "../services/services.service";
-import { getOrCreateImageByImageIdentifier } from "../services/images.service";
+import {
+    findImageById,
+    getOrCreateImageByImageIdentifier,
+} from "../services/images.service";
 import {
     createContainer,
     deleteContainer,
@@ -26,7 +28,10 @@ import {
     EnvironmentVariable,
     Redirect,
     ContainerInfo,
+    Prisma,
 } from "@prisma/client";
+import { createEnvironmentVariable } from "../services/environmentVariables.service";
+import { createRedirect } from "../services/redirects.service";
 
 export const getAllServicesHandler = async (
     _req: Request,
@@ -93,13 +98,36 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             });
         }
 
-        service.hosts = hosts ?? service.hosts;
-        service.environmentVariables =
-            environmentVariables ?? service.environmentVariables;
-        service.redirects = redirects ?? service.redirects;
-        const image = service.image;
+        if (hosts) {
+            service.hosts = hosts;
+        }
+        if (environmentVariables) {
+            environmentVariables.map(
+                (envVar: Prisma.EnvironmentVariableCreateInput) => {
+                    createEnvironmentVariable({
+                        ...envVar,
+                        service: { connect: service },
+                    });
+                }
+            );
+        }
+
+        if (redirects) {
+            redirects.map((redirect: Prisma.RedirectCreateInput) => {
+                createRedirect({
+                    ...redirect,
+                    service: { connect: service },
+                });
+            });
+        }
+
         await deleteContainer(service);
         const updatedService = await updateService(service.name, service);
+        const image = await findImageById(updatedService.imageId);
+        if (!image) {
+            // do something better
+            return res.status(500);
+        }
         createContainer(
             updatedService,
             image,
@@ -258,14 +286,21 @@ export const recreateServiceHandler = async (req: Request, res: Response) => {
         }
         await deleteContainer(service);
 
-        const image = req.body.image
-            ? await getOrCreateImageByImageIdentifier(req.body.image)
-            : service.image;
-        service.image = image;
-        await updateService(service.name, service);
+        let image;
+        if (req.body.image) {
+            image = await getOrCreateImageByImageIdentifier(req.body.image);
+        } else {
+            image = await findImageById(service.imageId);
+            if (!image) {
+                // TODO: return something useful
+                return res.status(500);
+            }
+        }
+        service.imageId = image.id;
+        const updatedService = await updateService(service.name, service);
         createContainer(
-            service,
-            service.image,
+            updatedService,
+            image,
             attachWithRestart,
             cleanUpOnError
         );
@@ -319,7 +354,7 @@ export const recreateServiceHandler = async (req: Request, res: Response) => {
 // };
 
 export const attachContainerToService = async (
-    service: PopulatedService,
+    service: Service,
     container: Dockerode.Container,
     start = false
 ) => {
@@ -330,21 +365,29 @@ export const attachContainerToService = async (
         containerId: container.id,
     };
 
-    // TODO: create env vars
-    // service.environmentVariables = dockerContainerInfo.Config.Env.map(
-    //     (envString) => {
-    //         // TODO: split on first equal BUT NOT ALWAYS CORRECT
-    //         const i = envString.indexOf("=");
-    //         const [key, value] = [
-    //             envString.slice(0, i),
-    //             envString.slice(i + 1),
-    //         ];
-    //         return {
-    //             key,
-    //             value,
-    //         };
-    //     }
-    // );
+    // TODO: refactor
+    const environmentVariables = dockerContainerInfo.Config.Env.map(
+        (envString) => {
+            // TODO: split on first equal BUT NOT ALWAYS CORRECT
+            const i = envString.indexOf("=");
+            const [key, value] = [
+                envString.slice(0, i),
+                envString.slice(i + 1),
+            ];
+            return {
+                key,
+                value,
+            };
+        }
+    );
+
+    environmentVariables.map((envVar) => {
+        createEnvironmentVariable({
+            ...envVar,
+            service: { connect: service },
+        });
+    });
+
     service.status = ServiceStatus.CREATED;
     logger.info(
         `Container ${container.id} attached to service ${service.name}`
@@ -358,7 +401,7 @@ export const attachContainerToService = async (
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const cleanUpOnError = async (service: PopulatedService, error: any) => {
+export const cleanUpOnError = async (service: Service, error: any) => {
     service.status = ServiceStatus.ERROR;
     await updateService(service.name, service);
     // istanbul ignore next

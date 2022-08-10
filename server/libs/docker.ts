@@ -3,14 +3,13 @@ import Docker, {
     ContainerInfo,
     ContainerInspectInfo,
 } from "dockerode";
+import { Image, Redirect, Service, ServiceStatus } from "@prisma/client";
+import { findEnvironmentVariablesByServiceId } from "../src/services/environmentVariables.service";
 import {
-    EnvironmentVariable,
-    Image,
-    Redirect,
-    Service,
-    ServiceStatus,
-} from "@prisma/client";
-import { PopulatedService } from "../src/services/services.service";
+    deleteContainerInfoById,
+    findContainerInfoById,
+} from "../src/services/containerInfo.service";
+import { findRedirectsByServiceId } from "../src/services/redirects.service";
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
@@ -26,10 +25,10 @@ export const pullImage = async (
 };
 
 export const createContainer = async (
-    service: PopulatedService,
+    service: Service,
     image: Image,
-    onSuccess: (service: PopulatedService, container: Container) => void,
-    onError: (service: PopulatedService, error: unknown) => void
+    onSuccess: (service: Service, container: Container) => void,
+    onError: (service: Service, error: unknown) => void
 ): Promise<void> => {
     try {
         const stream = await pullImage(image);
@@ -42,8 +41,12 @@ export const createContainer = async (
                     ? `${image.repository}/${image.name}:${image.tag}`
                     : `${image.name}:${image.tag}`;
 
-            const labels = getAllLabels(service);
-            const mappedEnvVars: string[] = service.environmentVariables.map(
+            const redirects = await findRedirectsByServiceId(service.id);
+            const labels = getAllLabels(service, redirects);
+
+            const environmentVariables =
+                await findEnvironmentVariablesByServiceId(service.id);
+            const mappedEnvVars: string[] = environmentVariables.map(
                 (env) => `${env.key}=${env.value}`
             );
             try {
@@ -66,36 +69,41 @@ export const createContainer = async (
     }
 };
 
-export const startContainer = async (service: PopulatedService) => {
-    if (!service?.containerInfo?.containerId) {
+export const startContainer = async (service: Service) => {
+    const containerInfo = await findContainerInfoById(service.containerInfoId);
+    if (!containerInfo || containerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
-    const container = docker.getContainer(service.containerInfo.containerId);
+    const container = docker.getContainer(containerInfo.containerId);
     return container.start();
 };
 
-export const stopContainer = async (service: PopulatedService) => {
-    if (!service?.containerInfo?.containerId) {
+export const stopContainer = async (service: Service) => {
+    const containerInfo = await findContainerInfoById(service.containerInfoId);
+    if (!containerInfo || containerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
-    const container = docker.getContainer(service.containerInfo.containerId);
-    const containerInfo = await container.inspect();
-    if (!containerInfo.State.Running) {
+    const container = docker.getContainer(containerInfo.containerId);
+    const containerState = (await container.inspect()).State;
+    if (!containerState.Running) {
         return;
     }
     return container.stop();
 };
 
-export const deleteContainer = async (service: PopulatedService) => {
-    if (!service?.containerInfo?.containerId) {
+export const deleteContainer = async (service: Service) => {
+    const containerInfo = await findContainerInfoById(service.containerInfoId);
+    if (!containerInfo || containerInfo?.containerId) {
+        throw new Error("Container id is not set");
+    }
+    if (containerInfo?.containerId) {
         throw new Error("Container id is not set");
     }
     if (service.status == ServiceStatus.RUNNING) {
         await stopContainer(service);
     }
-    const container = docker.getContainer(service.containerInfo.containerId);
-    service.containerInfo = null;
-    // TODO: update service obj in db
+    const container = docker.getContainer(containerInfo.containerId);
+    await deleteContainerInfoById(service.containerInfoId);
     return container.remove();
 };
 
@@ -212,7 +220,7 @@ const getMiddlewareLabel = (
             uniqueMiddlewareNames.join(","),
     };
 };
-const getAllLabels = (service: PopulatedService) => {
+const getAllLabels = (service: Service, redirects: Redirect[]) => {
     const internalName = `traefiker_${service.name}`;
     const SSLLabels = getSSLLabels(internalName);
     const hostLabels = transformHostsToLabel(internalName, service.hosts);
@@ -220,7 +228,7 @@ const getAllLabels = (service: PopulatedService) => {
         transformHostsToPathPrefixMiddlewareLabels(internalName, service.hosts);
     const redirectMiddlewareLabels = transformRedirectsToMiddlewareLabels(
         internalName,
-        service.redirects
+        redirects
     );
     const labels = {
         ...SSLLabels,

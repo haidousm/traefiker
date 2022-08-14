@@ -44,15 +44,32 @@ export const createServiceHandler = async (req: Request, res: Response) => {
         }
         const user = req.user! as User;
         const image = await getOrCreateImageByImageIdentifier(req.body.image);
+
+        const project = await findProjectByName(req.body.project);
+        if (!project) {
+            logger.error(
+                `Project with name ${req.body.project} does not exist`
+            );
+            return res.status(404).json({
+                error: `Project with name ${req.body.project} does not exist`, // TODO: fix status code, something like 400 vs 404
+            });
+        }
+
         const service = await createService({
             name: req.body.name,
             status: ServiceStatus.PULLING,
             image: { connect: { id: image.id } },
             hosts: req.body.hosts,
+            project: { connect: { id: project?.id } },
             user: { connect: { id: user.id } },
         });
 
-        createContainer(service, image, attachWithRestart, cleanUpOnError);
+        await createContainer(
+            service,
+            image,
+            attachWithRestart,
+            cleanUpOnError
+        );
         logger.info(`Service ${service.name} created`);
         return res.json(service);
     } catch (e) {

@@ -95,4 +95,6 @@ model Project {
   name String @unique
 
   services Service[]
+
+  createdAt DateTime @default(now())
 }

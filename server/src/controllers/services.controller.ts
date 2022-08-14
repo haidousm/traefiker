@@ -19,7 +19,6 @@ import {
 import Dockerode from "dockerode";
 import logger from "../utils/logger";
 import { bindTrailingArgs } from "../utils/misc";
-import { Project } from "../types/Project";
 import { findProjectByName } from "../services/projects.service";
 import { Service, ServiceStatus, User, Prisma } from "@prisma/client";
 import { createEnvironmentVariable } from "../services/environmentVariables.service";

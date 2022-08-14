@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import passport from "passport";
-import Dockerode from "dockerode";
 
 import * as ServicesService from "../../services/services.service";
 import * as ImageServices from "../../services/images.service";

@@ -41,6 +41,9 @@ model Service {
   containerInfo   ContainerInfo? @relation(fields: [containerInfoId], references: [id])
   containerInfoId Int?           @unique
 
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId Int
+
   order     Int      @default(autoincrement())
   createdAt DateTime @default(now())
 
@@ -85,4 +88,11 @@ model Redirect {
 
   service   Service @relation(fields: [serviceId], references: [id])
   serviceId Int
+}
+
+model Project {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  services Service[]
 }

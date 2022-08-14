@@ -3,11 +3,6 @@
 import supertest from "supertest";
 import createServer from "../utils/server";
 
-import * as ImagesService from "../services/images.service";
-import * as ProjectsService from "../services/projects.service";
-import * as DockerLib from "../../libs/docker";
-import { NextFunction, Request, Response } from "express";
-
 import {
     Service,
     Image,
@@ -32,6 +27,7 @@ import {
     stopContainerMock,
     updateServiceMock,
 } from "./utils/mocks";
+import { executeTestCase } from "./utils/misc";
 
 const userA: User = {
     id: 1,
@@ -1044,20 +1040,3 @@ describe("services", () => {
     //         });
     //     });
 });
-const executeTestCase = async (testCase: {
-    title: string;
-    sendRequest: () => supertest.Test;
-    res: { status: number; body?: any };
-    mocks: () => void;
-}) => {
-    testCase.mocks();
-    const expectedRes = testCase.res;
-    const res = await testCase.sendRequest();
-    if (expectedRes.status) {
-        expect(res.status).toBe(expectedRes.status);
-    }
-    if (expectedRes.body) {
-        expect(res.body).toEqual(JSON.parse(JSON.stringify(expectedRes.body))); // need to do this so that dates become strings :(
-    }
-    jest.clearAllMocks();
-};

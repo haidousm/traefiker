@@ -76,3 +76,12 @@ export const pullImageMock = (image: Image | null, throwError?: boolean) => {
         });
     });
 };
+
+export const startContainerMock = (throwError?: boolean) => {
+    jest.spyOn(DockerLib, "startContainer").mockImplementationOnce(async () => {
+        if (throwError) {
+            throw new Error(`${pullImageMock.name} threw an error`);
+        }
+        return Promise.resolve();
+    });
+};

@@ -263,7 +263,10 @@ export const deleteServiceHandler = async (req: Request, res: Response) => {
                 error: `Service with name ${req.params.name} not found`,
             });
         }
-        if (service.status == ServiceStatus.PULLING) {
+        if (
+            service.status == ServiceStatus.PULLING ||
+            service.status == ServiceStatus.RUNNING
+        ) {
             logger.error(`Service ${req.params.name} is being pulled`);
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is still pulling`,

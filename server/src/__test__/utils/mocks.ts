@@ -40,6 +40,12 @@ export const updateServiceMock = (service: Service) => {
     jest.spyOn(ServicesService, "updateService").mockResolvedValueOnce(service);
 };
 
+export const deleteServiceByNameMock = (service: Service) => {
+    jest.spyOn(ServicesService, "deleteServiceByName").mockResolvedValueOnce(
+        service
+    );
+};
+
 export const getOrCreateImageByImageIdentifierMock = (image: Image) => {
     jest.spyOn(
         ImageServices,

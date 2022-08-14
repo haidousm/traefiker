@@ -114,8 +114,8 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
         }
         if (environmentVariables) {
             environmentVariables.map(
-                (envVar: Prisma.EnvironmentVariableCreateInput) => {
-                    createEnvironmentVariable({
+                async (envVar: Prisma.EnvironmentVariableCreateInput) => {
+                    await createEnvironmentVariable({
                         ...envVar,
                         service: {
                             connect: {
@@ -128,8 +128,8 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
         }
 
         if (redirects) {
-            redirects.map((redirect: Prisma.RedirectCreateInput) => {
-                createRedirect({
+            redirects.map(async (redirect: Prisma.RedirectCreateInput) => {
+                await createRedirect({
                     ...redirect,
                     service: {
                         connect: {
@@ -144,7 +144,7 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
         const updatedService = await updateService(service.name, service);
         const image = await findImageById(updatedService.imageId);
         if (!image) {
-            // do something better
+            // TODO: handle better
             return res.status(500);
         }
         createContainer(
@@ -153,8 +153,8 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             attachWithRestart,
             cleanUpOnError
         );
-        logger.info(`Service ${service.name} updated`);
-        return res.json(service);
+        logger.info(`Service ${updatedService.name} updated`);
+        return res.json(updatedService);
     } catch (e) {
         if (e instanceof Error) {
             logger.error(e.message);

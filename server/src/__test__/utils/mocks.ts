@@ -47,6 +47,10 @@ export const getOrCreateImageByImageIdentifierMock = (image: Image) => {
     ).mockResolvedValueOnce(image);
 };
 
+export const findImageByIdMock = (image: Image) => {
+    jest.spyOn(ImageServices, "findImageById").mockResolvedValueOnce(image);
+};
+
 export const findProjectByNameMock = (project: Project | null) => {
     jest.spyOn(ProjectServices, "findProjectByName").mockResolvedValueOnce(
         project
@@ -84,4 +88,15 @@ export const startContainerMock = (throwError?: boolean) => {
         }
         return Promise.resolve();
     });
+};
+
+export const deleteContainerMock = (throwError?: boolean) => {
+    jest.spyOn(DockerLib, "deleteContainer").mockImplementationOnce(
+        async () => {
+            if (throwError) {
+                throw new Error(`${pullImageMock.name} threw an error`);
+            }
+            return Promise.resolve();
+        }
+    );
 };

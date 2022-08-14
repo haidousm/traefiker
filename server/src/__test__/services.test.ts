@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+/* TODO: fix a bunch of flaky tests? */
 import supertest from "supertest";
 import createServer from "../utils/server";
 
@@ -19,7 +20,9 @@ import {
     authMock,
     createContainerMock,
     createServiceMock,
+    deleteContainerMock,
     findAllServicesMock,
+    findImageByIdMock,
     findProjectByNameMock,
     findServiceByNameMock,
     getOrCreateImageByImageIdentifierMock,
@@ -97,64 +100,64 @@ const invalidCreateServiceRequest = {
     hosts: ["httpd.haidousm.com"],
 };
 
-// const updateHostsRequest = {
-//     hosts: ["haidousm.com/httpd"],
-// };
-// const updateRedirectsRequest = {
-//     redirects: [
-//         {
-//             from: "http://haidousm.com/httpd",
-//             to: "httpd.haidousm.com",
-//         },
-//     ],
-// };
-// const updateEnvironmentVariablesRequest = {
-//     environmentVariables: [
-//         {
-//             key: "PORT",
-//             value: "80",
-//         },
-//     ],
-// };
+const updateHostsRequest = {
+    hosts: ["haidousm.com/httpd"],
+};
+const updateRedirectsRequest = {
+    redirects: [
+        {
+            from: "http://haidousm.com/httpd",
+            to: "httpd.haidousm.com",
+        },
+    ],
+};
+const updateEnvironmentVariablesRequest = {
+    environmentVariables: [
+        {
+            key: "PORT",
+            value: "80",
+        },
+    ],
+};
 
-// const emptyUpdateRequest = {};
+const emptyUpdateRequest = {};
 
-// const updateAllRequest = {
-//     hosts: updateHostsRequest.hosts,
-//     redirects: updateRedirectsRequest.redirects,
-//     environmentVariables:
-//         updateEnvironmentVariablesRequest.environmentVariables,
-// };
+const updateAllRequest = {
+    hosts: updateHostsRequest.hosts,
+    redirects: updateRedirectsRequest.redirects,
+    environmentVariables:
+        updateEnvironmentVariablesRequest.environmentVariables,
+};
 
-// const invalidUpdateRequest = {
-//     host: ["httpd.haidousm.com"],
-//     redirects: [
-//         {
-//             FROM: "http://haidousm.com/httpd",
-//             to: "httpd.haidousm.com",
-//         },
-//     ],
-//     environmentVariables: [
-//         {
-//             name: "PORT",
-//             value: "80",
-//         },
-//     ],
-// };
+const invalidUpdateRequest = {
+    host: ["httpd.haidousm.com"],
+    redirects: [
+        {
+            FROM: "http://haidousm.com/httpd",
+            to: "httpd.haidousm.com",
+        },
+    ],
+    environmentVariables: [
+        {
+            name: "PORT",
+            value: "80",
+        },
+    ],
+};
 
-// const postUpdateContainer = {
-//     id: "54321",
-//     inspect: async () => {
-//         return {
-//             HostConfig: {
-//                 NetworkMode: "web",
-//             },
-//             Config: {
-//                 Env: ["PORT=80"],
-//             },
-//         };
-//     },
-// };
+const postUpdateContainer = {
+    id: "54321",
+    inspect: async () => {
+        return {
+            HostConfig: {
+                NetworkMode: "web",
+            },
+            Config: {
+                Env: ["PORT=80"],
+            },
+        };
+    },
+};
 
 const app = createServer();
 
@@ -329,17 +332,178 @@ describe("services", () => {
 
             for (const testCase of cases) {
                 it(testCase.title, async () => {
-                    testCase.mocks();
-                    const expectedRes = testCase.res;
-                    const res = await testCase.sendRequest();
-                    if (expectedRes.status) {
-                        expect(res.status).toBe(expectedRes.status);
-                    }
-                    if (expectedRes.body) {
-                        expect(res.body).toEqual(
-                            JSON.parse(JSON.stringify(expectedRes.body)) // need to do that so that the createdAt field becomes a string :(
-                        );
-                    }
+                    await executeTestCase(testCase);
+                });
+            }
+        });
+    });
+    describe("update service", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                // TODO: flaky?
+                const response = await supertest(app)
+                    .put("/services/httpd/update")
+                    .send(updateAllRequest);
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given the user is logged in", () => {
+            const cases = [
+                {
+                    title: "should return 400 given an empty request",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app)
+                            .put(`/services/${serviceName}/update`)
+                            .send(emptyUpdateRequest);
+                    },
+                    res: {
+                        status: 400,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                    },
+                },
+                {
+                    title: "should return 400 given an invalid request",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app)
+                            .put(`/services/${serviceName}/update`)
+                            .send(invalidUpdateRequest);
+                    },
+                    res: {
+                        status: 400,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                    },
+                },
+                {
+                    title: "should return 404 given the service does not exist",
+                    sendRequest: () => {
+                        const serviceName = "httbatata";
+                        return supertest(app)
+                            .put(`/services/${serviceName}/update`)
+                            .send(updateAllRequest);
+                    },
+                    res: {
+                        status: 404,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock(null);
+                    },
+                },
+                {
+                    title: "should return 400 given the service has a PULLING status",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app)
+                            .put(`/services/${serviceName}/update`)
+                            .send(updateAllRequest);
+                    },
+                    res: {
+                        status: 400,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock({
+                            ...serviceA,
+                            status: ServiceStatus.PULLING,
+                        });
+                    },
+                },
+                {
+                    title: "should return service with updated hosts given its an update hosts request",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app)
+                            .put(`/services/${serviceName}/update`)
+                            .send(updateHostsRequest);
+                    },
+                    res: {
+                        status: 200,
+                        body: {
+                            ...serviceA,
+                            status: ServiceStatus.PULLING,
+                            hosts: updateHostsRequest.hosts,
+                        },
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock({
+                            ...serviceA,
+                            status: ServiceStatus.CREATED,
+                        });
+                        deleteContainerMock();
+                        updateServiceMock({
+                            ...serviceA,
+                            status: ServiceStatus.PULLING,
+                            hosts: updateHostsRequest.hosts,
+                        });
+                        findImageByIdMock(imageA);
+                        createContainerMock(postUpdateContainer);
+                    },
+                },
+                // TODO: test redirects & env vars creation
+                // {
+                //     title: "should return service with updated redirects given its an update redirects request",
+                //     sendRequest: () => {
+                //         const serviceName = "httpd";
+                //         return supertest(app)
+                //             .put(`/services/${serviceName}/update`)
+                //             .send(updateRedirectsRequest);
+                //     },
+                //     res: {
+                //         status: 200,
+                //         body: {
+                //             ...serviceA,
+                //             status: ServiceStatus.PULLING,
+                //             hosts: updateRedirectsRequest.redirects,
+                //         },
+                //     },
+                //     mocks: () => {
+                //         authMock(userA);
+                //         findServiceByNameMock({
+                //             ...serviceA,
+                //             status: ServiceStatus.CREATED,
+                //         });
+                //         deleteContainerMock();
+                //         updateServiceMock({
+                //             ...serviceA,
+                //             status: ServiceStatus.PULLING,
+                //             redirects: updateRedirectsRequest.redirects,
+                //         });
+                //         findImageByIdMock(imageA);
+                //         createContainerMock(postUpdateContainer);
+                //     },
+                // },
+                {
+                    title: "should return a 500 given the container does not exist",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app)
+                            .put(`/services/${serviceName}/update`)
+                            .send(updateHostsRequest);
+                    },
+                    res: {
+                        status: 500,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock({
+                            ...serviceA,
+                            status: ServiceStatus.CREATED,
+                        });
+                        deleteContainerMock(true);
+                    },
+                },
+            ];
+
+            for (const testCase of cases) {
+                it(testCase.title, async () => {
+                    await executeTestCase(testCase);
                 });
             }
         });
@@ -354,16 +518,7 @@ describe("services", () => {
             });
         });
         describe("given the user is logged in", () => {
-            const cases: {
-                // need typing here for res.body stuff
-                title: any;
-                sendRequest: any;
-                res: {
-                    status: number;
-                    body?: any;
-                };
-                mocks: any;
-            }[] = [
+            const cases = [
                 {
                     title: "should return 404 given the service name does not exist",
                     sendRequest: () => {
@@ -401,7 +556,7 @@ describe("services", () => {
                     },
                 },
                 {
-                    title: "should return the service with RUNNING status if service had CREATED status",
+                    title: "should return the service with RUNNING status if service had CREATED status", //TODO: fix flakiness?
                     sendRequest: () => {
                         const serviceName = "httpd";
                         return supertest(app).put(
@@ -429,7 +584,7 @@ describe("services", () => {
                     },
                 },
                 {
-                    title: "should return a 400 given the service already has RUNNING status",
+                    title: "should return a 400 given the service already has RUNNING status", // TODO: flaky?
                     sendRequest: () => {
                         const serviceName = "httpd";
                         return supertest(app).put(
@@ -489,50 +644,11 @@ describe("services", () => {
 
             for (const testCase of cases) {
                 it(testCase.title, async () => {
-                    testCase.mocks();
-                    const expectedRes = testCase.res;
-                    const res = await testCase.sendRequest();
-                    if (expectedRes.status) {
-                        expect(res.status).toBe(expectedRes.status);
-                    }
-                    if (expectedRes.body) {
-                        expect(res.body).toEqual(
-                            JSON.parse(JSON.stringify(expectedRes.body))
-                        );
-                    }
+                    await executeTestCase(testCase);
                 });
             }
         });
     });
-
-    //             describe("given the service exists and it has PULLING status", () => {
-    //                 it("it should return 400", async () => {
-    //                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
-    //                         () => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         }
-    //                     );
-    //                     jest.spyOn(ServicesService, "findServiceByName")
-    //                         // @ts-ignore
-    //                         .mockImplementationOnce(async () => {
-    //                             const foundService = createdService;
-    //                             foundService.status = ServiceStatus.PULLING;
-    //                             return foundService;
-    //                         });
-    //                     const response = await supertest(app).put(
-    //                         "/services/httpd/start"
-    //                     );
-    //                     expect(response.status).toBe(400);
-    //                 });
-    //             });
-    //         });
-    //     });
     //     describe("update service", () => {
     //         describe("given the user is not logged in", () => {
     //             it("should return 401", async () => {
@@ -1424,3 +1540,20 @@ describe("services", () => {
     //         });
     //     });
 });
+const executeTestCase = async (testCase: {
+    title: string;
+    sendRequest: () => supertest.Test;
+    res: { status: number; body?: any };
+    mocks: () => void;
+}) => {
+    testCase.mocks();
+    const expectedRes = testCase.res;
+    const res = await testCase.sendRequest();
+    if (expectedRes.status) {
+        expect(res.status).toBe(expectedRes.status);
+    }
+    if (expectedRes.body) {
+        expect(res.body).toEqual(JSON.parse(JSON.stringify(expectedRes.body))); // need to do this so that dates become strings :(
+    }
+    jest.clearAllMocks();
+};

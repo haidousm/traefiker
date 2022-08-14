@@ -28,6 +28,7 @@ import {
     getOrCreateImageByImageIdentifierMock,
     pullImageMock,
     startContainerMock,
+    stopContainerMock,
     updateServiceMock,
 } from "./utils/mocks";
 
@@ -556,7 +557,7 @@ describe("services", () => {
                     },
                 },
                 {
-                    title: "should return the service with RUNNING status if service had CREATED status", //TODO: fix flakiness?
+                    title: "should return the service with RUNNING status if service had CREATED status",
                     sendRequest: () => {
                         const serviceName = "httpd";
                         return supertest(app).put(
@@ -649,380 +650,147 @@ describe("services", () => {
             }
         });
     });
-    //     describe("update service", () => {
-    //         describe("given the user is not logged in", () => {
-    //             it("should return 401", async () => {
-    //                 const response = await supertest(app)
-    //                     .put("/services/httpd/update")
-    //                     .send(emptyUpdateRequest);
-    //                 expect(response.status).toBe(401);
-    //             });
-    //         });
-    //         describe("given the user is logged in", () => {
-    //             describe("given an empty request", () => {
-    //                 it("should return 400", async () => {
-    //                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
-    //                         () => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         }
-    //                     );
-    //                     const response = await supertest(app)
-    //                         .put("/services/httpd/update")
-    //                         .send(emptyUpdateRequest);
-    //                     expect(response.status).toBe(400);
-    //                 });
-    //             });
-    //             describe("given an invalid request", () => {
-    //                 it("should return 400", async () => {
-    //                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
-    //                         () => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         }
-    //                     );
-    //                     const response = await supertest(app)
-    //                         .put("/services/httpd/update")
-    //                         .send(invalidUpdateRequest);
-    //                     expect(response.status).toBe(400);
-    //                 });
-    //             });
-    //             describe("given the service does not exist", () => {
-    //                 it("should return 404", async () => {
-    //                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
-    //                         () => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         }
-    //                     );
-    //                     jest.spyOn(ServicesService, "findServiceByName")
-    //                         // @ts-ignore
-    //                         .mockImplementationOnce(async () => {
-    //                             return null;
-    //                         });
-    //                     const response = await supertest(app)
-    //                         .put("/services/httpd/update")
-    //                         .send(updateAllRequest);
-    //                     expect(response.status).toBe(404);
-    //                 });
-    //             });
-    //             describe("given the service exists and it has PULLING status", () => {
-    //                 it("should return 400", async () => {
-    //                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
-    //                         () => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         }
-    //                     );
-    //                     jest.spyOn(ServicesService, "findServiceByName")
-    //                         // @ts-ignore
-    //                         .mockImplementationOnce(async () => {
-    //                             const foundService = createdService;
-    //                             foundService.status = ServiceStatus.PULLING;
-    //                             return foundService;
-    //                         });
-    //                     const response = await supertest(app)
-    //                         .put("/services/httpd/update")
-    //                         .send(updateAllRequest);
-    //                     expect(response.status).toBe(400);
-    //                 });
-    //             });
-    //             describe("given the service exists and its an update HOSTS request", () => {
-    //                 it("should return the service with updated hosts", async () => {
-    //                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
-    //                         () => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         }
-    //                     );
-    //                     jest.spyOn(ServicesService, "findServiceByName")
-    //                         // @ts-ignore
-    //                         .mockImplementationOnce(async () => {
-    //                             const foundService = createdService;
-    //                             foundService.status = ServiceStatus.CREATED;
-    //                             return foundService;
-    //                         });
-    //                     jest.spyOn(
-    //                         ImagesService,
-    //                         "getOrCreateImageByImageIdentifier"
-    //                     )
-    //                         // @ts-ignore
-    //                         .mockReturnValueOnce(createdImage);
-    //                     jest.spyOn(
-    //                         DockerLib,
-    //                         "deleteContainer"
-    //                     ).mockImplementationOnce(async () => {
-    //                         return Promise.resolve();
-    //                     });
-    //                     jest.spyOn(
-    //                         ServicesService,
-    //                         "updateService"
-    //                     ).mockImplementationOnce(
-    //                         // @ts-ignore
-    //                         (name: string, service: Service) => service
-    //                     );
-    //                     jest.spyOn(DockerLib, "createContainer")
-    //                         //@ts-ignore
-    //                         .mockImplementationOnce(
-    //                             async (service, image, callback) =>
-    //                                 //@ts-ignore
-    //                                 callback(service, postUpdateContainer)
-    //                         );
-    //                     const response = await supertest(app)
-    //                         .put("/services/httpd/update")
-    //                         .send(updateHostsRequest);
-    //                     expect(response.status).toBe(200);
-    //                     expect(response.body.hosts).toStrictEqual(
-    //                         updateHostsRequest.hosts
-    //                     );
-    //                 });
-    //             });
-    //             describe("given the service exists and its an update REDIRECTS request", () => {
-    //                 it("should return the service with updated redirects", async () => {
-    //                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
-    //                         () => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         }
-    //                     );
-    //                     jest.spyOn(ServicesService, "findServiceByName")
-    //                         // @ts-ignore
-    //                         .mockImplementationOnce(async () => {
-    //                             const foundService = createdService;
-    //                             foundService.status = ServiceStatus.CREATED;
-    //                             return foundService;
-    //                         });
-    //                     jest.spyOn(
-    //                         ImagesService,
-    //                         "getOrCreateImageByImageIdentifier"
-    //                     )
-    //                         // @ts-ignore
-    //                         .mockReturnValueOnce(createdImage);
-    //                     jest.spyOn(
-    //                         DockerLib,
-    //                         "deleteContainer"
-    //                     ).mockImplementationOnce(async () => {
-    //                         return Promise.resolve();
-    //                     });
-    //                     jest.spyOn(
-    //                         ServicesService,
-    //                         "updateService"
-    //                     ).mockImplementationOnce(
-    //                         // @ts-ignore
-    //                         (name: string, service: Service) => service
-    //                     );
-    //                     jest.spyOn(DockerLib, "createContainer")
-    //                         //@ts-ignore
-    //                         .mockImplementationOnce(
-    //                             async (service, image, callback) =>
-    //                                 //@ts-ignore
-    //                                 callback(service, postUpdateContainer)
-    //                         );
-    //                     const response = await supertest(app)
-    //                         .put("/services/httpd/update")
-    //                         .send(updateRedirectsRequest);
-    //                     expect(response.status).toBe(200);
-    //                     expect(response.body.redirects).toStrictEqual(
-    //                         updateRedirectsRequest.redirects
-    //                     );
-    //                 });
-    //             });
-    //             describe("given the service exists and its an update ENVIRONMENT VARIABLES request", () => {
-    //                 it("should return the service with updated environment variables", async () => {
-    //                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
-    //                         () => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         }
-    //                     );
-    //                     jest.spyOn(
-    //                         ServicesService,
-    //                         "findServiceByName"
-    //                     ).mockImplementationOnce(async () => {
-    //                         const foundService = createdService;
-    //                         foundService.status = ServiceStatus.CREATED;
-    //                         return foundService;
-    //                     });
-    //                     jest.spyOn(
-    //                         ImagesService,
-    //                         "getOrCreateImageByImageIdentifier"
-    //                     )
-    //                         // @ts-ignore
-    //                         .mockReturnValueOnce(createdImage);
-    //                     jest.spyOn(
-    //                         DockerLib,
-    //                         "deleteContainer"
-    //                     ).mockImplementationOnce(async () => {
-    //                         return Promise.resolve();
-    //                     });
-    //                     jest.spyOn(ServicesService, "saveService")
-    //                         // @ts-ignore
-    //                         .mockImplementationOnce((service: Service) => service);
-    //                     jest.spyOn(DockerLib, "createContainer")
-    //                         //@ts-ignore
-    //                         .mockImplementationOnce(
-    //                             async (service, image, callback) =>
-    //                                 //@ts-ignore
-    //                                 callback(service, postUpdateContainer)
-    //                         );
-    //                     const response = await supertest(app)
-    //                         .put("/services/httpd/update")
-    //                         .send(updateEnvironmentVariablesRequest);
-    //                     expect(response.status).toBe(200);
-    //                     expect(response.body.environmentVariables).toStrictEqual(
-    //                         updateEnvironmentVariablesRequest.environmentVariables
-    //                     );
-    //                 });
-    //             });
-    //             describe("given the service exists and its an update ALL request", () => {
-    //                 it("should return the service with updated ALL", async () => {
-    //                     jest.spyOn(passport, "authenticate").mockImplementationOnce(
-    //                         () => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         }
-    //                     );
-    //                     jest.spyOn(
-    //                         ServicesService,
-    //                         "findServiceByName"
-    //                     ).mockImplementationOnce(async () => {
-    //                         const foundService = createdService;
-    //                         foundService.status = ServiceStatus.CREATED;
-    //                         return foundService;
-    //                     });
-    //                     jest.spyOn(
-    //                         ImagesService,
-    //                         "getOrCreateImageByImageIdentifier"
-    //                     )
-    //                         // @ts-ignore
-    //                         .mockReturnValueOnce(createdImage);
-    //                     jest.spyOn(
-    //                         DockerLib,
-    //                         "deleteContainer"
-    //                     ).mockImplementationOnce(async () => {
-    //                         return Promise.resolve();
-    //                     });
-    //                     jest.spyOn(ServicesService, "saveService")
-    //                         // @ts-ignore
-    //                         .mockImplementationOnce((service: Service) => service);
-    //                     jest.spyOn(DockerLib, "createContainer")
-    //                         //@ts-ignore
-    //                         .mockImplementationOnce(
-    //                             async (service, image, callback) =>
-    //                                 //@ts-ignore
-    //                                 callback(service, postUpdateContainer)
-    //                         );
-    //                     const response = await supertest(app)
-    //                         .put("/services/httpd/update")
-    //                         .send(updateAllRequest);
-    //                     expect(response.status).toBe(200);
-    //                     expect(response.body.hosts).toStrictEqual(
-    //                         updateAllRequest.hosts
-    //                     );
-    //                     expect(response.body.redirects).toStrictEqual(
-    //                         updateAllRequest.redirects
-    //                     );
-    //                     expect(response.body.environmentVariables).toStrictEqual(
-    //                         updateAllRequest.environmentVariables
-    //                     );
-    //                 });
-    //                 describe("given the container does not exist", () => {
-    //                     it("should return a 400", async () => {
-    //                         jest.spyOn(
-    //                             passport,
-    //                             "authenticate"
-    //                         ).mockImplementationOnce(() => {
-    //                             return (
-    //                                 req: Request,
-    //                                 res: Response,
-    //                                 next: NextFunction
-    //                             ) => {
-    //                                 next();
-    //                             };
-    //                         });
-    //                         jest.spyOn(
-    //                             ServicesService,
-    //                             "findServiceByName"
-    //                         ).mockImplementationOnce(async () => {
-    //                             const foundService = createdService;
-    //                             foundService.status = ServiceStatus.CREATED;
-    //                             return foundService;
-    //                         });
-    //                         jest.spyOn(
-    //                             ImagesService,
-    //                             "getOrCreateImageByImageIdentifier"
-    //                         )
-    //                             // @ts-ignore
-    //                             .mockReturnValueOnce(createdImage);
-    //                         jest.spyOn(
-    //                             DockerLib,
-    //                             "deleteContainer"
-    //                         ).mockImplementationOnce(async () => {
-    //                             throw new Error("Container does not exist");
-    //                         });
-    //                         jest.spyOn(
-    //                             ServicesService,
-    //                             "saveService"
-    //                         ).mockImplementationOnce(
-    //                             // @ts-ignore
-    //                             (service: Service) => service
-    //                         );
-    //                         jest.spyOn(DockerLib, "createContainer")
-    //                             //@ts-ignore
-    //                             .mockImplementationOnce(
-    //                                 async (service, image, callback) =>
-    //                                     //@ts-ignore
-    //                                     callback(service, postUpdateContainer)
-    //                             );
-    //                         const response = await supertest(app)
-    //                             .put("/services/httpd/update")
-    //                             .send(updateAllRequest);
-    //                         expect(response.status).toBe(500);
-    //                     });
-    //                 });
-    //             });
-    //         });
-    //     });
+    describe("stop service", () => {
+        describe("given the user is not logged in", () => {
+            it("should return 401", async () => {
+                const response = await supertest(app).put(
+                    "/services/httpd/stop"
+                );
+                expect(response.status).toBe(401);
+            });
+        });
+        describe("given the user is logged in", () => {
+            const cases = [
+                {
+                    title: "should return 404 given the service name does not exist",
+                    sendRequest: () => {
+                        const serviceName = "httbatata";
+                        return supertest(app).put(
+                            `/services/${serviceName}/stop`
+                        );
+                    },
+                    res: {
+                        status: 404,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock(null);
+                    },
+                },
+                {
+                    title: "should return a 500 given the container cannot be found",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app).put(
+                            `/services/${serviceName}/stop`
+                        );
+                    },
+                    res: {
+                        status: 500,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock({
+                            ...serviceA,
+                            status: ServiceStatus.RUNNING,
+                        });
+                        stopContainerMock(true);
+                    },
+                },
+                {
+                    title: "should return the service with STOPPED status if service had RUNNING status",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app).put(
+                            `/services/${serviceName}/stop`
+                        );
+                    },
+                    res: {
+                        status: 200,
+                        body: {
+                            ...serviceA,
+                            status: ServiceStatus.STOPPED,
+                        },
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock({
+                            ...serviceA,
+                            status: ServiceStatus.RUNNING,
+                        });
+                        stopContainerMock();
+                        updateServiceMock({
+                            ...serviceA,
+                            status: ServiceStatus.STOPPED,
+                        });
+                    },
+                },
+                {
+                    title: "should return a 400 given the service already has STOPPED status",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app).put(
+                            `/services/${serviceName}/stop`
+                        );
+                    },
+                    res: {
+                        status: 400,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock({
+                            ...serviceA,
+                            status: ServiceStatus.STOPPED,
+                        });
+                    },
+                },
+                {
+                    title: "should return a 400 given the service already has ERROR status",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app).put(
+                            `/services/${serviceName}/stop`
+                        );
+                    },
+                    res: {
+                        status: 400,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock({
+                            ...serviceA,
+                            status: ServiceStatus.ERROR,
+                        });
+                    },
+                },
+                {
+                    title: "should return a 400 given the service already has PULLING status",
+                    sendRequest: () => {
+                        const serviceName = "httpd";
+                        return supertest(app).put(
+                            `/services/${serviceName}/stop`
+                        );
+                    },
+                    res: {
+                        status: 400,
+                    },
+                    mocks: () => {
+                        authMock(userA);
+                        findServiceByNameMock({
+                            ...serviceA,
+                            status: ServiceStatus.PULLING,
+                        });
+                    },
+                },
+            ];
+
+            for (const testCase of cases) {
+                it(testCase.title, async () => {
+                    await executeTestCase(testCase);
+                });
+            }
+        });
+    });
     //     describe("stop service", () => {
     //         describe("given the user is not logged in", () => {
     //             it("should return 401", async () => {

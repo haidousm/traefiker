@@ -84,7 +84,16 @@ export const pullImageMock = (image: Image | null, throwError?: boolean) => {
 export const startContainerMock = (throwError?: boolean) => {
     jest.spyOn(DockerLib, "startContainer").mockImplementationOnce(async () => {
         if (throwError) {
-            throw new Error(`${pullImageMock.name} threw an error`);
+            throw new Error(`${startContainerMock.name} threw an error`);
+        }
+        return Promise.resolve();
+    });
+};
+
+export const stopContainerMock = (throwError?: boolean) => {
+    jest.spyOn(DockerLib, "stopContainer").mockImplementationOnce(async () => {
+        if (throwError) {
+            throw new Error(`${stopContainerMock.name} threw an error`);
         }
         return Promise.resolve();
     });
@@ -94,7 +103,7 @@ export const deleteContainerMock = (throwError?: boolean) => {
     jest.spyOn(DockerLib, "deleteContainer").mockImplementationOnce(
         async () => {
             if (throwError) {
-                throw new Error(`${pullImageMock.name} threw an error`);
+                throw new Error(`${deleteContainerMock.name} threw an error`);
             }
             return Promise.resolve();
         }

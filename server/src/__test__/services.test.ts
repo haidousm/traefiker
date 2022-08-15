@@ -176,7 +176,7 @@ describe("services", () => {
                     },
                     res: {
                         status: 200,
-                        body: JSON.parse(JSON.stringify([serviceA])), // need to do that so that the createdAt field becomes a string :(
+                        body: [serviceA],
                     },
                     mocks: () => {
                         authMock();
@@ -187,15 +187,7 @@ describe("services", () => {
 
             for (const testCase of cases) {
                 it(testCase.title, async () => {
-                    testCase.mocks();
-                    const expectedRes = testCase.res;
-                    const res = await testCase.sendRequest();
-                    if (expectedRes.status) {
-                        expect(res.status).toBe(expectedRes.status);
-                    }
-                    if (expectedRes.body) {
-                        expect(res.body).toEqual(expectedRes.body);
-                    }
+                    await executeTestCase(testCase);
                 });
             }
         });

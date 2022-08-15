@@ -63,6 +63,18 @@ export const findProjectByNameMock = (project: Project | null) => {
     );
 };
 
+export const findAllProjectsMock = (projects: Project[]) => {
+    jest.spyOn(ProjectServices, "findAllProjects").mockResolvedValueOnce(
+        projects
+    );
+};
+
+export const findAllServicesByProjectNameMock = (services: Service[]) => {
+    jest.spyOn(ProjectServices, "findAllServicesByProjectName")
+        // @ts-ignore
+        .mockResolvedValueOnce({ services });
+};
+
 export const createContainerMock = (container: any, throwError?: boolean) => {
     jest.spyOn(DockerLib, "createContainer").mockImplementationOnce(
         async (service, _image, callback) => {

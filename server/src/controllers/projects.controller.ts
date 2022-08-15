@@ -88,7 +88,9 @@ export const getAllServicesForProjectHandler = async (
     res: Response
 ) => {
     try {
-        const services = findAllServicesByProjectName(req.params.projectName);
+        const services = (
+            await findAllServicesByProjectName(req.params.projectName)
+        )?.services;
         return res.json(services);
     } catch (e) {
         if (e instanceof Error) {
@@ -113,7 +115,7 @@ export const addServiceToProjectHandler = async (
         if (!service) {
             return res.sendStatus(404);
         }
-        service.projectId = project?.id;
+        service.projectId = project.id;
         const updatedService = await updateService(service.name, service);
         return res.json(updatedService);
     } catch (e) {

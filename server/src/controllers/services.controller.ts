@@ -41,6 +41,7 @@ export const createServiceHandler = async (req: Request, res: Response) => {
                 error: `Service with name ${req.body.name} already exists`,
             });
         }
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const user = req.user! as User;
         const image = await getOrCreateImageByImageIdentifier(req.body.image);
 
@@ -381,7 +382,7 @@ export const attachContainerToService = async (
 ) => {
     const dockerContainerInfo = await container.inspect();
     const containerInfo = await createContainerInfo({
-        network: dockerContainerInfo.HostConfig.NetworkMode!,
+        network: dockerContainerInfo.HostConfig.NetworkMode ?? "web",
         name: `traefiker_${service.name}`,
         containerId: container.id,
     });

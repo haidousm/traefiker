@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import supertest from "supertest";
 
 export const executeTestCase = async (testCase: {

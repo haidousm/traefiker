@@ -33,3 +33,15 @@ export const deleteServiceByName = (name: string) => {
 export const deleteAllServices = () => {
     return prisma.service.deleteMany();
 };
+
+export const findAllServicesPopulated = () => {
+    return prisma.service.findMany({
+        include: {
+            image: true,
+            project: true,
+            containerInfo: true,
+            environmentVariables: true,
+            redirects: true,
+        },
+    });
+};

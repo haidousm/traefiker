@@ -5,6 +5,7 @@ import {
     deleteServiceByName,
     createService,
     updateService,
+    findAllServicesPopulated,
 } from "../services/services.service";
 import {
     findImageById,
@@ -24,12 +25,13 @@ import { Service, ServiceStatus, User, Prisma } from "@prisma/client";
 import { createEnvironmentVariable } from "../services/environmentVariables.service";
 import { createRedirect } from "../services/redirects.service";
 import { createContainerInfo } from "../services/containerInfo.service";
+import { PopulatedService } from "../types/services.types";
 
 export const getAllServicesHandler = async (
     _req: Request,
-    res: Response<Service[]>
+    res: Response<PopulatedService[]>
 ) => {
-    const services: Service[] = await findAllServices();
+    const services: PopulatedService[] = await findAllServicesPopulated();
     return res.json(services);
 };
 

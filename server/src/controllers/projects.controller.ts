@@ -88,9 +88,9 @@ export const getAllServicesForProjectHandler = async (
     res: Response
 ) => {
     try {
-        const services = (
-            await findAllServicesByProjectName(req.params.projectName)
-        )?.services;
+        const services = await findAllServicesByProjectName(
+            req.params.projectName
+        );
         return res.json(services);
     } catch (e) {
         if (e instanceof Error) {

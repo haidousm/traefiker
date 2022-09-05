@@ -39,11 +39,18 @@ export const updateProjectByName = (
     });
 };
 
-export const findAllServicesByProjectName = (name: string) => {
-    return prisma.project.findFirst({
-        where: { name },
-        select: {
-            services: true,
+export const findAllServicesByProjectName = async (name: string) => {
+    const project = await prisma.project.findFirst({ where: { name } });
+    return prisma.service.findMany({
+        where: {
+            projectId: project?.id,
+        },
+        include: {
+            image: true,
+            project: true,
+            containerInfo: true,
+            environmentVariables: true,
+            redirects: true,
         },
     });
 };

@@ -2,7 +2,7 @@ import { NextResponse, NextRequest, NextFetchEvent } from "next/server";
 export async function middleware(req: NextRequest, ev: NextFetchEvent) {
     const { pathname } = req.nextUrl;
     const { cookies } = req;
-    const token = cookies["token"];
+    const token = cookies.get("token");
 
     if (pathname === "/") {
         if (token) {

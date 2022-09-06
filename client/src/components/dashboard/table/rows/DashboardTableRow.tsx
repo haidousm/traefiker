@@ -24,7 +24,7 @@ function DashboardTableRow({
     stopServiceClicked,
 }: Props) {
     const getActionIcon = () => {
-        switch (+service.status) {
+        switch (+ServiceStatus[service.status]) {
             case ServiceStatus.RUNNING:
                 return (
                     <button
@@ -64,7 +64,7 @@ function DashboardTableRow({
     };
 
     const getStatusColor = () => {
-        switch (+service.status) {
+        switch (+ServiceStatus[service.status]) {
             case ServiceStatus.RUNNING:
                 return "border-green-600";
             case ServiceStatus.STOPPED:

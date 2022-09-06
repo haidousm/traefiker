@@ -6,7 +6,7 @@ interface Props {
 
 function ProjectStatusIndicatorRectangle({ serviceStatus }: Props) {
     const getStatusIndicatorColor = (serviceStatus: ServiceStatus) => {
-        switch (+serviceStatus) {
+        switch (+ServiceStatus[serviceStatus]) {
             case ServiceStatus.RUNNING:
                 return "bg-green-500";
             case ServiceStatus.STOPPED:

@@ -1,3 +1,4 @@
+import { ContainerInfo } from "./ContainerInfo";
 import { ServiceStatus } from "./enums/ServiceStatus";
 import { EnvironmentVariable } from "./EnvironmentVariable";
 import { Image } from "./Image";
@@ -5,16 +6,17 @@ import { Project } from "./Project";
 import { Redirect } from "./Redirect";
 
 export interface Service {
-    id?: string;
+    id?: number;
     name: string;
     status: ServiceStatus;
-    image: Image;
     hosts: string[];
+
+    image: Image;
+
     environmentVariables: EnvironmentVariable[];
     redirects: Redirect[];
-    network?: string;
-    containerId?: string;
-    internalName?: string;
+
+    containerInfo?: ContainerInfo;
     project?: Project;
     order: number;
 }

@@ -92,6 +92,7 @@ export const stopContainer = async (service: Service) => {
 };
 
 export const deleteContainer = async (service: Service) => {
+    console.log(service);
     const containerInfo = await findContainerInfoById(service.containerInfoId!);
     if (!containerInfo || !containerInfo?.containerId) {
         throw new Error("Container id is not set");

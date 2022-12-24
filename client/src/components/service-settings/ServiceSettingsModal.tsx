@@ -48,6 +48,8 @@ function ServiceSettingsModal({ service, setServiceToConfigure }: Props) {
         setServiceToConfigure(undefined);
     };
 
+    console.log(service);
+
     return (
         <Dialog
             open={true}

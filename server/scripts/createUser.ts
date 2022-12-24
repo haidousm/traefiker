@@ -1,12 +1,9 @@
-import { createUser, findUser } from "../src/services/user.service";
-import connectDB from "../src/utils/db";
+import { createUser, deleteUser, findUser } from "../src/services/user.service";
 import logger from "../src/utils/logger";
 
 const createAdminUser = async (username: string, password: string) => {
-    const userAlreadyExists = await findUser({ username });
-    if (userAlreadyExists) {
-        await userAlreadyExists.remove();
-    }
+    const user = await findUser({ username });
+    if (user) await deleteUser({ username });
     await createUser(username, password);
 };
 
@@ -16,7 +13,6 @@ const createAdminUser = async (username: string, password: string) => {
         process.exit(1);
     }
 
-    await connectDB();
     const username = process.argv[2];
     const password = process.argv[3];
 

@@ -1,39 +1,43 @@
 import { Request, Response } from "express";
 import {
     createProject,
+    deleteProjectByName,
     findAllProjects,
+    findAllServicesByProjectName,
     findProjectByName,
-    saveProject,
+    updateProjectByName,
 } from "../services/projects.service";
-import {
-    findServicesByProjectId,
-    findServiceByName,
-} from "../services/services.service";
-import { Project } from "../types/Project";
-import { Service } from "../types/Service";
+import { findServiceByName, updateService } from "../services/services.service";
 import logger from "../utils/logger";
-import { saveService } from "../services/services.service";
-import { deleteProjectByName } from "../services/projects.service";
 
 export const getAllProjectsHandler = async (req: Request, res: Response) => {
-    const projects: Project[] = await findAllProjects();
+    const projects = await findAllProjects();
     return res.json(projects);
 };
 
 export const getProjectHandler = async (req: Request, res: Response) => {
-    const project: Project | null = await findProjectByName(
-        req.params.projectName
-    );
-    if (!project) {
-        return res.sendStatus(404);
+    try {
+        const project = await findProjectByName(req.params.projectName);
+        if (!project) {
+            return res.sendStatus(404);
+        }
+        return res.json(project);
+    } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e.message);
+        }
+        return res.status(500).json({
+            error: e,
+        });
     }
-    return res.json(project);
 };
 
 export const createProjectHandler = async (req: Request, res: Response) => {
     try {
         const projectName = req.params.projectName;
-        const project = await createProject(projectName);
+        const project = await createProject({
+            name: projectName,
+        });
         return res.json(project);
     } catch (e) {
         if (e instanceof Error) {
@@ -47,13 +51,13 @@ export const createProjectHandler = async (req: Request, res: Response) => {
 
 export const updateProjectHandler = async (req: Request, res: Response) => {
     try {
-        const projectName = req.params.projectName;
-        const project = await findProjectByName(projectName);
-        if (!project) {
-            return res.sendStatus(404);
-        }
-        project.name = req.body.name;
-        return res.json(await saveProject(project));
+        const updatedProject = await updateProjectByName(
+            req.params.projectName,
+            {
+                name: req.body.name,
+            }
+        );
+        return res.json(updatedProject);
     } catch (e) {
         if (e instanceof Error) {
             logger.error(e.message);
@@ -84,12 +88,9 @@ export const getAllServicesForProjectHandler = async (
     res: Response
 ) => {
     try {
-        const projectName = req.params.projectName;
-        const project = await findProjectByName(projectName);
-        if (!project) {
-            return res.status(404).send("Project not found");
-        }
-        const services: Service[] = await findServicesByProjectId(project.id);
+        const services = await findAllServicesByProjectName(
+            req.params.projectName
+        );
         return res.json(services);
     } catch (e) {
         if (e instanceof Error) {
@@ -106,20 +107,17 @@ export const addServiceToProjectHandler = async (
     res: Response
 ) => {
     try {
-        const projectName = req.params.projectName;
-        const serviceName = req.params.serviceName;
-
-        const project = await findProjectByName(projectName);
+        const project = await findProjectByName(req.params.projectName);
+        const service = await findServiceByName(req.params.serviceName);
         if (!project) {
-            return res.status(404).send("Project not found");
+            return res.sendStatus(404);
         }
-
-        const service = await findServiceByName(serviceName);
         if (!service) {
-            return res.status(404).send("Service not found");
+            return res.sendStatus(404);
         }
-        service.project = project;
-        return res.json(await saveService(service));
+        service.projectId = project.id;
+        const updatedService = await updateService(service.name, service);
+        return res.json(updatedService);
     } catch (e) {
         if (e instanceof Error) {
             logger.error(e.message);

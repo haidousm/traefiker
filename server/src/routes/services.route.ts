@@ -1,9 +1,6 @@
 import express from "express";
 import validateResource from "../middleware/validateResource";
-import {
-    RecreateServiceRequestSchema,
-    UpdateServicesOrderRequestSchema,
-} from "../schemas/services.schema";
+import { RecreateServiceRequestSchema } from "../schemas/services.schema";
 import {
     CreateServiceRequestSchema,
     UpdateServiceRequestSchema,
@@ -16,7 +13,6 @@ import {
     startServiceHandler,
     stopServiceHandler,
     updateServiceHandler,
-    updateServicesOrderHandler,
 } from "../controllers/services.controller";
 
 const router = express.Router();
@@ -250,10 +246,10 @@ router.put(
  *                  description: Unauthorized
  *
  */
-router.put(
-    "/order",
-    validateResource(UpdateServicesOrderRequestSchema),
-    updateServicesOrderHandler
-);
+// router.put(
+//     "/order",
+//     validateResource(UpdateServicesOrderRequestSchema),
+//     updateServicesOrderHandler
+// );
 
 export default router;

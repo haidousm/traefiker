@@ -2,21 +2,24 @@ import { NextResponse, NextRequest, NextFetchEvent } from "next/server";
 export async function middleware(req: NextRequest, ev: NextFetchEvent) {
     const { pathname } = req.nextUrl;
     const { cookies } = req;
-    const token = cookies["token"];
-
+    const token = cookies.get("token");
+    const url = req.nextUrl.clone();
     if (pathname === "/") {
         if (token) {
-            return NextResponse.redirect("/projects");
+            url.pathname = "/projects";
         } else {
-            return NextResponse.redirect("/login");
+            url.pathname = "/login";
         }
+        return NextResponse.redirect(url);
     } else if (pathname === "/login") {
         if (token) {
-            return NextResponse.redirect("/projects");
+            url.pathname = "/projects";
+            return NextResponse.redirect(url);
         }
     } else if (pathname === "/projects") {
         if (!token) {
-            return NextResponse.redirect("/login");
+            url.pathname = "/login";
+            return NextResponse.redirect(url);
         }
     }
     return NextResponse.next();

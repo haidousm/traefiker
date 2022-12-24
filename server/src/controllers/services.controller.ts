@@ -1,32 +1,36 @@
 import { Request, Response } from "express";
 import {
-    findAllServices,
-    saveService,
     findServiceByName,
     deleteServiceByName,
+    createService,
+    updateService,
+    findAllServicesPopulated,
 } from "../services/services.service";
-import { Service } from "../types/Service";
-import { getOrCreateImageByImageIdentifier } from "../services/images.service";
-import { Image } from "../types/Image";
+import {
+    findImageById,
+    getOrCreateImageByImageIdentifier,
+} from "../services/images.service";
 import {
     createContainer,
     deleteContainer,
     startContainer,
     stopContainer,
 } from "../../libs/docker";
-import { ServiceStatus } from "../types/enums/ServiceStatus";
 import Dockerode from "dockerode";
-import { findLastUsedOrder } from "../services/services.service";
 import logger from "../utils/logger";
 import { bindTrailingArgs } from "../utils/misc";
-import { Project } from "../types/Project";
 import { findProjectByName } from "../services/projects.service";
+import { Service, ServiceStatus, User, Prisma } from "@prisma/client";
+import { createEnvironmentVariable } from "../services/environmentVariables.service";
+import { createRedirect } from "../services/redirects.service";
+import { createContainerInfo } from "../services/containerInfo.service";
+import { PopulatedService } from "../types/services.types";
 
 export const getAllServicesHandler = async (
     _req: Request,
-    res: Response<Service[]>
+    res: Response<PopulatedService[]>
 ) => {
-    const services: Service[] = await findAllServices();
+    const services: PopulatedService[] = await findAllServicesPopulated();
     return res.json(services);
 };
 
@@ -38,33 +42,35 @@ export const createServiceHandler = async (req: Request, res: Response) => {
                 error: `Service with name ${req.body.name} already exists`,
             });
         }
-        const image: Image = await getOrCreateImageByImageIdentifier(
-            req.body.image
-        );
-        const project: Project | null = await findProjectByName(
-            req.body.project
-        );
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const user = req.user! as User;
+        const image = await getOrCreateImageByImageIdentifier(req.body.image);
 
+        const project = await findProjectByName(req.body.project);
         if (!project) {
             logger.error(
                 `Project with name ${req.body.project} does not exist`
             );
             return res.status(404).json({
-                error: `Project with name ${req.body.project} does not exist`,
+                error: `Project with name ${req.body.project} does not exist`, // TODO: fix status code, something like 400 vs 404
             });
         }
-        const service: Service = await saveService({
+
+        const service = await createService({
             name: req.body.name,
             status: ServiceStatus.PULLING,
-            image: image,
+            image: { connect: { id: image.id } },
             hosts: req.body.hosts,
-            environmentVariables: [],
-            project: project,
-            redirects: [],
-            order: (await findLastUsedOrder()) + 1, // TODO: operation is not atomic ?? might(is) a problem if multiple requests are made at the same time
+            project: { connect: { id: project?.id } },
+            user: { connect: { id: user.id } },
         });
 
-        createContainer(service, image, attachWithRestart, cleanUpOnError);
+        await createContainer(
+            service,
+            image,
+            attachWithRestart,
+            cleanUpOnError
+        );
         logger.info(`Service ${service.name} created`);
         return res.json(service);
     } catch (e) {
@@ -90,9 +96,7 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             });
         }
 
-        const service: Service | null = await findServiceByName(
-            req.params.name
-        );
+        const service = await findServiceByName(req.params.name);
         if (!service) {
             logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
@@ -106,16 +110,52 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
             });
         }
 
-        service.hosts = hosts ?? service.hosts;
-        service.environmentVariables =
-            environmentVariables ?? service.environmentVariables;
-        service.redirects = redirects ?? service.redirects;
-        const image = service.image;
+        if (hosts) {
+            service.hosts = hosts;
+        }
+        if (environmentVariables) {
+            environmentVariables.map(
+                async (envVar: Prisma.EnvironmentVariableCreateInput) => {
+                    await createEnvironmentVariable({
+                        ...envVar,
+                        service: {
+                            connect: {
+                                id: service.id,
+                            },
+                        },
+                    });
+                }
+            );
+        }
+
+        if (redirects) {
+            redirects.map(async (redirect: Prisma.RedirectCreateInput) => {
+                await createRedirect({
+                    ...redirect,
+                    service: {
+                        connect: {
+                            id: service.id,
+                        },
+                    },
+                });
+            });
+        }
+
         await deleteContainer(service);
-        await saveService(service);
-        createContainer(service, image, attachWithRestart, cleanUpOnError);
-        logger.info(`Service ${service.name} updated`);
-        return res.json(service);
+        const updatedService = await updateService(service.name, service);
+        const image = await findImageById(updatedService.imageId);
+        if (!image) {
+            // TODO: handle better
+            return res.status(500);
+        }
+        createContainer(
+            updatedService,
+            image,
+            attachWithRestart,
+            cleanUpOnError
+        );
+        logger.info(`Service ${updatedService.name} updated`);
+        return res.json(updatedService);
     } catch (e) {
         if (e instanceof Error) {
             logger.error(e.message);
@@ -128,9 +168,7 @@ export const updateServiceHandler = async (req: Request, res: Response) => {
 
 export const startServiceHandler = async (req: Request, res: Response) => {
     try {
-        const service: Service | null = await findServiceByName(
-            req.params.name
-        );
+        const service = await findServiceByName(req.params.name);
         if (!service) {
             logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
@@ -158,7 +196,7 @@ export const startServiceHandler = async (req: Request, res: Response) => {
         }
         await startContainer(service);
         service.status = ServiceStatus.RUNNING;
-        const updatedService = await saveService(service);
+        const updatedService = await updateService(service.name, service);
         logger.info(`Service ${updatedService.name} started`);
         return res.json(updatedService);
     } catch (e) {
@@ -173,9 +211,7 @@ export const startServiceHandler = async (req: Request, res: Response) => {
 
 export const stopServiceHandler = async (req: Request, res: Response) => {
     try {
-        const service: Service | null = await findServiceByName(
-            req.params.name
-        );
+        const service = await findServiceByName(req.params.name);
         if (!service) {
             logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
@@ -206,7 +242,7 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
         }
         await stopContainer(service);
         service.status = ServiceStatus.STOPPED;
-        const updatedService = await saveService(service);
+        const updatedService = await updateService(service.name, service);
         logger.info(`Service ${updatedService.name} stopped`);
         return res.json(updatedService);
     } catch (e) {
@@ -221,16 +257,17 @@ export const stopServiceHandler = async (req: Request, res: Response) => {
 
 export const deleteServiceHandler = async (req: Request, res: Response) => {
     try {
-        const service: Service | null = await findServiceByName(
-            req.params.name
-        );
+        const service = await findServiceByName(req.params.name);
         if (!service) {
             logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
                 error: `Service with name ${req.params.name} not found`,
             });
         }
-        if (service.status == ServiceStatus.PULLING) {
+        if (
+            service.status == ServiceStatus.PULLING ||
+            service.status == ServiceStatus.RUNNING
+        ) {
             logger.error(`Service ${req.params.name} is being pulled`);
             return res.status(400).json({
                 error: `Service with name ${req.params.name} is still pulling`,
@@ -257,9 +294,7 @@ export const deleteServiceHandler = async (req: Request, res: Response) => {
 // istanbul ignore next
 export const recreateServiceHandler = async (req: Request, res: Response) => {
     try {
-        const service: Service | null = await findServiceByName(
-            req.params.name
-        );
+        const service = await findServiceByName(req.params.name);
         if (!service) {
             logger.error(`Service ${req.params.name} not found`);
             return res.status(404).json({
@@ -274,14 +309,21 @@ export const recreateServiceHandler = async (req: Request, res: Response) => {
         }
         await deleteContainer(service);
 
-        const image = req.body.image
-            ? await getOrCreateImageByImageIdentifier(req.body.image)
-            : service.image;
-        service.image = image;
-        await saveService(service);
+        let image;
+        if (req.body.image) {
+            image = await getOrCreateImageByImageIdentifier(req.body.image);
+        } else {
+            image = await findImageById(service.imageId);
+            if (!image) {
+                // TODO: return something useful
+                return res.status(500);
+            }
+        }
+        service.imageId = image.id;
+        const updatedService = await updateService(service.name, service);
         createContainer(
-            service,
-            service.image,
+            updatedService,
+            image,
             attachWithRestart,
             cleanUpOnError
         );
@@ -297,77 +339,101 @@ export const recreateServiceHandler = async (req: Request, res: Response) => {
     }
 };
 
-export const updateServicesOrderHandler = async (
-    req: Request,
-    res: Response
-) => {
-    try {
-        const services: Service[] = [];
-        for (const service of req.body.services) {
-            const foundService: Service | null = await findServiceByName(
-                service.name
-            );
-            if (!foundService) {
-                logger.error(`Service ${service.name} not found`);
-                return res.status(404).json({
-                    error: `Service with name ${service.name} not found`,
-                });
-            }
-            foundService.order = service.order;
-            services.push(foundService);
-        }
-        // updating the order should be atomic, so we need to save all the services after updating the order
-        const updatedServices = await Promise.all(
-            services.map(async (service: Service) => {
-                return await saveService(service);
-            })
-        );
-        logger.info(`Services order updated`);
-        return res.json(updatedServices);
-    } catch (e) {
-        if (e instanceof Error) {
-            logger.error(e.message);
-        }
-        return res.status(500).json({
-            error: e,
-        });
-    }
-};
+// export const updateServicesOrderHandler = async (
+//     req: Request,
+//     res: Response
+// ) => {
+//     try {
+//         const services: Service[] = [];
+//         for (const service of req.body.services) {
+//             const foundService: Service | null = await findServiceByName(
+//                 service.name
+//             );
+//             if (!foundService) {
+//                 logger.error(`Service ${service.name} not found`);
+//                 return res.status(404).json({
+//                     error: `Service with name ${service.name} not found`,
+//                 });
+//             }
+//             foundService.order = service.order;
+//             services.push(foundService);
+//         }
+//         // updating the order should be atomic, so we need to save all the services after updating the order
+//         const updatedServices = await Promise.all(
+//             services.map(async (service: Service) => {
+//                 return await updateService(service);
+//             })
+//         );
+//         logger.info(`Services order updated`);
+//         return res.json(updatedServices);
+//     } catch (e) {
+//         if (e instanceof Error) {
+//             logger.error(e.message);
+//         }
+//         return res.status(500).json({
+//             error: e,
+//         });
+//     }
+// };
 
 export const attachContainerToService = async (
     service: Service,
     container: Dockerode.Container,
     start = false
 ) => {
-    const containerInfo = await container.inspect();
-    service.network = containerInfo.HostConfig.NetworkMode;
-    service.environmentVariables = containerInfo.Config.Env.map((envString) => {
-        // TODO: split on first equal BUT NOT ALWAYS CORRECT
-        const i = envString.indexOf("=");
-        const [key, value] = [envString.slice(0, i), envString.slice(i + 1)];
-        return {
-            key,
-            value,
-        };
+    const dockerContainerInfo = await container.inspect();
+    const containerInfo = await createContainerInfo({
+        network: dockerContainerInfo.HostConfig.NetworkMode ?? "web",
+        name: `traefiker_${service.name}`,
+        containerId: container.id,
     });
-    service.containerId = container.id;
+
+    // TODO: refactor
+    const environmentVariables = dockerContainerInfo.Config.Env.map(
+        (envString) => {
+            // TODO: split on first equal BUT NOT ALWAYS CORRECT
+            const i = envString.indexOf("=");
+            const [key, value] = [
+                envString.slice(0, i),
+                envString.slice(i + 1),
+            ];
+            return {
+                key,
+                value,
+            };
+        }
+    );
+
+    environmentVariables.map((envVar) => {
+        createEnvironmentVariable({
+            ...envVar,
+            service: {
+                connect: {
+                    id: service.id,
+                },
+            },
+        });
+    });
+
     service.status = ServiceStatus.CREATED;
-    service.internalName = `traefiker_${service.name}`;
+    service.containerInfoId = containerInfo.id;
+    const updatedService = await updateService(service.name, service);
+    // TODO: rethink, maybe pass containerId vs service
     logger.info(
         `Container ${container.id} attached to service ${service.name}`
     );
     // istanbul ignore next
     if (start) {
-        await startContainer(service);
+        await startContainer(updatedService);
         service.status = ServiceStatus.RUNNING;
     }
-    await saveService(service);
+    await updateService(service.name, service);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const cleanUpOnError = async (service: Service, error: any) => {
     service.status = ServiceStatus.ERROR;
-    await saveService(service);
+    await updateService(service.name, service);
     // istanbul ignore next
     logger.error(`Service ${service.name} in error state because of ${error}`);
 };

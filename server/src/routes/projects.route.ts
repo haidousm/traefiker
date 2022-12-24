@@ -1,14 +1,12 @@
 import express from "express";
 import {
-    deleteProjectHandler,
-    getProjectHandler,
-    updateProjectHandler,
-} from "../controllers/projects.controller";
-import {
     addServiceToProjectHandler,
     createProjectHandler,
+    deleteProjectHandler,
     getAllProjectsHandler,
     getAllServicesForProjectHandler,
+    getProjectHandler,
+    updateProjectHandler,
 } from "../controllers/projects.controller";
 
 const router = express.Router();

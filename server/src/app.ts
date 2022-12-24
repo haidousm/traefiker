@@ -2,7 +2,6 @@ import config from "config";
 import http from "http";
 
 import logger from "./utils/logger";
-import connectDB from "./utils/db";
 import swaggerDocs from "./utils/swagger";
 import createServer from "./utils/server";
 import { io } from "./utils/socket";
@@ -26,7 +25,6 @@ const port =
     8010;
 httpServer.listen(port, async () => {
     logger.info(`Express server started on port ${port}`);
-    await connectDB();
     if (config.get<boolean>("DOCKER_SOURCE_OF_TRUTH")) {
         logger.info("Using Docker as source of truth");
         await useDockerAsSourceOfTruth();

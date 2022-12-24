@@ -1,21 +1,21 @@
-import mongoose from "mongoose";
-import config from "config";
-import logger from "../utils/logger";
+import { PrismaClient } from "@prisma/client";
+import { io } from "../utils/socket";
 
-const connectDB = async () => {
-    const mongoUri =
-        config.get<string>("MONGO_URI") ||
-        process.env.MONGO_URI ||
-        "mongodb://0.0.0.0:27017/traefiker";
-    try {
-        const mongo = await mongoose.connect(mongoUri, {
-            autoCreate: true,
-        });
-        logger.info(`MongoDB connected @ ${mongo.connection.host}`);
-    } catch (error) {
-        logger.error(error);
-        process.exit(1);
+const prisma = new PrismaClient();
+prisma.$use(async (params, next) => {
+    const result = await next(params);
+    if (params.model === "Service") {
+        if (params.action === "create" || params.action === "update") {
+            const name = result.name;
+            const status = result.status;
+            if (io.sockets) {
+                io.sockets.emit("status", {
+                    name,
+                    status,
+                });
+            }
+        }
     }
-};
-
-export default connectDB;
+    return result;
+});
+export default prisma;

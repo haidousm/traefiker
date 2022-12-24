@@ -1,49 +1,91 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import {
+    Project,
+    Image,
+    Service,
+    ServiceStatus,
+    ContainerInfo,
+    User,
+} from "@prisma/client";
 import supertest from "supertest";
 import createServer from "../utils/server";
-import passport from "passport";
+import { executeTestCase } from "./utils/misc";
+import {
+    authMock,
+    findAllProjectsMock,
+    findAllServicesByProjectNameMock,
+    findProjectByNameMock,
+    findServiceByNameMock,
+    updateServiceMock,
+} from "./utils/mocks";
 
-import * as ProjectsService from "../services/projects.service";
-import * as ServicesService from "../services/services.service";
+// TODO: move all mock data to a single place
+const userA: User = {
+    id: 1,
+    username: "userA",
+    hash: "thisisahash",
+    salt: "thisisasalt",
+    createdAt: new Date(),
+};
 
-import { NextFunction, Request, Response } from "express";
-import { Project } from "../types/Project";
-import { Service } from "../types/Service";
-import { Image } from "../types/Image";
-import { ServiceStatus } from "../types/enums/ServiceStatus";
-
-const mockProject: Project = {
-    id: "1249124912",
+const projectA: Project = {
+    id: 1,
     name: "default",
+    createdAt: new Date(),
 };
 
-const mockProject1: Project = {
-    id: "12512512423",
-    name: "ProjectA",
+const projectB: Project = {
+    id: 2,
+    name: "ProjectB",
+    createdAt: new Date(),
 };
 
-const mockImage: Image = {
-    id: "5312949241",
+const containerA = {
+    id: "thisisacontainerid",
+    inspect: async () => {
+        return {
+            HostConfig: {
+                NetworkMode: "web",
+            },
+            Config: {
+                Env: ["PORT=80"],
+            },
+        };
+    },
+};
+
+const containerInfoA: ContainerInfo = {
+    id: 1,
+    name: "traefiker_httpd",
+    network: "web",
+    containerId: containerA.id,
+};
+
+const imageA: Image = {
+    id: 1,
     name: "httpd",
     tag: "latest",
     repository: "haidousm/httpd",
+    createdAt: new Date(),
 };
 
-const mockService: Service = {
+const serviceA: Service = {
+    id: 1,
     name: "httpd",
     status: ServiceStatus.PULLING,
-    image: mockImage,
     hosts: ["httpd.haidousm.com"],
-    redirects: [],
-    environmentVariables: [],
+    imageId: imageA.id,
+    containerInfoId: containerInfoA.id,
+    projectId: projectA.id,
     order: 1,
-    project: mockProject,
+    createdAt: new Date(),
+    userId: userA.id,
 };
 
 const app = createServer();
 
 describe("projects", () => {
-    describe("get all project", () => {
+    describe("get all projects", () => {
         describe("given the user is not logged in", () => {
             it("should return 401", async () => {
                 const response = await supertest(app).get("/projects");
@@ -51,29 +93,28 @@ describe("projects", () => {
             });
         });
         describe("given user is logged in", () => {
-            beforeEach(() => {
-                jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                    () => {
-                        return (
-                            req: Request,
-                            res: Response,
-                            next: NextFunction
-                        ) => {
-                            next();
-                        };
-                    }
-                );
-            });
+            const cases = [
+                {
+                    title: "should return all projects",
+                    sendRequest: () => {
+                        return supertest(app).get("/projects");
+                    },
+                    res: {
+                        status: 200,
+                        body: [projectA, projectB],
+                    },
+                    mocks: () => {
+                        authMock();
+                        findAllProjectsMock([projectA, projectB]);
+                    },
+                },
+            ];
 
-            it("should return all projects", async () => {
-                jest.spyOn(ProjectsService, "findAllProjects")
-                    // @ts-ignore
-                    .mockReturnValueOnce([mockProject]);
-
-                const response = await supertest(app).get("/projects");
-                expect(response.statusCode).toBe(200);
-                expect(response.body).toStrictEqual([mockProject]);
-            });
+            for (const testCase of cases) {
+                it(testCase.title, async () => {
+                    await executeTestCase(testCase);
+                });
+            }
         });
     });
     describe("get a project", () => {
@@ -84,45 +125,41 @@ describe("projects", () => {
             });
         });
         describe("given user is logged in", () => {
-            beforeEach(() => {
-                jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                    () => {
-                        return (
-                            req: Request,
-                            res: Response,
-                            next: NextFunction
-                        ) => {
-                            next();
-                        };
-                    }
-                );
-            });
+            const cases = [
+                {
+                    title: "should return the project given the project exists",
+                    sendRequest: () => {
+                        return supertest(app).get("/projects/default");
+                    },
+                    res: {
+                        status: 200,
+                        body: projectA,
+                    },
+                    mocks: () => {
+                        authMock();
+                        findProjectByNameMock(projectA);
+                    },
+                },
+                {
+                    title: "should return a 404 given the project does not exist",
+                    sendRequest: () => {
+                        return supertest(app).get("/projects/batata");
+                    },
+                    res: {
+                        status: 404,
+                    },
+                    mocks: () => {
+                        authMock();
+                        findProjectByNameMock(null);
+                    },
+                },
+            ];
 
-            describe("given the project exists", () => {
-                it("should return the project", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(mockProject);
-
-                    const response = await supertest(app).get(
-                        "/projects/default"
-                    );
-                    expect(response.statusCode).toBe(200);
-                    expect(response.body).toStrictEqual(mockProject);
+            for (const testCase of cases) {
+                it(testCase.title, async () => {
+                    await executeTestCase(testCase);
                 });
-            });
-            describe("given the project does not exist", () => {
-                it("should return 404", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(null);
-
-                    const response = await supertest(app).get(
-                        "/projects/default"
-                    );
-                    expect(response.statusCode).toBe(404);
-                });
-            });
+            }
         });
     });
     describe("get all services for project", () => {
@@ -135,58 +172,28 @@ describe("projects", () => {
             });
         });
         describe("given user is logged in", () => {
-            beforeEach(() => {
-                jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                    () => {
-                        return (
-                            req: Request,
-                            res: Response,
-                            next: NextFunction
-                        ) => {
-                            next();
-                        };
-                    }
-                );
-            });
-            describe("given the project exists", () => {
-                it("should return all services for project", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(mockProject);
-                    jest.spyOn(ServicesService, "findServicesByProjectId")
-                        // @ts-ignore
-                        .mockReturnValueOnce([mockService]);
-                    const response = await supertest(app).get(
-                        "/projects/default/services"
-                    );
-                    expect(response.statusCode).toBe(200);
-                    expect(response.body).toStrictEqual([mockService]);
+            const cases = [
+                {
+                    title: "should return all services for project given project exists",
+                    sendRequest: () => {
+                        return supertest(app).get("/projects/default/services");
+                    },
+                    res: {
+                        status: 200,
+                        body: [serviceA],
+                    },
+                    mocks: () => {
+                        authMock();
+                        findAllServicesByProjectNameMock([serviceA]);
+                    },
+                },
+            ];
+
+            for (const testCase of cases) {
+                it(testCase.title, async () => {
+                    await executeTestCase(testCase);
                 });
-            });
-            describe("given the project does not exist", () => {
-                it("should return 404", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(null);
-                    const response = await supertest(app).get(
-                        "/projects/default/services"
-                    );
-                    expect(response.statusCode).toBe(404);
-                });
-            });
-            describe("given the something throws", () => {
-                it("should return 500", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockImplementationOnce(() => {
-                            throw new Error("oopsie daisie");
-                        });
-                    const response = await supertest(app).get(
-                        "/projects/default/services"
-                    );
-                    expect(response.statusCode).toBe(500);
-                });
-            });
+            }
         });
     });
     describe("add service to project", () => {
@@ -199,282 +206,69 @@ describe("projects", () => {
             });
         });
         describe("given user is logged in", () => {
-            beforeEach(() => {
-                jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                    () => {
-                        return (
-                            req: Request,
-                            res: Response,
-                            next: NextFunction
-                        ) => {
-                            next();
-                        };
-                    }
-                );
-            });
+            const cases = [
+                {
+                    title: "should return a 404 given the project does not exist",
+                    sendRequest: () => {
+                        return supertest(app).put(
+                            "/projects/batata/services/httpd"
+                        );
+                    },
+                    res: {
+                        status: 404,
+                    },
+                    mocks: () => {
+                        authMock();
+                        findProjectByNameMock(null);
+                    },
+                },
+                {
+                    title: "should return a 404 given the service does not exist",
+                    sendRequest: () => {
+                        return supertest(app).put(
+                            "/projects/ProjectB/services/batata"
+                        );
+                    },
+                    res: {
+                        status: 404,
+                    },
+                    mocks: () => {
+                        authMock();
+                        findProjectByNameMock(projectB);
+                        findServiceByNameMock(null);
+                    },
+                },
+                {
+                    title: "should return an updated service with the new project given both the project & the service exist",
+                    sendRequest: () => {
+                        return supertest(app).put(
+                            "/projects/ProjectB/services/httpd"
+                        );
+                    },
+                    res: {
+                        status: 200,
+                        body: {
+                            ...serviceA,
+                            projectId: projectB.id,
+                        },
+                    },
+                    mocks: () => {
+                        authMock();
+                        findProjectByNameMock(projectB);
+                        findServiceByNameMock(serviceA);
+                        updateServiceMock({
+                            ...serviceA,
+                            projectId: projectB.id,
+                        });
+                    },
+                },
+            ];
 
-            describe("given the project does not exist", () => {
-                it("should return 404", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(null);
-
-                    const response = await supertest(app).put(
-                        "/projects/ProjectB/services/httpd"
-                    );
-                    expect(response.statusCode).toBe(404);
+            for (const testCase of cases) {
+                it(testCase.title, async () => {
+                    await executeTestCase(testCase);
                 });
-            });
-
-            describe("given the service does not exist", () => {
-                it("should return 404", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(mockProject1);
-                    jest.spyOn(ServicesService, "findServiceByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(null);
-
-                    const response = await supertest(app).put(
-                        "/projects/ProjectA/services/httpd_1"
-                    );
-                    expect(response.statusCode).toBe(404);
-                });
-            });
-            describe("given both project and service exist", () => {
-                it("should return 200", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(mockProject1);
-                    jest.spyOn(ServicesService, "findServiceByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(mockService);
-                    jest.spyOn(ServicesService, "saveService")
-                        // @ts-ignore
-                        .mockImplementationOnce((service) => {
-                            service.project = mockProject1;
-                            return service;
-                        });
-                    const response = await supertest(app).put(
-                        "/projects/ProjectA/services/httpd1"
-                    );
-                    expect(response.statusCode).toBe(200);
-                    expect(response.body.project).toStrictEqual(mockProject1);
-                });
-            });
-            describe("given saving service throws an error", () => {
-                it("should return 500", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(mockProject1);
-                    jest.spyOn(ServicesService, "findServiceByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(mockService);
-                    jest.spyOn(ServicesService, "saveService")
-                        // @ts-ignore
-                        .mockImplementationOnce(() => {
-                            throw new Error("oopsie daisie x2!");
-                        });
-                    const response = await supertest(app).put(
-                        "/projects/ProjectA/services/httpd1"
-                    );
-                    expect(response.statusCode).toBe(500);
-                });
-            });
-        });
-    });
-    describe("create a project", () => {
-        describe("given the user is not logged in", () => {
-            it("should return 401", async () => {
-                const response = await supertest(app).post(
-                    "/projects/ProjectA"
-                );
-                expect(response.status).toBe(401);
-            });
-        });
-        describe("given user is logged in", () => {
-            beforeEach(() => {
-                jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                    () => {
-                        return (
-                            req: Request,
-                            res: Response,
-                            next: NextFunction
-                        ) => {
-                            next();
-                        };
-                    }
-                );
-            });
-
-            describe("given the project already exists", () => {
-                it("should return 500", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(mockProject1);
-
-                    const response = await supertest(app).post(
-                        "/projects/ProjectA"
-                    );
-                    expect(response.statusCode).toBe(500);
-                });
-            });
-
-            describe("given the project does not exist", () => {
-                it("should return 200", async () => {
-                    jest.spyOn(ProjectsService, "createProject")
-                        // @ts-ignore
-                        .mockImplementationOnce(() => {
-                            return mockProject1;
-                        });
-                    const response = await supertest(app).post(
-                        "/projects/ProjectA"
-                    );
-                    expect(response.statusCode).toBe(200);
-                    expect(response.body.name).toBe("ProjectA");
-                });
-            });
-        });
-    });
-    describe("update project name", () => {
-        describe("given the user is not logged in", () => {
-            it("should return 401", async () => {
-                const response = await supertest(app)
-                    .put("/projects/ProjectA")
-                    .send({
-                        name: "ProjectB",
-                    });
-                expect(response.status).toBe(401);
-            });
-        });
-        describe("given user is logged in", () => {
-            beforeEach(() => {
-                jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                    () => {
-                        return (
-                            req: Request,
-                            res: Response,
-                            next: NextFunction
-                        ) => {
-                            next();
-                        };
-                    }
-                );
-            });
-
-            describe("given the does not exist", () => {
-                it("should return 404", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockReturnValueOnce(null);
-
-                    const response = await supertest(app)
-                        .put("/projects/ProjectA")
-                        .send({
-                            name: "ProjectB",
-                        });
-                    expect(response.statusCode).toBe(404);
-                });
-            });
-
-            describe("given the project does exist", () => {
-                it("should return 200", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockImplementationOnce(() => {
-                            return mockProject;
-                        });
-                    jest.spyOn(ProjectsService, "saveProject")
-                        // @ts-ignore
-                        .mockImplementationOnce(() => {
-                            return {
-                                id: mockProject.id,
-                                name: "ProjectB",
-                            };
-                        });
-                    const response = await supertest(app)
-                        .put("/projects/ProjectA")
-                        .send({
-                            name: "ProjectB",
-                        });
-                    expect(response.statusCode).toBe(200);
-                    expect(response.body.id).toBe(mockProject.id);
-                    expect(response.body.name).toBe("ProjectB");
-                });
-            });
-            describe("given saving the project throws", () => {
-                it("should return 500", async () => {
-                    jest.spyOn(ProjectsService, "findProjectByName")
-                        // @ts-ignore
-                        .mockImplementationOnce(() => {
-                            return mockProject;
-                        });
-                    jest.spyOn(ProjectsService, "saveProject")
-                        // @ts-ignore
-                        .mockImplementationOnce(() => {
-                            throw new Error("project not found");
-                        });
-                    const response = await supertest(app)
-                        .put("/projects/ProjectA")
-                        .send({
-                            name: "ProjectB",
-                        });
-                    expect(response.statusCode).toBe(500);
-                });
-            });
-        });
-    });
-    describe("delete a project", () => {
-        describe("given the user is not logged in", () => {
-            it("should return 401", async () => {
-                const response = await supertest(app).delete(
-                    "/projects/ProjectA"
-                );
-                expect(response.status).toBe(401);
-            });
-        });
-        describe("given user is logged in", () => {
-            beforeEach(() => {
-                jest.spyOn(passport, "authenticate").mockImplementationOnce(
-                    () => {
-                        return (
-                            req: Request,
-                            res: Response,
-                            next: NextFunction
-                        ) => {
-                            next();
-                        };
-                    }
-                );
-            });
-
-            describe("given the project does not exist", () => {
-                it("should return 500", async () => {
-                    jest.spyOn(ProjectsService, "deleteProjectByName")
-                        // @ts-ignore
-                        .mockImplementationOnce(() => {
-                            throw new Error("Project not found");
-                        });
-                    const response = await supertest(app).delete(
-                        "/projects/ProjectA"
-                    );
-                    expect(response.statusCode).toBe(500);
-                });
-            });
-
-            describe("given the project does exist", () => {
-                it("should return 200", async () => {
-                    jest.spyOn(ProjectsService, "deleteProjectByName")
-                        // @ts-ignore
-                        .mockImplementationOnce(() => {
-                            return mockProject1;
-                        });
-                    const response = await supertest(app).delete(
-                        "/projects/ProjectA"
-                    );
-                    expect(response.statusCode).toBe(200);
-                });
-            });
+            }
         });
     });
 });

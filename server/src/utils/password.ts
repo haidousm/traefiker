@@ -1,7 +1,7 @@
 import fs from "fs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { UserDocument } from "../models/User";
+import { User } from "@prisma/client";
 
 /* istanbul ignore next */
 export const validatePassword = (
@@ -29,7 +29,7 @@ export const generateHash = (password: string, salt: string) => {
 };
 
 /* istanbul ignore next */
-export const issueJWT = (user: UserDocument) => {
+export const issueJWT = (user: User) => {
     const PRIV_KEY = fs.readFileSync(
         `${__dirname}/../../config/keys/private.pem`
     );
